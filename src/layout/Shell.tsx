@@ -49,7 +49,11 @@ export function Shell({
     <div className="relative z-10 min-h-[100dvh] flex flex-col">
       <AmbientBackground />
       {/* ── Top nav (desktop) ─────────────────────────────── */}
-      <header className="hidden sidebar:flex items-center justify-between gap-4 px-6 py-4 sticky top-0 z-20">
+      <header className="hidden sidebar:grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-4 sticky top-0 z-20">
+        <div className="font-[var(--font-display)] text-[13px] tracking-[0.18em] text-[var(--color-ink)] flex-none">
+          PERFORMANCE<span className="text-[var(--color-red)]">.</span>
+        </div>
+
         <div className="nav-pillbar">
           <span className="nav-logo-badge">
             <span className="nav-logo-dot" />
