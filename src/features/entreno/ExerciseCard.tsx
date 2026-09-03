@@ -125,7 +125,7 @@ export function ExerciseCard({
             placeholder="Nota (opcional)"
             className="mt-2 w-full bg-[var(--color-surface-2)] border border-[var(--color-line-strong)] px-2.5 py-2 text-[13px] outline-none focus:border-[var(--color-red)]"
           />
-          <button onClick={save} className="mt-2.5 w-full bg-[var(--color-red)] text-black py-2.5 text-[12.5px] font-semibold uppercase tracking-wide hover:brightness-110">
+          <button onClick={save} className="tap-target mt-2.5 w-full bg-[var(--color-red)] text-black py-2.5 text-[12.5px] font-semibold uppercase tracking-wide hover:brightness-110">
             Guardar serie
           </button>
         </div>

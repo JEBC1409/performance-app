@@ -5,26 +5,33 @@ import { Card, Eyebrow, Chip, Button, Field, Input } from "@/ui";
 import { LineChart } from "@/ui/LineChart";
 import { evaluateRate } from "@/lib/weightProjection";
 import { todayISO, fmtDateHuman } from "@/lib/date";
+import { fromKg, toKg, unitLabel } from "@/lib/units";
 import { showToast } from "@/ui/Toast";
 
 export function PesoTab() {
   const rows = useLiveQuery(() => db.weights.orderBy("date").toArray(), []);
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const goal = settings?.weeklyGoalKg ?? DEFAULT_SETTINGS.weeklyGoalKg;
+  const unit = settings?.unit ?? DEFAULT_SETTINGS.unit;
+  const u = unitLabel(unit);
 
   const [date, setDate] = useState(todayISO());
   const [weight, setWeight] = useState("");
 
-  const points = (rows ?? []).filter((r) => r.weightKg != null).map((r) => ({ label: r.date, value: r.weightKg as number }));
-  const alert = points.length >= 2 ? evaluateRate(points.map((p) => ({ date: p.label, weight: p.value }))) : null;
+  const kgPoints = (rows ?? [])
+    .filter((r) => r.weightKg != null)
+    .map((r) => ({ date: r.date, weight: r.weightKg as number }));
+  const displayPoints = kgPoints.map((p) => ({ label: p.date, value: fromKg(p.weight, unit) }));
+  const alert = kgPoints.length >= 2 ? evaluateRate(kgPoints) : null;
   const last = rows && rows.length ? rows[rows.length - 1] : null;
 
   async function addEntry() {
-    const w = parseFloat(weight.replace(",", "."));
-    if (Number.isNaN(w)) return;
+    const typed = parseFloat(weight.replace(",", "."));
+    if (Number.isNaN(typed)) return;
+    const kg = toKg(typed, unit);
     const existing = await db.weights.where("date").equals(date).first();
-    if (existing) await db.weights.update(existing.id!, { weightKg: w });
-    else await db.weights.add({ date, weightKg: w, pechoCm: null, brazoCm: null, note: "" });
+    if (existing) await db.weights.update(existing.id!, { weightKg: kg });
+    else await db.weights.add({ date, weightKg: kg, pechoCm: null, brazoCm: null, note: "" });
     setWeight("");
     showToast("Peso guardado");
   }
@@ -34,10 +41,16 @@ export function PesoTab() {
       <Card>
         <div className="flex items-center justify-between">
           <Eyebrow accent>Peso corporal</Eyebrow>
-          <span className="text-[10.5px] text-[var(--color-muted)] num">meta +{goal} kg/semana</span>
+          <span className="text-[10.5px] text-[var(--color-muted)] num">
+            meta +{fromKg(goal, unit)} {u}/semana
+          </span>
         </div>
         <div className="mt-3">
-          <LineChart points={points} goalPerStep={goal} lastValueLabel={last?.weightKg != null ? `${last.weightKg} kg` : undefined} />
+          <LineChart
+            points={displayPoints}
+            goalPerStep={fromKg(goal, unit)}
+            lastValueLabel={last?.weightKg != null ? `${fromKg(last.weightKg, unit)} ${u}` : undefined}
+          />
         </div>
         {alert?.overPace ? (
           <div className="mt-3">
@@ -52,8 +65,8 @@ export function PesoTab() {
           <Field label="Fecha">
             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </Field>
-          <Field label="Peso (kg)">
-            <Input inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="72.0" />
+          <Field label={`Peso (${u})`}>
+            <Input inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder={unit === "lb" ? "158.7" : "72.0"} />
           </Field>
         </div>
         <Button variant="primary" className="w-full mt-3" onClick={addEntry}>
@@ -70,7 +83,9 @@ export function PesoTab() {
             .map((r) => (
               <div key={r.id} className="flex items-center justify-between px-4 py-2.5 text-[12.5px]">
                 <span className="text-[var(--color-muted)] num">{fmtDateHuman(r.date)}</span>
-                <span className="num font-semibold">{r.weightKg ?? "—"} kg</span>
+                <span className="num font-semibold">
+                  {r.weightKg != null ? fromKg(r.weightKg, unit) : "—"} {u}
+                </span>
               </div>
             ))}
           {!rows?.length ? <div className="px-4 py-6 text-center text-[12px] text-[var(--color-muted)]">Sin registros aún.</div> : null}

@@ -1,5 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/db/db";
+import { db, DEFAULT_SETTINGS } from "@/db/db";
 import { Card, Eyebrow, Stat, Ring, Button } from "@/ui";
 import { HABIT_LIST } from "@/data/habits";
 import { GYM_DIAS } from "@/data/gym";
@@ -9,6 +9,7 @@ import { HORARIO } from "@/data/horario";
 import { useCycleSlot } from "@/hooks/useCycle";
 import { useBible } from "@/hooks/useBible";
 import { verseOfDay } from "@/data/bible/loader";
+import { fromKg, unitLabel } from "@/lib/units";
 import type { Tab } from "@/App";
 import type { GymDay } from "@/lib/cycle";
 
@@ -18,6 +19,8 @@ export function Hoy({ onStartEntreno, onNavigate }: { onStartEntreno: (day: GymD
   const habitDay = useLiveQuery(() => db.habitDays.get(today), [today]);
   const lastWeight = useLiveQuery(() => db.weights.orderBy("date").last(), []);
   const firstWeight = useLiveQuery(() => db.weights.orderBy("date").first(), []);
+  const settings = useLiveQuery(() => db.settings.get("app"), []);
+  const unit = settings?.unit ?? DEFAULT_SETTINGS.unit;
   const moureHours = useLiveQuery(async () => {
     const rows = await db.moureWeeks.toArray();
     return rows.reduce((a, r) => a + (num(r.hours) ?? 0), 0);
@@ -88,7 +91,12 @@ export function Hoy({ onStartEntreno, onNavigate }: { onStartEntreno: (day: GymD
       </div>
 
       <div className="grid grid-cols-2 sidebar:grid-cols-3 gap-2.5">
-        <Stat label="Peso actual" value={lastWeight?.weightKg != null ? `${lastWeight.weightKg}` : "—"} sub={weightDelta ? `${weightDelta > 0 ? "+" : ""}${weightDelta.toFixed(1)} kg desde inicio` : "kg"} accent />
+        <Stat
+          label="Peso actual"
+          value={lastWeight?.weightKg != null ? `${fromKg(lastWeight.weightKg, unit)}` : "—"}
+          sub={weightDelta ? `${weightDelta > 0 ? "+" : ""}${fromKg(weightDelta, unit).toFixed(1)} ${unitLabel(unit)} desde inicio` : unitLabel(unit)}
+          accent
+        />
         <Stat label="Horas MoureDev" value={moureHours ?? 0} sub="acumuladas" />
         <Stat
           label="Hábitos"

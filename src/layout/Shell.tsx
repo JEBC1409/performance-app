@@ -101,7 +101,7 @@ export function Shell({ active, onChange, children }: { active: Tab; onChange: (
                     onChange(t.key);
                     setMoreOpen(false);
                   }}
-                  className={`panel-surface flex items-center gap-2.5 px-3 py-3 text-[12px] font-semibold uppercase tracking-wide ${
+                  className={`tap-target panel-surface flex items-center gap-2.5 px-3 py-3 text-[12px] font-semibold uppercase tracking-wide ${
                     active === t.key ? "text-[var(--color-red)]" : "text-[var(--color-ink)]"
                   }`}
                 >

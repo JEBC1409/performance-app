@@ -32,7 +32,7 @@ export function RestTimer({
               timer.addTime(30);
               onAdd?.();
             }}
-            className="flex-1 border border-[var(--color-line-strong)] py-1.5 text-[11.5px] font-semibold uppercase tracking-wide hover:border-[var(--color-red)]"
+            className="tap-target flex-1 border border-[var(--color-line-strong)] py-1.5 text-[11.5px] font-semibold uppercase tracking-wide hover:border-[var(--color-red)]"
           >
             +30s
           </button>
@@ -41,7 +41,7 @@ export function RestTimer({
               timer.skip();
               onSkip?.();
             }}
-            className="flex-1 border border-[var(--color-line-strong)] py-1.5 text-[11.5px] font-semibold uppercase tracking-wide hover:border-[var(--color-red)]"
+            className="tap-target flex-1 border border-[var(--color-line-strong)] py-1.5 text-[11.5px] font-semibold uppercase tracking-wide hover:border-[var(--color-red)]"
           >
             Saltar
           </button>

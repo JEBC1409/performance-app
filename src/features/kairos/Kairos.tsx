@@ -56,13 +56,13 @@ export function Kairos() {
       <div className="flex border border-[var(--color-line)]">
         <button
           onClick={() => setView("leer")}
-          className={`flex-1 py-2.5 text-[12px] font-semibold uppercase tracking-wide ${view === "leer" ? "bg-[var(--color-red)] text-black" : "text-[var(--color-muted)]"}`}
+          className={`tap-target flex-1 py-2.5 text-[12px] font-semibold uppercase tracking-wide ${view === "leer" ? "bg-[var(--color-red)] text-black" : "text-[var(--color-muted)]"}`}
         >
           Leer
         </button>
         <button
           onClick={() => setView("guardados")}
-          className={`flex-1 py-2.5 text-[12px] font-semibold uppercase tracking-wide ${view === "guardados" ? "bg-[var(--color-red)] text-black" : "text-[var(--color-muted)]"}`}
+          className={`tap-target flex-1 py-2.5 text-[12px] font-semibold uppercase tracking-wide ${view === "guardados" ? "bg-[var(--color-red)] text-black" : "text-[var(--color-muted)]"}`}
         >
           Guardados ({saved?.length ?? 0})
         </button>

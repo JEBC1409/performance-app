@@ -52,6 +52,18 @@ body {
   color: #fff;
 }
 
+:focus-visible {
+  outline: 2px solid var(--color-red);
+  outline-offset: 2px;
+}
+
+/* Minimum touch target for primary, repeatedly-tapped controls (WCAG 2.5.5).
+   Small inline icon toggles (steppers, calendar cells, close buttons) are an
+   intentional exception — bumping those to 44px would break dense layouts. */
+.tap-target {
+  min-height: 44px;
+}
+
 .num {
   font-variant-numeric: tabular-nums;
 }

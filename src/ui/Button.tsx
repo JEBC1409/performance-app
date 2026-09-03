@@ -12,7 +12,7 @@ export function Button({ variant = "outline", className = "", ...rest }: ButtonH
   return (
     <button
       {...rest}
-      className={`px-4 py-2.5 text-[12.5px] font-semibold uppercase tracking-wide transition-colors disabled:opacity-40 ${VARIANT[variant]} ${className}`}
+      className={`tap-target px-4 py-2.5 text-[12.5px] font-semibold uppercase tracking-wide transition-colors disabled:opacity-40 ${VARIANT[variant]} ${className}`}
     />
   );
 }

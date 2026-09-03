@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
 import { Shell } from "@/layout/Shell";
 import { ToastHost } from "@/ui/Toast";
 import { seedIfNeeded } from "@/db/seed";
+import { db } from "@/db/db";
+import { useReminders } from "@/hooks/useReminders";
 import { Hoy } from "@/features/hoy/Hoy";
 import { Entreno } from "@/features/entreno/Entreno";
 import { Habitos } from "@/features/habitos/Habitos";
@@ -18,6 +21,8 @@ export default function App() {
   const [ready, setReady] = useState(false);
   const [tab, setTab] = useState<Tab>("hoy");
   const [autoStartDay, setAutoStartDay] = useState<GymDay | null>(null);
+  const settings = useLiveQuery(() => db.settings.get("app"), []);
+  useReminders(settings);
 
   useEffect(() => {
     seedIfNeeded().finally(() => setReady(true));
