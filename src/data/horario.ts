@@ -32,6 +32,34 @@ export const BLOCK_LABEL: Record<BlockType, string> = {
   otro: "—",
 };
 
+/** Soft fill + border tints per block type, for the colored cell chips. */
+export const BLOCK_TINT: Record<BlockType, string> = {
+  clase: "rgba(223, 37, 49, 0.16)",
+  gym: "rgba(255, 255, 255, 0.1)",
+  mouredev: "rgba(255, 255, 255, 0.06)",
+  ingles: "rgba(223, 37, 49, 0.16)",
+  libre: "rgba(255, 255, 255, 0.04)",
+  otro: "transparent",
+};
+
+export const BLOCK_BORDER: Record<BlockType, string> = {
+  clase: "rgba(223, 37, 49, 0.55)",
+  gym: "rgba(255, 255, 255, 0.4)",
+  mouredev: "rgba(255, 255, 255, 0.22)",
+  ingles: "rgba(223, 37, 49, 0.55)",
+  libre: "rgba(255, 255, 255, 0.14)",
+  otro: "transparent",
+};
+
+export const BLOCK_TEXT: Record<BlockType, string> = {
+  clase: "var(--color-red)",
+  gym: "var(--color-ink)",
+  mouredev: "var(--color-muted)",
+  ingles: "var(--color-red)",
+  libre: "var(--color-muted)",
+  otro: "var(--color-muted)",
+};
+
 export const HORARIO: HorarioRow[] = [
   {
     time: "5:20-6:00",
@@ -77,7 +105,7 @@ export const HORARIO: HorarioRow[] = [
       c("MoureDev + Uni", "mouredev"),
       c("MoureDev + Uni", "mouredev"),
       c("Uni pendientes", "clase"),
-      c("Estadística PRESENCIAL ★", "clase"),
+      c("LIBRE", "libre"),
       c("Uni + planear MoureDev", "mouredev"),
     ],
   },
@@ -135,7 +163,7 @@ export const HORARIO: HorarioRow[] = [
       c("Cena + libre", "otro"),
       c("Cena + libre", "otro"),
       c("Cena + libre", "otro"),
-      c("Estadística ★ (alternante)", "clase"),
+      c("Dormir 22:00", "otro"),
       c("Dormir 22:00", "otro"),
       c("Dormir 22:00", "otro"),
       c("Planear + dormir", "otro"),
@@ -159,4 +187,4 @@ export const SUENO: SueñoRow[] = [
 
 export const SLEEP_GOAL_HOURS = 7.5;
 
-export const HORARIO_NOTE = "Semestre 2026-2 · Clases virtuales (excepto Estadística sábado) · Inglés Blendex L-J 14:00-16:00";
+export const HORARIO_NOTE = "Semestre 2026-2 · Clases virtuales · Inglés Blendex L-J 14:00-16:00";
