@@ -162,7 +162,7 @@ export function Shell({
                       onChange(t.key);
                       setMoreOpen(false);
                     }}
-                    className={`panel-surface flex items-center gap-3 px-4 py-3.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] transition-all border-l-2 ${
+                    className={`tap-target panel-surface flex items-center gap-3 px-4 py-3.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] transition-all border-l-2 ${
                       isActive
                         ? "border-l-[var(--color-red)] text-[var(--color-red)]"
                         : "border-l-transparent text-[var(--color-ink)] hover:border-l-[var(--color-red)] hover:text-[var(--color-red)]"

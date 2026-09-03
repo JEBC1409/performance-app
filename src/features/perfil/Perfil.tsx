@@ -6,6 +6,9 @@ import { showToast } from "@/ui/Toast";
 import { useCycleSlot } from "@/hooks/useCycle";
 import { exportBackup, importBackup } from "@/lib/jsonBackup";
 import { importExcelFile } from "@/lib/excelImport";
+import { fromKg, toKg, unitLabel } from "@/lib/units";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 
 const HEAVY_DUTY_RULES = [
   "Pre-fatigá el músculo objetivo con una serie de aislamiento antes del compuesto principal.",
@@ -18,13 +21,29 @@ const HEAVY_DUTY_RULES = [
 export function Perfil() {
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const slot = useCycleSlot();
+  const { session } = useAuth();
   const fileRef = useRef<HTMLInputElement>(null);
   const excelRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
+  const [permission, setPermission] = useState<NotificationPermission | "unsupported">(
+    typeof Notification === "undefined" ? "unsupported" : Notification.permission,
+  );
 
   async function patch(fields: Partial<typeof DEFAULT_SETTINGS>) {
     const current = settings ?? DEFAULT_SETTINGS;
     await db.settings.put({ ...current, ...fields });
+  }
+
+  async function enableReminders() {
+    if (typeof Notification === "undefined") return;
+    const result = await Notification.requestPermission();
+    setPermission(result);
+    if (result === "granted") {
+      await patch({ remindersEnabled: true });
+      showToast("Recordatorios activados");
+    } else {
+      showToast("Permiso de notificaciones denegado");
+    }
   }
 
   async function onImportJson(e: React.ChangeEvent<HTMLInputElement>) {
@@ -64,6 +83,17 @@ export function Perfil() {
       </div>
 
       <Card>
+        <div className="flex items-center justify-between">
+          <Eyebrow accent>Cuenta</Eyebrow>
+          <Chip tone="good">Conectado</Chip>
+        </div>
+        <p className="text-[13px] mt-2">{session?.user.email}</p>
+        <Button className="mt-3 w-full" onClick={() => supabase?.auth.signOut()}>
+          Cerrar sesión
+        </Button>
+      </Card>
+
+      <Card>
         <Eyebrow accent>Ciclo actual</Eyebrow>
         <div className="mt-2 flex items-center gap-2">
           <Chip tone="accent">{slot === "rest" ? "Descanso" : `Día ${slot}`}</Chip>
@@ -80,11 +110,15 @@ export function Perfil() {
               <option value="lb">Libras (lb)</option>
             </Select>
           </Field>
-          <Field label="Meta semanal (kg)">
+          <Field label={`Meta semanal (${unitLabel(unit)})`}>
             <Input
+              key={unit}
               inputMode="decimal"
-              defaultValue={settings?.weeklyGoalKg ?? DEFAULT_SETTINGS.weeklyGoalKg}
-              onBlur={(e) => patch({ weeklyGoalKg: parseFloat(e.target.value) || DEFAULT_SETTINGS.weeklyGoalKg })}
+              defaultValue={fromKg(settings?.weeklyGoalKg ?? DEFAULT_SETTINGS.weeklyGoalKg, unit)}
+              onBlur={(e) => {
+                const typed = parseFloat(e.target.value);
+                patch({ weeklyGoalKg: Number.isNaN(typed) ? DEFAULT_SETTINGS.weeklyGoalKg : toKg(typed, unit) });
+              }}
             />
           </Field>
           <Field label="Descanso por defecto (seg)">
@@ -101,6 +135,41 @@ export function Perfil() {
             <Input type="time" defaultValue={settings?.sleepTime ?? DEFAULT_SETTINGS.sleepTime} onBlur={(e) => patch({ sleepTime: e.target.value })} />
           </Field>
         </div>
+      </Card>
+
+      <Card>
+        <div className="flex items-center justify-between">
+          <Eyebrow accent>Recordatorios</Eyebrow>
+          {permission === "granted" ? (
+            <Chip tone="good">Activos</Chip>
+          ) : permission === "denied" ? (
+            <Chip tone="bad">Bloqueados</Chip>
+          ) : permission === "unsupported" ? (
+            <Chip tone="neutral">No disponible</Chip>
+          ) : (
+            <Chip tone="neutral">Inactivos</Chip>
+          )}
+        </div>
+        <p className="text-[12px] text-[var(--color-muted)] mt-2">
+          Avisa con una notificación cuando llega la hora de guardar el celular ({settings?.noPhoneTime ?? DEFAULT_SETTINGS.noPhoneTime}) y la hora
+          de dormir ({settings?.sleepTime ?? DEFAULT_SETTINGS.sleepTime}). Solo funciona con la app abierta en el navegador.
+        </p>
+        {permission === "granted" ? (
+          <Button
+            className="mt-3 w-full"
+            onClick={() => patch({ remindersEnabled: !(settings?.remindersEnabled ?? true) })}
+          >
+            {settings?.remindersEnabled ?? true ? "Desactivar" : "Reactivar"}
+          </Button>
+        ) : permission === "denied" ? (
+          <p className="text-[11.5px] text-[var(--color-red)] mt-3">
+            Bloqueaste las notificaciones para este sitio. Habilitalas desde los ajustes del navegador para reactivarlas.
+          </p>
+        ) : permission === "unsupported" ? null : (
+          <Button variant="primary" className="mt-3 w-full" onClick={enableReminders}>
+            Activar notificaciones
+          </Button>
+        )}
       </Card>
 
       <Card>

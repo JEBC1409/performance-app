@@ -19,7 +19,7 @@ export function Button({
   return (
     <button
       {...rest}
-      className={`px-4 py-2.5 text-[12px] font-semibold uppercase tracking-[0.1em] transition-all duration-150 disabled:opacity-40 ${VARIANT[variant]} ${className}`}
+      className={`tap-target px-4 py-2.5 text-[12px] font-semibold uppercase tracking-[0.1em] transition-all duration-150 disabled:opacity-40 ${VARIANT[variant]} ${className}`}
     />
   );
 }
