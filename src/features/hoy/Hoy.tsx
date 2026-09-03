@@ -61,6 +61,12 @@ export function Hoy({
         {/* Header row */}
         <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-[var(--color-line)]">
           <div>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-red)] glow-dot" />
+              <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--color-muted)]">
+                Dr. Discipline
+              </span>
+            </div>
             <div className="eyebrow eyebrow-accent">
               {DIAS[jsDowToIndex(new Date().getDay())]}
             </div>
