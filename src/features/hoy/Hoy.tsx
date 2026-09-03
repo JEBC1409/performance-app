@@ -56,6 +56,20 @@ export function Hoy({
 
   return (
     <div className="flex flex-col gap-4">
+      {/* ── Mascotas laterales (desktop, en el margen vacío junto al contenido) ── */}
+      <img
+        src="/images/berserk.jpg"
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none fixed bottom-0 left-2 z-[-1] hidden h-[62vh] max-w-[220px] object-contain object-bottom mix-blend-screen opacity-90 sidebar:block"
+      />
+      <img
+        src="/images/mentzer.webp"
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none fixed bottom-0 right-2 z-[-1] hidden h-[62vh] max-w-[220px] object-contain object-bottom mix-blend-screen opacity-90 sidebar:block"
+      />
+
       {/* ── Bloque actual ──────────────────────────────────── */}
       <div className="panel-surface enter">
         {/* Header row */}
