@@ -75,7 +75,7 @@ export function Login() {
   if (!supabaseConfigured) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)] px-6">
-        <div className="panel-surface p-6 max-w-sm w-full">
+        <div className="login-card p-6 max-w-sm w-full">
           <div className="eyebrow eyebrow-accent">Configuración pendiente</div>
           <h1 className="font-[var(--font-display)] text-lg mt-2.5">Falta conectar Supabase</h1>
           <p className="text-[12.5px] text-[var(--color-muted)] mt-3 leading-relaxed">
@@ -100,7 +100,7 @@ export function Login() {
           </div>
         </div>
 
-        <div className="panel-surface p-6">
+        <div className="login-card p-6">
           {step === "email" ? (
             <form onSubmit={sendCode} className="flex flex-col gap-5">
               <div>
@@ -123,7 +123,7 @@ export function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@correo.com"
-                  className="bg-[var(--color-surface-2)] border border-[var(--color-line-strong)] px-3 py-3 text-[14px] outline-none focus:border-[var(--color-red)]"
+                  className="bg-[var(--color-surface-2)] border border-[var(--color-line-strong)] rounded-xl px-3.5 py-3 text-[14px] outline-none focus:border-[var(--color-red)]"
                 />
               </label>
 
@@ -132,7 +132,7 @@ export function Login() {
               <button
                 type="submit"
                 disabled={loading || !email.trim()}
-                className="tap-target w-full bg-[var(--color-red)] text-black py-3 text-[12.5px] font-semibold uppercase tracking-wide hover:brightness-110 disabled:opacity-40 transition-colors"
+                className="tap-target w-full bg-[var(--color-red)] text-black rounded-full py-3 text-[12.5px] font-semibold uppercase tracking-wide hover:brightness-110 disabled:opacity-40 transition-colors"
               >
                 {loading ? "Enviando…" : "Enviar código"}
               </button>
@@ -157,7 +157,7 @@ export function Login() {
               <button
                 onClick={verifyCode}
                 disabled={loading || code.length !== OTP_LENGTH}
-                className="tap-target w-full bg-[var(--color-red)] text-black py-3 text-[12.5px] font-semibold uppercase tracking-wide hover:brightness-110 disabled:opacity-40 transition-colors"
+                className="tap-target w-full bg-[var(--color-red)] text-black rounded-full py-3 text-[12.5px] font-semibold uppercase tracking-wide hover:brightness-110 disabled:opacity-40 transition-colors"
               >
                 {loading ? "Verificando…" : "Verificar"}
               </button>

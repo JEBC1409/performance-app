@@ -50,7 +50,7 @@ export function OtpInput({ value, onChange, disabled }: { value: string; onChang
           autoComplete={i === 0 ? "one-time-code" : "off"}
           maxLength={1}
           aria-label={`Dígito ${i + 1} de ${OTP_LENGTH}`}
-          className="num w-full aspect-square bg-[var(--color-surface-2)] border border-[var(--color-line-strong)] text-center text-lg font-semibold outline-none focus:border-[var(--color-red)] disabled:opacity-40"
+          className="num w-full aspect-square rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-line-strong)] text-center text-lg font-semibold outline-none focus:border-[var(--color-red)] disabled:opacity-40"
         />
       ))}
     </div>
