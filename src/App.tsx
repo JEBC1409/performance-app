@@ -5,6 +5,8 @@ import { ToastHost } from "@/ui/Toast";
 import { seedIfNeeded } from "@/db/seed";
 import { db } from "@/db/db";
 import { useReminders } from "@/hooks/useReminders";
+import { useAuth } from "@/hooks/useAuth";
+import { Login } from "@/features/auth/Login";
 import { Hoy } from "@/features/hoy/Hoy";
 import { Entreno } from "@/features/entreno/Entreno";
 import { Habitos } from "@/features/habitos/Habitos";
@@ -17,7 +19,16 @@ import type { GymDay } from "@/lib/cycle";
 
 export type Tab = "hoy" | "entreno" | "habitos" | "datos" | "mas" | "horario" | "kairos" | "mouredev" | "perfil";
 
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
+      <div className="eyebrow pulse">Cargando PERFORMANCE…</div>
+    </div>
+  );
+}
+
 export default function App() {
+  const { session, loading: authLoading } = useAuth();
   const [ready, setReady] = useState(false);
   const [tab, setTab] = useState<Tab>("hoy");
   const [autoStartDay, setAutoStartDay] = useState<GymDay | null>(null);
@@ -33,13 +44,9 @@ export default function App() {
     setTab("entreno");
   }
 
-  if (!ready) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
-        <div className="eyebrow pulse">Cargando PERFORMANCE…</div>
-      </div>
-    );
-  }
+  if (authLoading) return <LoadingScreen />;
+  if (!session) return <Login />;
+  if (!ready) return <LoadingScreen />;
 
   return (
     <Shell active={tab} onChange={setTab}>

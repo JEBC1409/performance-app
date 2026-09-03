@@ -7,6 +7,8 @@ import { useCycleSlot } from "@/hooks/useCycle";
 import { exportBackup, importBackup } from "@/lib/jsonBackup";
 import { importExcelFile } from "@/lib/excelImport";
 import { fromKg, toKg, unitLabel } from "@/lib/units";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 
 const HEAVY_DUTY_RULES = [
   "Pre-fatigá el músculo objetivo con una serie de aislamiento antes del compuesto principal.",
@@ -19,6 +21,7 @@ const HEAVY_DUTY_RULES = [
 export function Perfil() {
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const slot = useCycleSlot();
+  const { session } = useAuth();
   const fileRef = useRef<HTMLInputElement>(null);
   const excelRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
@@ -78,6 +81,17 @@ export function Perfil() {
         <Eyebrow>Perfil</Eyebrow>
         <h1 className="font-[var(--font-display)] text-xl mt-1.5">Configuración</h1>
       </div>
+
+      <Card>
+        <div className="flex items-center justify-between">
+          <Eyebrow accent>Cuenta</Eyebrow>
+          <Chip tone="good">Conectado</Chip>
+        </div>
+        <p className="text-[13px] mt-2">{session?.user.email}</p>
+        <Button className="mt-3 w-full" onClick={() => supabase?.auth.signOut()}>
+          Cerrar sesión
+        </Button>
+      </Card>
 
       <Card>
         <Eyebrow accent>Ciclo actual</Eyebrow>
