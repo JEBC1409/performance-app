@@ -29,86 +29,150 @@ const SIDEBAR_TABS: { key: Tab; label: string }[] = [
   { key: "perfil", label: "Perfil" },
 ];
 
-export function Shell({ active, onChange, children }: { active: Tab; onChange: (t: Tab) => void; children: ReactNode }) {
+export function Shell({
+  active,
+  onChange,
+  children,
+}: {
+  active: Tab;
+  onChange: (t: Tab) => void;
+  children: ReactNode;
+}) {
   const [moreOpen, setMoreOpen] = useState(false);
-  const dateLabel = new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" });
+  const dateLabel = new Date().toLocaleDateString("es-CO", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
 
   return (
-    <div className="min-h-screen flex flex-col sidebar:flex-row">
-      <aside className="hidden sidebar:flex sidebar:flex-col sidebar:w-[190px] sidebar:border-r sidebar:border-[var(--color-line)] sidebar:h-screen sidebar:sticky sidebar:top-0">
-        <div className="px-5 pt-6 pb-4">
-          <div className="font-[var(--font-display)] text-[13px] tracking-[0.14em]">
+    <div className="min-h-[100dvh] flex flex-col sidebar:flex-row">
+      {/* ── Sidebar (desktop) ─────────────────────────────── */}
+      <aside className="hidden sidebar:flex sidebar:flex-col sidebar:w-[200px] sidebar:border-r sidebar:border-[var(--color-line)] sidebar:h-screen sidebar:sticky sidebar:top-0 bg-[var(--color-surface)]">
+        {/* Logo */}
+        <div className="px-5 pt-7 pb-6 border-b border-[var(--color-line)]">
+          <div className="font-[var(--font-display)] text-[12.5px] tracking-[0.18em] text-[var(--color-ink)]">
             PERFORMANCE<span className="text-[var(--color-red)]">.</span>
           </div>
         </div>
-        <nav className="flex flex-col gap-0.5 px-3">
-          {SIDEBAR_TABS.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => onChange(t.key)}
-              className={`flex items-center gap-3 px-2.5 py-2.5 text-[12px] font-semibold uppercase tracking-wide transition-colors ${
-                active === t.key ? "text-[var(--color-red)] bg-[var(--color-surface)]" : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
-              }`}
-            >
-              <NavGlyph tab={t.key} active={active === t.key} />
-              {t.label}
-            </button>
-          ))}
-        </nav>
-      </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-20 bg-[var(--color-bg)] border-b border-[var(--color-line)] px-4 py-3.5 flex items-center justify-between sidebar:hidden">
-          <div className="font-[var(--font-display)] text-[13px] tracking-[0.14em]">
-            PERFORMANCE<span className="text-[var(--color-red)]">.</span>
-          </div>
-          <div className="text-[11px] num text-[var(--color-muted)] capitalize">{dateLabel}</div>
-        </header>
-
-        <main className="flex-1 px-4 py-4 sidebar:px-8 sidebar:py-8 pb-24 sidebar:pb-8 max-w-[1100px] w-full">{children}</main>
-      </div>
-
-      <nav className="sidebar:hidden fixed bottom-0 left-0 right-0 z-30 bg-[var(--color-bg)] border-t border-[var(--color-line)]">
-        <div className="flex">
-          {MOBILE_TABS.map((t) => {
-            const isActive = t.key === "mas" ? MORE_TABS.some((m) => m.key === active) : active === t.key;
+        {/* Nav */}
+        <nav className="flex flex-col gap-px px-0 py-3 flex-1">
+          {SIDEBAR_TABS.map((t) => {
+            const isActive = active === t.key;
             return (
               <button
                 key={t.key}
-                onClick={() => (t.key === "mas" ? setMoreOpen(true) : onChange(t.key))}
-                className="flex-1 flex flex-col items-center gap-1 py-2.5"
+                onClick={() => onChange(t.key)}
+                className={`flex items-center gap-2.5 px-5 py-2.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] transition-all duration-150 border-l-2 ${
+                  isActive
+                    ? "border-l-[var(--color-red)] text-[var(--color-red)] bg-[var(--color-surface-2)]"
+                    : "border-l-transparent text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-surface-2)]"
+                }`}
               >
                 <NavGlyph tab={t.key} active={isActive} />
-                <span className={`text-[9.5px] font-semibold uppercase tracking-wide ${isActive ? "text-[var(--color-red)]" : "text-[var(--color-muted)]"}`}>
+                {t.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Date footer */}
+        <div className="px-5 py-4 border-t border-[var(--color-line)]">
+          <div className="text-[10px] num text-[var(--color-muted-2)] capitalize leading-snug">
+            {dateLabel}
+          </div>
+        </div>
+      </aside>
+
+      {/* ── Main content ──────────────────────────────────── */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile header */}
+        <header className="sticky top-0 z-20 bg-[var(--color-bg)]/95 backdrop-blur-sm border-b border-[var(--color-line)] px-4 py-3.5 flex items-center justify-between sidebar:hidden">
+          <div className="font-[var(--font-display)] text-[12.5px] tracking-[0.18em]">
+            PERFORMANCE<span className="text-[var(--color-red)]">.</span>
+          </div>
+          <div className="text-[10.5px] num text-[var(--color-muted)] capitalize">
+            {dateLabel}
+          </div>
+        </header>
+
+        <main className="flex-1 px-4 py-5 sidebar:px-8 sidebar:py-8 pb-24 sidebar:pb-10 max-w-[1000px] w-full">
+          {children}
+        </main>
+      </div>
+
+      {/* ── Mobile bottom nav ─────────────────────────────── */}
+      <nav className="sidebar:hidden fixed bottom-0 left-0 right-0 z-30 bg-[var(--color-bg)]/95 backdrop-blur-sm border-t border-[var(--color-line)]">
+        <div className="flex">
+          {MOBILE_TABS.map((t) => {
+            const isActive =
+              t.key === "mas"
+                ? MORE_TABS.some((m) => m.key === active)
+                : active === t.key;
+            return (
+              <button
+                key={t.key}
+                onClick={() =>
+                  t.key === "mas" ? setMoreOpen(true) : onChange(t.key)
+                }
+                className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors duration-150 ${
+                  isActive
+                    ? "text-[var(--color-red)]"
+                    : "text-[var(--color-muted)] active:text-[var(--color-ink)]"
+                }`}
+              >
+                <NavGlyph tab={t.key} active={isActive} />
+                <span
+                  className={`text-[9px] font-semibold uppercase tracking-[0.08em] ${
+                    isActive ? "text-[var(--color-red)]" : ""
+                  }`}
+                >
                   {t.label}
                 </span>
+                {isActive && (
+                  <span className="w-1 h-1 bg-[var(--color-red)] mt-0.5" />
+                )}
               </button>
             );
           })}
         </div>
       </nav>
 
+      {/* ── "Más" bottom sheet ────────────────────────────── */}
       {moreOpen ? (
-        <div className="sidebar:hidden fixed inset-0 z-40 flex items-end" role="dialog" aria-modal>
-          <div className="absolute inset-0 bg-black/70" onClick={() => setMoreOpen(false)} />
-          <div className="relative w-full bg-[var(--color-surface)] border-t border-[var(--color-line-strong)] p-4 enter">
-            <div className="eyebrow mb-3">Más</div>
+        <div
+          className="sidebar:hidden fixed inset-0 z-40 flex items-end"
+          role="dialog"
+          aria-modal
+        >
+          <div
+            className="absolute inset-0 bg-black/80"
+            onClick={() => setMoreOpen(false)}
+          />
+          <div className="relative w-full bg-[var(--color-surface)] border-t border-[var(--color-line-strong)] p-5 enter">
+            <div className="eyebrow mb-4">Más secciones</div>
             <div className="grid grid-cols-2 gap-2">
-              {MORE_TABS.map((t) => (
-                <button
-                  key={t.key}
-                  onClick={() => {
-                    onChange(t.key);
-                    setMoreOpen(false);
-                  }}
-                  className={`panel-surface flex items-center gap-2.5 px-3 py-3 text-[12px] font-semibold uppercase tracking-wide ${
-                    active === t.key ? "text-[var(--color-red)]" : "text-[var(--color-ink)]"
-                  }`}
-                >
-                  <NavGlyph tab={t.key} active={active === t.key} />
-                  {t.label}
-                </button>
-              ))}
+              {MORE_TABS.map((t) => {
+                const isActive = active === t.key;
+                return (
+                  <button
+                    key={t.key}
+                    onClick={() => {
+                      onChange(t.key);
+                      setMoreOpen(false);
+                    }}
+                    className={`panel-surface flex items-center gap-3 px-4 py-3.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] transition-all border-l-2 ${
+                      isActive
+                        ? "border-l-[var(--color-red)] text-[var(--color-red)]"
+                        : "border-l-transparent text-[var(--color-ink)] hover:border-l-[var(--color-red)] hover:text-[var(--color-red)]"
+                    }`}
+                  >
+                    <NavGlyph tab={t.key} active={isActive} />
+                    {t.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
