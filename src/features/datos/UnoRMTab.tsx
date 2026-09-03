@@ -1,50 +1,75 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, type SetRecord } from "@/db/db";
-import { Card, Eyebrow, Select } from "@/ui";
-import { BarChart, type BarPoint } from "@/ui/BarChart";
-import { epley1RM, roundKg } from "@/lib/epley";
+import { Card, Eyebrow, BarChart, type BarPoint } from "@/ui";
 import { startOfWeek, fmtDateHuman } from "@/lib/date";
 
 export function UnoRMTab() {
-  const exercises = useLiveQuery(async () => {
-    const rows = await db.sets.toArray();
-    return Array.from(new Set(rows.map((r) => r.exercise))).sort();
-  }, []);
+  const sets = useLiveQuery(() => db.sets.toArray(), []);
 
-  const [exercise, setExercise] = useState<string>("");
-  const active = exercise || exercises?.[0] || "";
-
-  const sets = useLiveQuery(() => (active ? db.sets.where("exercise").equals(active).toArray() : Promise.resolve([] as SetRecord[])), [active]);
-
-  const points: BarPoint[] = useMemo(() => {
-    if (!sets?.length) return [];
-    const byWeek = new Map<string, number>();
-    sets.forEach((s) => {
-      if (s.weight == null || s.reps == null) return;
-      const wk = startOfWeek(s.date);
-      const est = epley1RM(s.weight, s.reps);
-      byWeek.set(wk, Math.max(byWeek.get(wk) ?? 0, est));
+  const byExercise = useMemo(() => {
+    const map = new Map<string, SetRecord[]>();
+    (sets ?? []).forEach((s) => {
+      if (s.weight == null) return;
+      if (!map.has(s.exercise)) map.set(s.exercise, []);
+      map.get(s.exercise)!.push(s);
     });
-    const weeks = Array.from(byWeek.keys()).sort();
-    return weeks.map((wk, i) => ({ label: fmtDateHuman(wk), value: roundKg(byWeek.get(wk)!), highlight: i === weeks.length - 1 }));
+    return map;
   }, [sets]);
+
+  const exercises = useMemo(() => Array.from(byExercise.keys()).sort(), [byExercise]);
 
   return (
     <Card>
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <Eyebrow accent>1RM estimado (Epley)</Eyebrow>
-        <Select value={active} onChange={(e) => setExercise(e.target.value)} className="min-w-[180px]">
-          {(exercises ?? []).map((ex) => (
-            <option key={ex} value={ex}>
-              {ex}
-            </option>
+      <Eyebrow accent>Progreso de carga por semana</Eyebrow>
+      {exercises.length ? (
+        <div className="mt-3 grid grid-cols-1 sidebar:grid-cols-2 gap-3">
+          {exercises.map((ex) => (
+            <LoadProgressCard key={ex} exercise={ex} sets={byExercise.get(ex)!} />
           ))}
-        </Select>
-      </div>
-      <div className="mt-3">
-        <BarChart points={points} unit="kg estimados por semana" />
-      </div>
+        </div>
+      ) : (
+        <p className="mt-3 text-[12.5px] text-[var(--color-muted)]">Todavía no hay series con peso registradas.</p>
+      )}
     </Card>
+  );
+}
+
+function LoadProgressCard({ exercise, sets }: { exercise: string; sets: SetRecord[] }) {
+  const points: BarPoint[] = useMemo(() => {
+    const byWeek = new Map<string, number>();
+    sets.forEach((s) => {
+      if (s.weight == null) return;
+      const wk = startOfWeek(s.date);
+      byWeek.set(wk, Math.max(byWeek.get(wk) ?? 0, s.weight));
+    });
+    const weeks = Array.from(byWeek.keys()).sort();
+    return weeks.map((wk, i) => ({ label: fmtDateHuman(wk), value: byWeek.get(wk)!, highlight: i === weeks.length - 1 }));
+  }, [sets]);
+
+  const last = points[points.length - 1];
+  const first = points[0];
+  const delta = last && first ? last.value - first.value : 0;
+
+  return (
+    <div className="panel-surface p-3.5">
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-[12px] font-semibold leading-snug">{exercise}</div>
+        {last ? (
+          <div className="flex-none text-right">
+            <div className="num text-[13px] font-semibold text-[var(--color-red)]">{last.value}kg</div>
+            {points.length > 1 ? (
+              <div className={`num text-[10px] ${delta >= 0 ? "text-[var(--color-good)]" : "text-[var(--color-muted-2)]"}`}>
+                {delta >= 0 ? "+" : ""}
+                {delta.toFixed(1)}kg
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+      <div className="mt-2">
+        <BarChart points={points} height={90} unit="kg máx / semana" />
+      </div>
+    </div>
   );
 }

@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
-import { Card, Eyebrow, Chip, Button, Field, Input } from "@/ui";
+import { Card, Eyebrow, Chip, Button, Field, Input, BarChart, type BarPoint } from "@/ui";
 import { LineChart } from "@/ui/LineChart";
 import { evaluateRate } from "@/lib/weightProjection";
-import { todayISO, fmtDateHuman } from "@/lib/date";
+import { todayISO, fmtDateHuman, startOfWeek } from "@/lib/date";
 import { fromKg, toKg, unitLabel } from "@/lib/units";
 import { showToast } from "@/ui/Toast";
 
@@ -24,6 +24,21 @@ export function PesoTab() {
   const displayPoints = kgPoints.map((p) => ({ label: p.date, value: fromKg(p.weight, unit) }));
   const alert = kgPoints.length >= 2 ? evaluateRate(kgPoints) : null;
   const last = rows && rows.length ? rows[rows.length - 1] : null;
+
+  const weeklyAvgPoints: BarPoint[] = useMemo(() => {
+    const byWeek = new Map<string, number[]>();
+    kgPoints.forEach((p) => {
+      const wk = startOfWeek(p.date);
+      if (!byWeek.has(wk)) byWeek.set(wk, []);
+      byWeek.get(wk)!.push(p.weight);
+    });
+    const weeks = Array.from(byWeek.keys()).sort();
+    return weeks.map((wk, i) => {
+      const vals = byWeek.get(wk)!;
+      const avgKg = vals.reduce((a, b) => a + b, 0) / vals.length;
+      return { label: fmtDateHuman(wk), value: fromKg(avgKg, unit), highlight: i === weeks.length - 1 };
+    });
+  }, [kgPoints, unit]);
 
   async function addEntry() {
     const typed = parseFloat(weight.replace(",", "."));
@@ -45,12 +60,19 @@ export function PesoTab() {
             meta +{fromKg(goal, unit)} {u}/semana
           </span>
         </div>
-        <div className="mt-3">
-          <LineChart
-            points={displayPoints}
-            goalPerStep={fromKg(goal, unit)}
-            lastValueLabel={last?.weightKg != null ? `${fromKg(last.weightKg, unit)} ${u}` : undefined}
-          />
+        <div className="mt-3 grid grid-cols-1 sidebar:grid-cols-[1.3fr_1fr] gap-4">
+          <div>
+            <LineChart
+              points={displayPoints}
+              height={110}
+              goalPerStep={fromKg(goal, unit)}
+              lastValueLabel={last?.weightKg != null ? `${fromKg(last.weightKg, unit)} ${u}` : undefined}
+            />
+          </div>
+          <div>
+            <div className="mb-1 text-[9.5px] uppercase tracking-wide text-[var(--color-muted-2)]">Promedio semanal</div>
+            <BarChart points={weeklyAvgPoints} height={110} unit="" />
+          </div>
         </div>
         {alert?.overPace ? (
           <div className="mt-3">

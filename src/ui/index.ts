@@ -13,3 +13,4 @@ export * from "./Button";
 export * from "./icons";
 export * from "./ErrorBoundary";
 export * from "./AmbientBackground";
+export * from "./RankBadge";

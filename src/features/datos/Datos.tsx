@@ -11,7 +11,7 @@ type SubTab = "peso" | "1rm" | "sueno" | "volumen" | "mouredev" | "medidas";
 
 const SUB_TABS: { key: SubTab; label: string }[] = [
   { key: "peso", label: "Peso" },
-  { key: "1rm", label: "1RM" },
+  { key: "1rm", label: "Carga" },
   { key: "sueno", label: "Sueño" },
   { key: "volumen", label: "Volumen" },
   { key: "mouredev", label: "MoureDev" },
