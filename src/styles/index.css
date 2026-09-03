@@ -1,0 +1,155 @@
+@import "tailwindcss";
+@import "@fontsource/michroma";
+@import "@fontsource/open-sans/300.css";
+@import "@fontsource/open-sans/400.css";
+@import "@fontsource/open-sans/600.css";
+@import "@fontsource/open-sans/700.css";
+
+@theme {
+  --color-bg: #000000;
+  --color-surface: #0b0b0d;
+  --color-surface-2: #111114;
+  --color-line: rgba(255, 255, 255, 0.07);
+  --color-line-strong: rgba(255, 255, 255, 0.12);
+  --color-red: #df2531;
+  --color-red-soft: rgba(223, 37, 49, 0.45);
+  --color-red-softer: rgba(223, 37, 49, 0.65);
+  --color-ink: #ffffff;
+  --color-muted: rgba(255, 255, 255, 0.56);
+  --color-muted-2: rgba(255, 255, 255, 0.34);
+  --color-good: #2fae66;
+  --color-good-soft: rgba(47, 174, 102, 0.4);
+
+  --font-display: "Michroma", sans-serif;
+  --font-body: "Open Sans", sans-serif;
+
+  --radius-none: 0px;
+
+  --breakpoint-sidebar: 900px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+* {
+  border-color: var(--color-line);
+}
+
+::selection {
+  background: var(--color-red-soft);
+  color: #fff;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 9.5px;
+  color: var(--color-muted);
+}
+
+.eyebrow-accent {
+  color: var(--color-red);
+}
+
+.panel-surface {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+}
+
+.glow-dot {
+  box-shadow: 0 0 12px var(--color-red);
+}
+
+@keyframes enter-fade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.enter {
+  animation: enter-fade 320ms ease-out forwards;
+}
+
+@keyframes sweep {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(220%);
+  }
+}
+.sweep-line {
+  animation: sweep 2.4s linear infinite;
+}
+
+@keyframes soft-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+.pulse {
+  animation: soft-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes draw-line {
+  from {
+    stroke-dashoffset: var(--dash, 1000);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.draw-line {
+  animation: draw-line 900ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter,
+  .sweep-line,
+  .pulse,
+  .draw-line {
+    animation: none !important;
+  }
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.6;
+}
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-line-strong);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
