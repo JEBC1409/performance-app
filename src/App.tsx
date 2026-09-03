@@ -27,6 +27,20 @@ function LoadingScreen() {
   );
 }
 
+/** The Dr. Discipline landing (public/dr-discipline/) is the app's presentation layer:
+ * logged-out visitors land there first, and its CTAs link to /?enter=1 to reach this
+ * login screen directly. Bookmarking / refreshing "/" while logged out sends you back
+ * to the landing rather than dropping you straight on the OTP form. */
+function useLandingRedirect(shouldRedirect: boolean) {
+  useEffect(() => {
+    if (!shouldRedirect) return;
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has("enter")) {
+      window.location.replace("/dr-discipline/index.html");
+    }
+  }, [shouldRedirect]);
+}
+
 export default function App() {
   const { session, loading: authLoading } = useAuth();
   const [ready, setReady] = useState(false);
@@ -34,6 +48,7 @@ export default function App() {
   const [autoStartDay, setAutoStartDay] = useState<GymDay | null>(null);
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   useReminders(settings);
+  useLandingRedirect(!authLoading && !session);
 
   useEffect(() => {
     seedIfNeeded().finally(() => setReady(true));
@@ -45,7 +60,10 @@ export default function App() {
   }
 
   if (authLoading) return <LoadingScreen />;
-  if (!session) return <Login />;
+  if (!session) {
+    const cameFromLanding = new URLSearchParams(window.location.search).has("enter");
+    return cameFromLanding ? <Login /> : <LoadingScreen />;
+  }
   if (!ready) return <LoadingScreen />;
 
   return (
