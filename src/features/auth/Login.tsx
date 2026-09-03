@@ -148,6 +148,7 @@ export function Login() {
               </div>
 
               <OtpInput value={code} onChange={setCode} disabled={loading} />
+              <p className="text-[11px] text-[var(--color-muted-2)] -mt-2.5">¿No ves un código de 6 dígitos? También podés entrar tocando el enlace del correo.</p>
 
               {error ? <div className="text-[12px] text-[var(--color-red)] border-l-2 border-[var(--color-red)] pl-2.5">{error}</div> : null}
 
