@@ -1,20 +1,21 @@
 import { useEffect, useState } from "react";
-import { db } from "@/db/db";
+import { db, DEFAULT_SETTINGS } from "@/db/db";
 import { GYM_DAY_ORDER, GYM_DIAS, CARDIO_NOTA, targetSetsForDay } from "@/data/gym";
-import { Tabs, Eyebrow, Card } from "@/ui";
+import { Tabs, Eyebrow, Card, Sheet } from "@/ui";
 import { showToast } from "@/ui/Toast";
 import { todayISO } from "@/lib/date";
 import type { GymDay } from "@/lib/cycle";
 import { useTodaySets, useLastSession } from "./useEntrenoData";
-import { ExerciseCard, type LogSetPayload } from "./ExerciseCard";
+import { ExerciseCard } from "./ExerciseCard";
+import { ExerciseLogForm, type LogSetPayload } from "./ExerciseLogForm";
 import { RestTimer } from "./RestTimer";
 import { useRestTimer } from "./useRestTimer";
 import { useLiveQuery } from "dexie-react-hooks";
-import { DEFAULT_SETTINGS } from "@/db/db";
 import type { ExerciseTarget } from "@/data/gym";
 
 export function Entreno({ autoStartDay, onConsumeAutoStart }: { autoStartDay: GymDay | null; onConsumeAutoStart: () => void }) {
   const [day, setDay] = useState<GymDay>(autoStartDay ?? "A");
+  const [openExercise, setOpenExercise] = useState<ExerciseTarget | null>(null);
   const timer = useRestTimer();
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const restSec = settings?.defaultRestSec ?? DEFAULT_SETTINGS.defaultRestSec;
@@ -32,7 +33,7 @@ export function Entreno({ autoStartDay, onConsumeAutoStart }: { autoStartDay: Gy
   const done = todaySets.length;
   const pct = target > 0 ? Math.min(1, done / target) : 0;
 
-  async function logSet(exerciseName: string, payload: { weight: number | null; reps: number | null; toFailure: boolean; rpe: number | null; note: string }) {
+  async function logSet(exerciseName: string, payload: LogSetPayload) {
     const existing = todaySets.filter((s) => s.exercise === exerciseName).length;
     await db.sets.add({
       date: today,
@@ -73,15 +74,16 @@ export function Entreno({ autoStartDay, onConsumeAutoStart }: { autoStartDay: Gy
             {done} / {target} series
           </span>
         </div>
-        <div className="h-1.5 bg-[var(--color-surface-2)] overflow-hidden">
-          <div className="h-full bg-[var(--color-red)]" style={{ width: `${pct * 100}%`, transition: "width 300ms ease-out" }} />
+        <div className="h-1.5 rounded-full bg-[var(--color-surface-2)] overflow-hidden">
+          <div className="h-full rounded-full bg-[var(--color-red)]" style={{ width: `${pct * 100}%`, transition: "width 300ms ease-out" }} />
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        {GYM_DIAS[day].ex.map((ex) => (
-          <ExerciseRow key={ex.name} day={day} exercise={ex} onLogSet={(payload) => logSet(ex.name, payload)} allTodaySets={todaySets} />
-        ))}
+      <div className="grid grid-cols-2 sidebar:grid-cols-3 gap-3">
+        {GYM_DIAS[day].ex.map((ex) => {
+          const doneCount = todaySets.filter((s) => s.exercise === ex.name).length;
+          return <ExerciseCard key={ex.name} exercise={ex} done={doneCount} onOpen={() => setOpenExercise(ex)} />;
+        })}
       </div>
 
       <Card>
@@ -90,11 +92,22 @@ export function Entreno({ autoStartDay, onConsumeAutoStart }: { autoStartDay: Gy
       </Card>
 
       <RestTimer timer={timer} />
+
+      <Sheet open={!!openExercise} onClose={() => setOpenExercise(null)} title="Registrar serie">
+        {openExercise ? (
+          <ExerciseDetail
+            day={day}
+            exercise={openExercise}
+            onLogSet={(payload) => logSet(openExercise.name, payload)}
+            allTodaySets={todaySets}
+          />
+        ) : null}
+      </Sheet>
     </div>
   );
 }
 
-function ExerciseRow({
+function ExerciseDetail({
   day,
   exercise,
   onLogSet,
@@ -108,5 +121,5 @@ function ExerciseRow({
   const today = todayISO();
   const lastSession = useLastSession(exercise.name, today);
   const sets = allTodaySets.filter((s) => s.exercise === exercise.name && s.day === day).sort((a, b) => a.setIndex - b.setIndex);
-  return <ExerciseCard exercise={exercise} sets={sets} lastSession={lastSession} onLogSet={onLogSet} />;
+  return <ExerciseLogForm exercise={exercise} sets={sets} lastSession={lastSession} onLogSet={onLogSet} />;
 }

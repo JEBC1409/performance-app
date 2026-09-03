@@ -1,135 +1,58 @@
-import { useState } from "react";
 import type { ExerciseTarget } from "@/data/gym";
-import type { SetRecord } from "@/db/db";
-import type { LastSession } from "./useEntrenoData";
+import { exerciseImageUrl } from "@/data/exerciseImages";
 import { Chip } from "@/ui";
-import { fmtDateHuman } from "@/lib/date";
-
-export interface LogSetPayload {
-  weight: number | null;
-  reps: number | null;
-  toFailure: boolean;
-  rpe: number | null;
-  note: string;
-}
 
 export function ExerciseCard({
   exercise,
-  sets,
-  lastSession,
-  onLogSet,
+  done,
+  onOpen,
 }: {
   exercise: ExerciseTarget;
-  sets: SetRecord[];
-  lastSession: LastSession | null;
-  onLogSet: (payload: LogSetPayload) => void;
+  done: number;
+  onOpen: () => void;
 }) {
-  const [weight, setWeight] = useState("");
-  const [reps, setReps] = useState("");
-  const [toFailure, setToFailure] = useState(false);
-  const [rpe, setRpe] = useState("");
-  const [note, setNote] = useState("");
-  const [open, setOpen] = useState(sets.length < exercise.series);
-
-  const done = sets.length;
   const target = exercise.series;
-
-  function save() {
-    const w = weight.trim() ? parseFloat(weight.replace(",", ".")) : null;
-    const r = reps.trim() ? parseFloat(reps.replace(",", ".")) : null;
-    if (w === null && r === null) return;
-    onLogSet({ weight: w, reps: r, toFailure, rpe: rpe.trim() ? parseFloat(rpe) : null, note: note.trim() });
-    setWeight("");
-    setReps("");
-    setToFailure(false);
-    setRpe("");
-    setNote("");
-  }
-
-  const lastTop = lastSession?.sets.reduce<number | null>((max, s) => (s.weight != null && (max == null || s.weight > max) ? s.weight : max), null);
+  const complete = done >= target;
+  const imgUrl = exerciseImageUrl(exercise.name);
 
   return (
-    <div className="border border-[var(--color-line)]">
-      <button onClick={() => setOpen((o) => !o)} className="w-full flex items-center justify-between px-3.5 py-3 text-left">
-        <div>
-          <div className="text-[13px] font-semibold flex items-center gap-2">
-            {exercise.name}
-            {exercise.preFatiga ? <Chip tone="accent">Pre-fatiga</Chip> : null}
-          </div>
-          {exercise.note ? <div className="text-[11px] text-[var(--color-muted)] mt-0.5">{exercise.note}</div> : null}
-        </div>
-        <div className="text-right flex-none pl-3">
-          <div className="num text-[12px] text-[var(--color-red)] font-semibold">
-            {done}/{target}
-          </div>
-          <div className="text-[10px] text-[var(--color-muted-2)] num">{exercise.series}×{exercise.repsLabel}</div>
-        </div>
-      </button>
-
-      {open ? (
-        <div className="px-3.5 pb-3.5">
-          {lastSession ? (
-            <div className="text-[11px] text-[var(--color-muted)] mb-2.5 num">
-              Última vez ({fmtDateHuman(lastSession.date)}): {lastSession.sets.map((s) => `${s.weight ?? "—"}×${s.reps ?? "—"}`).join(" · ")}
-              {lastTop != null ? <span className="text-[var(--color-red)]"> · top {lastTop}kg</span> : null}
-            </div>
-          ) : null}
-
-          {sets.length ? (
-            <div className="flex flex-wrap gap-1.5 mb-2.5">
-              {sets.map((s) => (
-                <span key={s.id} className="num text-[11px] border border-[var(--color-line-strong)] px-2 py-1">
-                  {s.weight ?? "—"}kg × {s.reps ?? "—"}
-                  {s.toFailure ? <span className="text-[var(--color-red)]"> · AF</span> : null}
-                </span>
-              ))}
-            </div>
-          ) : null}
-
-          <div className="grid grid-cols-2 gap-2">
-            <input
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-              inputMode="decimal"
-              placeholder="kg"
-              className="num bg-[var(--color-surface-2)] border border-[var(--color-line-strong)] px-2.5 py-2 text-[13px] outline-none focus:border-[var(--color-red)]"
-            />
-            <input
-              value={reps}
-              onChange={(e) => setReps(e.target.value)}
-              inputMode="decimal"
-              placeholder="reps"
-              className="num bg-[var(--color-surface-2)] border border-[var(--color-line-strong)] px-2.5 py-2 text-[13px] outline-none focus:border-[var(--color-red)]"
-            />
-          </div>
-          <div className="flex items-center gap-2 mt-2">
-            <input
-              value={rpe}
-              onChange={(e) => setRpe(e.target.value)}
-              inputMode="decimal"
-              placeholder="RPE (opcional)"
-              className="num flex-1 bg-[var(--color-surface-2)] border border-[var(--color-line-strong)] px-2.5 py-2 text-[13px] outline-none focus:border-[var(--color-red)]"
-            />
-            <button
-              onClick={() => setToFailure((v) => !v)}
-              className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-wide border ${
-                toFailure ? "bg-[var(--color-red)] text-black border-[var(--color-red)]" : "border-[var(--color-line-strong)] text-[var(--color-muted)]"
-              }`}
-            >
-              Al fallo
-            </button>
-          </div>
-          <input
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Nota (opcional)"
-            className="mt-2 w-full bg-[var(--color-surface-2)] border border-[var(--color-line-strong)] px-2.5 py-2 text-[13px] outline-none focus:border-[var(--color-red)]"
+    <button onClick={onOpen} className="panel-surface group flex flex-col text-left">
+      <div className="relative aspect-[4/3] overflow-hidden bg-[var(--color-surface-2)]">
+        {imgUrl ? (
+          <img
+            src={imgUrl}
+            alt={exercise.name}
+            loading="lazy"
+            className="h-full w-full object-cover opacity-85 transition-all duration-300 group-hover:scale-105 group-hover:opacity-100"
           />
-          <button onClick={save} className="tap-target mt-2.5 w-full rounded-full bg-[var(--color-red)] text-black py-2.5 text-[12.5px] font-semibold uppercase tracking-wide hover:brightness-110">
-            Guardar serie
-          </button>
+        ) : (
+          <div className="flex h-full w-full items-center justify-center px-2 text-center text-[9.5px] uppercase tracking-wide text-[var(--color-muted-2)]">
+            {exercise.name}
+          </div>
+        )}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-transparent" />
+        {exercise.preFatiga ? (
+          <span className="absolute left-2 top-2">
+            <Chip tone="accent">Pre-fatiga</Chip>
+          </span>
+        ) : null}
+        {complete ? (
+          <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-good)] text-[10px] font-bold text-black">
+            ✓
+          </span>
+        ) : null}
+      </div>
+      <div className="flex flex-1 flex-col gap-1.5 p-3">
+        <div className="line-clamp-2 text-[12px] font-semibold leading-snug">{exercise.name}</div>
+        <div className="mt-auto flex items-center justify-between pt-1">
+          <span className="num text-[11.5px] font-semibold text-[var(--color-red)]">
+            {done}/{target}
+          </span>
+          <span className="num text-[9.5px] text-[var(--color-muted-2)]">
+            {exercise.series}×{exercise.repsLabel}
+          </span>
         </div>
-      ) : null}
-    </div>
+      </div>
+    </button>
   );
 }
