@@ -89,11 +89,13 @@ body {
   overflow: hidden;
 }
 
-/* Ambient animated backdrop: slow-drifting blurred red glows behind the app
-   shell and login screen, echoing the reference "dark UI" glow-wave look.
-   Cards sit above it at a higher stacking context and are translucent
-   (see .panel-surface / .login-card) so the glow tints through instead of
-   being fully hidden behind opaque panels. */
+/* Ambient animated backdrop: crisp, slow-drifting glowing red wave lines
+   behind the app shell and login screen, echoing the reference "dark UI"
+   glow-wave look. Cards sit above it at a higher stacking context and are
+   translucent (see .panel-surface / .login-card) so the glow tints through
+   instead of being fully hidden behind opaque panels. Kept as thin SVG
+   strokes with a tight glow filter (not a large CSS blur) so it reads as
+   sharp lines rather than a hazy blob. */
 .ambient-bg {
   position: fixed;
   inset: 0;
@@ -104,46 +106,27 @@ body {
   overflow: hidden;
   pointer-events: none;
 }
-.ambient-glow {
-  position: absolute;
-  left: 50%;
-  width: 130vmax;
-  height: 130vmax;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  filter: blur(70px);
-  will-change: transform, opacity;
+.ambient-waves {
+  width: 100%;
+  height: 100%;
 }
-.ambient-glow-1 {
-  top: -12%;
-  background: radial-gradient(circle at 50% 35%, rgba(223, 37, 49, 0.4), rgba(223, 37, 49, 0.08) 42%, transparent 70%);
-  opacity: 0.55;
-  animation: ambient-drift-1 24s ease-in-out infinite;
+.ambient-wave-path {
+  animation: ambient-wave-drift 20s ease-in-out infinite;
 }
-.ambient-glow-2 {
-  top: 55%;
-  background: radial-gradient(circle at 50% 50%, rgba(223, 37, 49, 0.3), transparent 65%);
-  opacity: 0.4;
-  animation: ambient-drift-2 30s ease-in-out infinite;
+.ambient-wave-path-2 {
+  animation-duration: 26s;
+  animation-delay: -7s;
 }
-.ambient-glow-3 {
-  top: 105%;
-  background: radial-gradient(circle at 50% 60%, rgba(223, 37, 49, 0.24), transparent 65%);
-  opacity: 0.35;
-  animation: ambient-drift-1 36s ease-in-out infinite reverse;
+.ambient-wave-path-3 {
+  animation-duration: 32s;
+  animation-delay: -14s;
 }
-@keyframes ambient-drift-1 {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-44%, -55%) scale(1.1); }
-}
-@keyframes ambient-drift-2 {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-56%, -47%) scale(1.06); }
+@keyframes ambient-wave-drift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(18px, -10px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ambient-glow-1,
-  .ambient-glow-2,
-  .ambient-glow-3 {
+  .ambient-wave-path {
     animation: none !important;
   }
 }

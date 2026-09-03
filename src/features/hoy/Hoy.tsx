@@ -161,7 +161,7 @@ export function Hoy({
       </div>
 
       {/* ── Stats ───────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sidebar:grid-cols-3 gap-2.5 enter enter-delay-3">
+      <div className="grid grid-cols-3 gap-2.5 enter enter-delay-3">
         <Stat
           label="Peso actual"
           value={lastWeight?.weightKg != null ? `${fromKg(lastWeight.weightKg, unit)}` : "—"}

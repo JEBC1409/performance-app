@@ -98,7 +98,7 @@ export function Shell({
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-5 sidebar:px-8 sidebar:py-8 pb-24 sidebar:pb-10 max-w-[1000px] w-full">
+        <main className="flex-1 px-4 py-5 sidebar:px-8 sidebar:py-8 pb-24 sidebar:pb-10 max-w-[1000px] w-full mx-auto">
           {children}
         </main>
       </div>
