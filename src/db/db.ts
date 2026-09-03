@@ -72,6 +72,8 @@ export interface SettingsRecord {
   noPhoneTime: string;
   sleepTime: string;
   seeded: boolean;
+  displayName?: string;
+  avatarDataUrl?: string | null;
 }
 
 export const db = new Dexie("performance-db") as Dexie & {
@@ -103,4 +105,6 @@ export const DEFAULT_SETTINGS: SettingsRecord = {
   noPhoneTime: "21:30",
   sleepTime: "22:00",
   seeded: false,
+  displayName: "",
+  avatarDataUrl: null,
 };

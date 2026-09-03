@@ -1,14 +1,17 @@
 import { useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS, type Unit } from "@/db/db";
-import { Card, Eyebrow, Field, Input, Select, Button, Chip } from "@/ui";
+import { Card, Eyebrow, Field, Input, Select, Button, Chip, Stat } from "@/ui";
 import { showToast } from "@/ui/Toast";
 import { useCycleSlot } from "@/hooks/useCycle";
 import { exportBackup, importBackup } from "@/lib/jsonBackup";
 import { importExcelFile } from "@/lib/excelImport";
+import { resizeImageToDataUrl } from "@/lib/image";
 import { fromKg, toKg, unitLabel } from "@/lib/units";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
+import { currentStreak } from "@/lib/streak";
+import { HABIT_LIST } from "@/data/habits";
 
 const HEAVY_DUTY_RULES = [
   "Pre-fatigá el músculo objetivo con una serie de aislamiento antes del compuesto principal.",
@@ -24,14 +27,36 @@ export function Perfil() {
   const { session } = useAuth();
   const fileRef = useRef<HTMLInputElement>(null);
   const excelRef = useRef<HTMLInputElement>(null);
+  const avatarRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission | "unsupported">(
     typeof Notification === "undefined" ? "unsupported" : Notification.permission,
   );
 
+  const totalSets = useLiveQuery(() => db.sets.count(), []);
+  const habitDays = useLiveQuery(() => db.habitDays.toArray(), []);
+  const bestStreak = habitDays ? Math.max(0, ...HABIT_LIST.map((h) => currentStreak(habitDays, h.key))) : 0;
+
   async function patch(fields: Partial<typeof DEFAULT_SETTINGS>) {
     const current = settings ?? DEFAULT_SETTINGS;
     await db.settings.put({ ...current, ...fields });
+  }
+
+  async function onAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploadingAvatar(true);
+    try {
+      const dataUrl = await resizeImageToDataUrl(file, 256);
+      await patch({ avatarDataUrl: dataUrl });
+      showToast("Foto de perfil actualizada");
+    } catch {
+      showToast("No se pudo procesar la imagen");
+    } finally {
+      setUploadingAvatar(false);
+    }
   }
 
   async function enableReminders() {
@@ -74,12 +99,59 @@ export function Perfil() {
   }
 
   const unit: Unit = settings?.unit ?? DEFAULT_SETTINGS.unit;
+  const displayName = settings?.displayName ?? "";
+  const avatarUrl = settings?.avatarDataUrl ?? null;
+  const initials = (displayName || session?.user.email || "P").trim().charAt(0).toUpperCase();
+  const memberSince = session?.user.created_at
+    ? new Date(session.user.created_at).toLocaleDateString("es-CO", { year: "numeric", month: "short" })
+    : "—";
 
   return (
     <div className="flex flex-col gap-4 enter">
       <div>
         <Eyebrow>Perfil</Eyebrow>
         <h1 className="font-[var(--font-display)] text-xl mt-1.5">Configuración</h1>
+      </div>
+
+      <Card className="panel-surface-glow">
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => avatarRef.current?.click()}
+            disabled={uploadingAvatar}
+            className="group relative flex-none disabled:opacity-60"
+            aria-label="Cambiar foto de perfil"
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="h-16 w-16 rounded-full border-2 border-[var(--color-red)] object-cover" />
+            ) : (
+              <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-[var(--color-line-strong)] bg-[var(--color-surface-2)] text-[20px] font-bold text-[var(--color-red)]">
+                {initials}
+              </div>
+            )}
+            <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-red)] text-[11px] font-bold text-white transition-colors group-hover:brightness-110">
+              +
+            </span>
+          </button>
+          <div className="min-w-0 flex-1">
+            <input
+              key={displayName}
+              defaultValue={displayName}
+              onBlur={(e) => patch({ displayName: e.target.value })}
+              placeholder="Tu nombre"
+              className="w-full bg-transparent text-[16px] font-bold outline-none focus:text-[var(--color-red)]"
+            />
+            <div className="truncate text-[11.5px] text-[var(--color-muted)] mt-0.5">{session?.user.email}</div>
+            <div className="text-[10px] text-[var(--color-muted-2)] mt-1 uppercase tracking-wide num">Miembro desde {memberSince}</div>
+          </div>
+        </div>
+        <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={onAvatarChange} />
+      </Card>
+
+      <div className="grid grid-cols-3 gap-2.5">
+        <Stat label="Series totales" value={totalSets ?? 0} accent />
+        <Stat label="Racha activa" value={`${bestStreak}d`} />
+        <Stat label="Ciclo" value={slot === "rest" ? "Descanso" : slot} />
       </div>
 
       <Card>
