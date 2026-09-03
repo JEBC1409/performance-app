@@ -261,18 +261,26 @@ function registerHook(cfg: TableSync) {
       });
   }
 
+  // `suppressHooks` must be read here, synchronously as the hook fires (not
+  // inside `onsuccess`, which Dexie defers until after the write commits) —
+  // by the time onsuccess runs, a suppressed bulk merge may have already
+  // finished and flipped the flag back off, letting a merge-driven write
+  // leak out as an unwanted push.
   cfg.localTable.hook("creating", function (_primKey, obj) {
     if (cfg.idKeyed && !(obj as { remoteId?: string }).remoteId) {
       (obj as { remoteId?: string }).remoteId = crypto.randomUUID();
     }
+    if (suppressHooks) return;
     (this as { onsuccess?: () => void }).onsuccess = () => push(obj);
   });
 
   cfg.localTable.hook("updating", function () {
+    if (suppressHooks) return;
     (this as { onsuccess?: (updated: unknown) => void }).onsuccess = (updatedObj) => push(updatedObj);
   });
 
   cfg.localTable.hook("deleting", function (primKey, obj) {
+    if (suppressHooks) return;
     (this as { onsuccess?: () => void }).onsuccess = () => {
       if (suppressHooks || !currentUserId || !supabase) return;
       supabase
@@ -297,9 +305,11 @@ function registerSettingsHooks() {
       });
   };
   db.settings.hook("creating", function (_primKey, obj) {
+    if (suppressHooks) return;
     (this as { onsuccess?: () => void }).onsuccess = () => push(obj);
   });
   db.settings.hook("updating", function () {
+    if (suppressHooks) return;
     (this as { onsuccess?: (updated: SettingsRecord) => void }).onsuccess = (updatedObj) => push(updatedObj);
   });
 }
