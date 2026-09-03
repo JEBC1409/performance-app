@@ -12,6 +12,11 @@ export default defineConfig({
       workbox: {
         globPatterns: ["**/*.{js,css,html,png,svg,woff2}", "bible/rvr1909.json"],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
+        // Without these, a new deployment's service worker installs but waits
+        // for every open tab to close before taking over — so a plain reload
+        // keeps serving the previous build's cached JS indefinitely.
+        clientsClaim: true,
+        skipWaiting: true,
       },
       manifest: {
         name: "PERFORMANCE",
