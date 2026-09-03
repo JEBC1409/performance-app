@@ -3,6 +3,8 @@ import type { GymDay } from "@/lib/cycle";
 
 export interface SetRecord {
   id?: number;
+  /** Client-generated uuid, stable across devices — the id this row is pushed to Supabase under. */
+  remoteId?: string;
   date: string;
   day: GymDay;
   exercise: string;
@@ -25,6 +27,7 @@ export interface HabitDayRecord {
 
 export interface WeightRecord {
   id?: number;
+  remoteId?: string;
   date: string;
   weightKg: number | null;
   pechoCm: number | null;
@@ -34,6 +37,7 @@ export interface WeightRecord {
 
 export interface SleepRecord {
   id?: number;
+  remoteId?: string;
   date: string;
   hours: number | null;
   bedTime: string;
@@ -43,6 +47,7 @@ export interface SleepRecord {
 
 export interface SavedVerseRecord {
   id?: number;
+  remoteId?: string;
   abbrev: string;
   bookName: string;
   chapter: number;
@@ -95,6 +100,31 @@ db.version(1).stores({
   moureWeeks: "week",
   settings: "id",
 });
+
+/** v2 adds a `remoteId` column to the tables Supabase needs a stable id for.
+ * Local primary keys stay Dexie's own auto-increment numbers — only remoteId
+ * (a client-generated uuid) is shared with the Supabase row's id, so this is
+ * an additive index change rather than a primary-key migration. */
+db.version(2)
+  .stores({
+    sets: "++id, date, day, exercise, createdAt, remoteId",
+    habitDays: "date",
+    weights: "++id, date, remoteId",
+    sleep: "++id, date, remoteId",
+    savedVerses: "++id, createdAt, abbrev, remoteId",
+    moureWeeks: "week",
+    settings: "id",
+  })
+  .upgrade(async (tx) => {
+    for (const name of ["sets", "weights", "sleep", "savedVerses"] as const) {
+      await tx
+        .table(name)
+        .toCollection()
+        .modify((row) => {
+          row.remoteId = crypto.randomUUID();
+        });
+    }
+  });
 
 export const DEFAULT_SETTINGS: SettingsRecord = {
   id: "app",

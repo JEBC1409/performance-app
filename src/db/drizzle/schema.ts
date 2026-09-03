@@ -10,6 +10,7 @@ import {
   date,
   timestamp,
   primaryKey,
+  type PgColumn,
 } from "drizzle-orm/pg-core";
 import { authUsers } from "drizzle-orm/supabase";
 
@@ -17,7 +18,7 @@ import { authUsers } from "drizzle-orm/supabase";
  * Every table carries a user_id owned by the authenticated Supabase user and
  * an RLS policy restricting all access to auth.uid() = user_id. */
 
-const ownedByUser = (table: { userId: ReturnType<typeof userIdColumn> }) =>
+const ownedByUser = (table: { userId: PgColumn }) =>
   pgPolicy("owner_full_access", {
     for: "all",
     to: "authenticated",
