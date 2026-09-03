@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
-import { Card, Eyebrow, Stat, HabitGlyph, Button } from "@/ui";
+import { Card, Eyebrow, Stat, HabitGlyph, Button, Sheet } from "@/ui";
 import { HABIT_LIST } from "@/data/habits";
-import { GYM_DIAS } from "@/data/gym";
+import { GYM_DAY_ORDER, GYM_DIAS } from "@/data/gym";
 import { todayISO, num, DIAS, jsDowToIndex } from "@/lib/date";
 import { currentBlockInfo } from "@/lib/scheduleBlock";
 import { HORARIO } from "@/data/horario";
@@ -17,11 +18,21 @@ export function Hoy({
   onStartEntreno,
   onNavigate,
 }: {
-  onStartEntreno: (day: GymDay) => void;
+  onStartEntreno: (day: GymDay, date: string) => void;
   onNavigate: (t: Tab) => void;
 }) {
   const today = todayISO();
   const slot = useCycleSlot();
+  const [startPrompt, setStartPrompt] = useState(false);
+  const [pickedDay, setPickedDay] = useState<GymDay>("A");
+  const [pickedDate, setPickedDate] = useState(today);
+
+  function openStartPrompt() {
+    if (slot === "rest") return;
+    setPickedDay(slot);
+    setPickedDate(today);
+    setStartPrompt(true);
+  }
   const habitDay = useLiveQuery(() => db.habitDays.get(today), [today]);
   const lastWeight = useLiveQuery(() => db.weights.orderBy("date").last(), []);
   const firstWeight = useLiveQuery(
@@ -153,7 +164,7 @@ export function Hoy({
                   </div>
                 </div>
               </div>
-              <Button variant="primary" onClick={() => onStartEntreno(slot)}>
+              <Button variant="primary" onClick={openStartPrompt}>
                 Iniciar
               </Button>
             </div>
@@ -240,6 +251,49 @@ export function Hoy({
           </div>
         )}
       </Card>
+
+      <Sheet open={startPrompt} onClose={() => setStartPrompt(false)} title="Empezar entreno">
+        <div className="flex flex-col gap-4">
+          <div>
+            <div className="text-[11px] text-[var(--color-muted)] mb-2 uppercase tracking-wide">¿Qué día vas a entrenar?</div>
+            <div className="flex gap-2">
+              {GYM_DAY_ORDER.map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setPickedDay(d)}
+                  className={`flex-1 rounded-xl border px-3 py-3 text-center transition-colors ${
+                    pickedDay === d
+                      ? "border-[var(--color-red)] bg-[rgba(223,37,49,0.12)]"
+                      : "border-[var(--color-line-strong)] text-[var(--color-muted)]"
+                  }`}
+                >
+                  <div className="font-[var(--font-display)] text-[13px]">Día {d}</div>
+                  <div className="text-[10px] mt-0.5">{GYM_DIAS[d].nombre}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[10.5px] text-[var(--color-muted)] uppercase tracking-wide">Fecha</span>
+            <input
+              type="date"
+              value={pickedDate}
+              max={today}
+              onChange={(e) => setPickedDate(e.target.value || today)}
+              className="num rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-3 py-2.5 text-[13px] outline-none focus:border-[var(--color-red)]"
+            />
+          </label>
+          <button
+            onClick={() => {
+              setStartPrompt(false);
+              onStartEntreno(pickedDay, pickedDate);
+            }}
+            className="tap-target w-full rounded-full bg-[var(--color-red)] py-3 text-[12.5px] font-semibold uppercase tracking-wide text-black hover:brightness-110"
+          >
+            Comenzar
+          </button>
+        </div>
+      </Sheet>
     </div>
   );
 }

@@ -130,7 +130,7 @@ export const DEFAULT_SETTINGS: SettingsRecord = {
   id: "app",
   unit: "kg",
   weeklyGoalKg: 0.5,
-  defaultRestSec: 120,
+  defaultRestSec: 210,
   remindersEnabled: true,
   noPhoneTime: "21:30",
   sleepTime: "22:00",

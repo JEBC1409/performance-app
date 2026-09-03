@@ -6,10 +6,10 @@
 const IMAGE_BASE = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises";
 
 const EXERCISE_IMAGE_ID: Record<string, string> = {
-  "Pullover en polea": "Straight-Arm_Dumbbell_Pullover",
+  "Pullover en banco": "Bent-Arm_Dumbbell_Pullover",
   "Jalón al pecho agarre ancho": "Wide-Grip_Lat_Pulldown",
-  "Remo en máquina o barra": "Seated_Cable_Rows",
-  "Remo unilateral mancuerna": "One-Arm_Dumbbell_Row",
+  "Remo en máquina Hammer": "Seated_Cable_Rows",
+  "Remo unilateral en Hammer": "One-Arm_Dumbbell_Row",
   "Face pulls": "Face_Pull",
   "Curl barra Z": "EZ-Bar_Curl",
   "Curl martillo": "Hammer_Curls",
@@ -23,10 +23,10 @@ const EXERCISE_IMAGE_ID: Record<string, string> = {
   "Fondos en paralelas": "Parallel_Bar_Dip",
   "Extensión trícep cuerda": "Triceps_Pushdown_-_Rope_Attachment",
   "Extensiones de piernas": "Leg_Extensions",
-  "Prensa / Hack squat": "Leg_Press",
-  "Sentadilla búlgara": "Split_Squat_with_Dumbbells",
+  "Sentadilla libre / Prensa": "Barbell_Squat",
+  "Extensión de piernas unilateral": "Single-Leg_Leg_Extension",
   "Peso muerto rumano": "Romanian_Deadlift",
-  "Curl femoral acostado": "Lying_Leg_Curls",
+  "Curl femoral sentado": "Seated_Leg_Curl",
   "Extensión pantorrilla": "Standing_Calf_Raises",
   "Circuito core": "Plank",
 };

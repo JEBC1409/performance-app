@@ -10,10 +10,10 @@ export const MUSCLE_GROUP_LABEL: Record<MuscleGroup, string> = {
 };
 
 export const EXERCISE_MUSCLE_GROUP: Record<string, MuscleGroup> = {
-  "Pullover en polea": "espalda",
+  "Pullover en banco": "espalda",
   "Jalón al pecho agarre ancho": "espalda",
-  "Remo en máquina o barra": "espalda",
-  "Remo unilateral mancuerna": "espalda",
+  "Remo en máquina Hammer": "espalda",
+  "Remo unilateral en Hammer": "espalda",
   "Face pulls": "hombro",
   "Curl barra Z": "brazo",
   "Curl martillo": "brazo",
@@ -27,12 +27,21 @@ export const EXERCISE_MUSCLE_GROUP: Record<string, MuscleGroup> = {
   "Fondos en paralelas": "brazo",
   "Extensión trícep cuerda": "brazo",
   "Extensiones de piernas": "pierna",
-  "Prensa / Hack squat": "pierna",
-  "Sentadilla búlgara": "pierna",
+  "Sentadilla libre / Prensa": "pierna",
+  "Extensión de piernas unilateral": "pierna",
   "Peso muerto rumano": "pierna",
-  "Curl femoral acostado": "pierna",
+  "Curl femoral sentado": "pierna",
   "Extensión pantorrilla": "pierna",
   "Circuito core": "core",
+  // Retired exercise names — kept so already-logged historical sets (not
+  // rewritten when the routine's names/equipment changed) still count
+  // toward muscle volume.
+  "Pullover en polea": "espalda",
+  "Remo en máquina o barra": "espalda",
+  "Remo unilateral mancuerna": "espalda",
+  "Prensa / Hack squat": "pierna",
+  "Sentadilla búlgara": "pierna",
+  "Curl femoral acostado": "pierna",
 };
 
 export const MUSCLE_GROUP_ORDER: MuscleGroup[] = ["espalda", "pecho", "hombro", "brazo", "pierna", "core"];

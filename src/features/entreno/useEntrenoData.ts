@@ -1,11 +1,12 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, type SetRecord } from "@/db/db";
 import type { GymDay } from "@/lib/cycle";
-import { todayISO } from "@/lib/date";
 
-export function useTodaySets(day: GymDay): SetRecord[] {
-  const today = todayISO();
-  const rows = useLiveQuery(() => db.sets.where("date").equals(today).toArray(), [today]);
+/** Sets logged for a given session — `date` is whatever day the user is
+ * actually logging for, not necessarily today, since training days are
+ * irregular (A/B/C by session count, not by calendar week). */
+export function useSessionSets(day: GymDay, date: string): SetRecord[] {
+  const rows = useLiveQuery(() => db.sets.where("date").equals(date).toArray(), [date]);
   return (rows ?? []).filter((r) => r.day === day);
 }
 

@@ -45,7 +45,7 @@ export default function App() {
   const { session, loading: authLoading } = useAuth();
   const [ready, setReady] = useState(false);
   const [tab, setTab] = useState<Tab>("hoy");
-  const [autoStartDay, setAutoStartDay] = useState<GymDay | null>(null);
+  const [autoStart, setAutoStart] = useState<{ day: GymDay; date: string } | null>(null);
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   useReminders(settings);
   useLandingRedirect(!authLoading && !session);
@@ -54,8 +54,8 @@ export default function App() {
     seedIfNeeded().finally(() => setReady(true));
   }, []);
 
-  function startEntreno(day: GymDay) {
-    setAutoStartDay(day);
+  function startEntreno(day: GymDay, date: string) {
+    setAutoStart({ day, date });
     setTab("entreno");
   }
 
@@ -69,7 +69,7 @@ export default function App() {
   return (
     <Shell active={tab} onChange={setTab}>
       {tab === "hoy" ? <Hoy onStartEntreno={startEntreno} onNavigate={setTab} /> : null}
-      {tab === "entreno" ? <Entreno autoStartDay={autoStartDay} onConsumeAutoStart={() => setAutoStartDay(null)} /> : null}
+      {tab === "entreno" ? <Entreno autoStart={autoStart} onConsumeAutoStart={() => setAutoStart(null)} /> : null}
       {tab === "habitos" ? <Habitos /> : null}
       {tab === "datos" ? <Datos /> : null}
       {tab === "horario" ? <Horario /> : null}
