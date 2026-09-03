@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
-import { OtpInput } from "./OtpInput";
+import { OtpInput, OTP_LENGTH } from "./OtpInput";
 
 type Step = "email" | "code";
 
@@ -51,7 +51,7 @@ export function Login() {
   }
 
   async function verifyCode() {
-    if (!supabase || code.length !== 6 || loading) return;
+    if (!supabase || code.length !== OTP_LENGTH || loading) return;
     setLoading(true);
     setError("");
     const { error: err } = await supabase.auth.verifyOtp({
@@ -68,7 +68,7 @@ export function Login() {
   }
 
   useEffect(() => {
-    if (step === "code" && code.length === 6) verifyCode();
+    if (step === "code" && code.length === OTP_LENGTH) verifyCode();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code, step]);
 
@@ -148,13 +148,15 @@ export function Login() {
               </div>
 
               <OtpInput value={code} onChange={setCode} disabled={loading} />
-              <p className="text-[11px] text-[var(--color-muted-2)] -mt-2.5">¿No ves un código de 6 dígitos? También podés entrar tocando el enlace del correo.</p>
+              <p className="text-[11px] text-[var(--color-muted-2)] -mt-2.5">
+                ¿No ves un código de {OTP_LENGTH} dígitos? También podés entrar tocando el enlace del correo.
+              </p>
 
               {error ? <div className="text-[12px] text-[var(--color-red)] border-l-2 border-[var(--color-red)] pl-2.5">{error}</div> : null}
 
               <button
                 onClick={verifyCode}
-                disabled={loading || code.length !== 6}
+                disabled={loading || code.length !== OTP_LENGTH}
                 className="tap-target w-full bg-[var(--color-red)] text-black py-3 text-[12.5px] font-semibold uppercase tracking-wide hover:brightness-110 disabled:opacity-40 transition-colors"
               >
                 {loading ? "Verificando…" : "Verificar"}

@@ -1,16 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { OtpInput } from "../OtpInput";
+import { OtpInput, OTP_LENGTH } from "../OtpInput";
 
 function boxes() {
-  return screen.getAllByLabelText(/Dígito \d de 6/) as HTMLInputElement[];
+  return screen.getAllByLabelText(new RegExp(`Dígito \\d de ${OTP_LENGTH}`)) as HTMLInputElement[];
 }
 
 describe("OtpInput", () => {
-  it("renders six empty boxes for an empty value", () => {
+  it(`renders ${OTP_LENGTH} empty boxes for an empty value`, () => {
     render(<OtpInput value="" onChange={() => {}} />);
     const inputs = boxes();
-    expect(inputs).toHaveLength(6);
+    expect(inputs).toHaveLength(OTP_LENGTH);
     inputs.forEach((el) => expect(el.value).toBe(""));
   });
 
@@ -36,19 +36,22 @@ describe("OtpInput", () => {
     expect(onChange).toHaveBeenCalledWith("");
   });
 
-  it("splits a pasted 6-digit code across all boxes", () => {
+  it(`splits a pasted ${OTP_LENGTH}-digit code across all boxes`, () => {
     const onChange = vi.fn();
     render(<OtpInput value="" onChange={onChange} />);
-    const paste = { clipboardData: { getData: () => "123456" } };
+    const full = "1".repeat(OTP_LENGTH - 1) + "9";
+    const paste = { clipboardData: { getData: () => full } };
     fireEvent.paste(boxes()[0], paste);
-    expect(onChange).toHaveBeenCalledWith("123456");
+    expect(onChange).toHaveBeenCalledWith(full);
   });
 
   it("ignores non-numeric characters in pasted content", () => {
     const onChange = vi.fn();
     render(<OtpInput value="" onChange={onChange} />);
-    const paste = { clipboardData: { getData: () => "12-34ab56" } };
+    const digits = "1".repeat(OTP_LENGTH - 1) + "9";
+    const noisy = digits.split("").join("-ab"); // interleave letters/dashes between each digit
+    const paste = { clipboardData: { getData: () => noisy } };
     fireEvent.paste(boxes()[0], paste);
-    expect(onChange).toHaveBeenCalledWith("123456");
+    expect(onChange).toHaveBeenCalledWith(digits);
   });
 });
