@@ -82,11 +82,40 @@ body {
 
 .panel-surface {
   position: relative;
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.05), rgba(10, 10, 12, 0.74) 55%, rgba(0, 0, 0, 0.8) 100%);
-  border: 1px solid var(--color-line-strong);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.05), rgba(10, 10, 12, 0.72) 55%, rgba(0, 0, 0, 0.78) 100%);
+  border: 1px solid rgba(223, 37, 49, 0.24);
   border-radius: 18px;
-  box-shadow: 0 18px 36px -26px rgba(0, 0, 0, 0.75), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  box-shadow: 0 18px 36px -26px rgba(0, 0, 0, 0.75), 0 0 22px -8px rgba(223, 37, 49, 0.22), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
   overflow: hidden;
+}
+
+/* Top nav (desktop): icon badges glow red per section, echoing the
+   reference "neon badge" dashboards. */
+.nav-pill {
+  border: 1px solid transparent;
+}
+.nav-pill:hover {
+  background: rgba(255, 255, 255, 0.035);
+}
+.nav-pill-active {
+  background: linear-gradient(155deg, rgba(223, 37, 49, 0.12), rgba(17, 17, 20, 0.4));
+  border-color: rgba(223, 37, 49, 0.18);
+}
+.nav-icon-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 32%, rgba(223, 37, 49, 0.3), rgba(15, 15, 17, 0.92) 72%);
+  border: 1px solid var(--color-line-strong);
+  box-shadow: 0 0 10px -3px rgba(223, 37, 49, 0.35);
+  transition: box-shadow 150ms ease, border-color 150ms ease;
+}
+.nav-icon-badge-active {
+  border-color: rgba(223, 37, 49, 0.65);
+  box-shadow: 0 0 18px -2px rgba(223, 37, 49, 0.75), 0 0 5px rgba(223, 37, 49, 0.5) inset;
 }
 
 /* Ambient animated backdrop: crisp, slow-drifting glowing red wave lines

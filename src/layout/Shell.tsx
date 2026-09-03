@@ -46,45 +46,42 @@ export function Shell({
   });
 
   return (
-    <div className="relative z-10 min-h-[100dvh] flex flex-col sidebar:flex-row">
+    <div className="relative z-10 min-h-[100dvh] flex flex-col">
       <AmbientBackground />
-      {/* ── Sidebar (desktop) ─────────────────────────────── */}
-      <aside className="hidden sidebar:flex sidebar:flex-col sidebar:w-[200px] sidebar:border-r sidebar:border-[var(--color-line)] sidebar:h-screen sidebar:sticky sidebar:top-0 bg-[var(--color-surface)]">
-        {/* Logo */}
-        <div className="px-5 pt-7 pb-6 border-b border-[var(--color-line)]">
-          <div className="font-[var(--font-display)] text-[12.5px] tracking-[0.18em] text-[var(--color-ink)]">
-            PERFORMANCE<span className="text-[var(--color-red)]">.</span>
-          </div>
+      {/* ── Top nav (desktop) ─────────────────────────────── */}
+      <header className="hidden sidebar:flex items-center justify-between gap-6 px-8 py-3.5 sticky top-0 z-20 bg-[var(--color-bg)]/92 backdrop-blur-sm border-b border-[var(--color-line)]">
+        <div className="font-[var(--font-display)] text-[13px] tracking-[0.18em] text-[var(--color-ink)] flex-none">
+          PERFORMANCE<span className="text-[var(--color-red)]">.</span>
         </div>
 
-        {/* Nav */}
-        <nav className="flex flex-col gap-px px-0 py-3 flex-1">
+        <nav className="flex items-center gap-1.5">
           {SIDEBAR_TABS.map((t) => {
             const isActive = active === t.key;
             return (
               <button
                 key={t.key}
                 onClick={() => onChange(t.key)}
-                className={`flex items-center gap-2.5 px-5 py-2.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] transition-all duration-150 border-l-2 ${
-                  isActive
-                    ? "border-l-[var(--color-red)] text-[var(--color-red)] bg-[var(--color-surface-2)]"
-                    : "border-l-transparent text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[var(--color-surface-2)]"
-                }`}
+                className={`nav-pill flex flex-col items-center gap-1.5 px-3 py-2 rounded-2xl transition-all duration-150 ${isActive ? "nav-pill-active" : ""}`}
               >
-                <NavGlyph tab={t.key} active={isActive} />
-                {t.label}
+                <span className={`nav-icon-badge ${isActive ? "nav-icon-badge-active" : ""}`}>
+                  <NavGlyph tab={t.key} active={isActive} />
+                </span>
+                <span
+                  className={`text-[9px] font-semibold uppercase tracking-[0.08em] ${
+                    isActive ? "text-[var(--color-red)]" : "text-[var(--color-muted)]"
+                  }`}
+                >
+                  {t.label}
+                </span>
               </button>
             );
           })}
         </nav>
 
-        {/* Date footer */}
-        <div className="px-5 py-4 border-t border-[var(--color-line)]">
-          <div className="text-[10px] num text-[var(--color-muted-2)] capitalize leading-snug">
-            {dateLabel}
-          </div>
+        <div className="text-[10px] num text-[var(--color-muted-2)] capitalize leading-snug flex-none text-right">
+          {dateLabel}
         </div>
-      </aside>
+      </header>
 
       {/* ── Main content ──────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0">
