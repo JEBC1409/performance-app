@@ -97,7 +97,7 @@ export function Hoy({
       </div>
 
       {/* ── Sesión del día ─────────────────────────────────── */}
-      <div className="panel-surface enter enter-delay-1">
+      <div className={`panel-surface enter enter-delay-1 ${slot !== "rest" ? "panel-surface-glow" : ""}`}>
         <div className="px-4 pt-4 pb-3 border-b border-[var(--color-line)]">
           <Eyebrow>Sesión del día</Eyebrow>
         </div>

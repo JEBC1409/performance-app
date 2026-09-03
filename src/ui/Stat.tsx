@@ -13,7 +13,7 @@ export function Stat({
     <div
       className={`panel-surface p-3.5 flex flex-col gap-1.5 border-l-2 transition-colors ${
         accent
-          ? "border-l-[var(--color-red)]"
+          ? "border-l-[var(--color-red)] panel-surface-glow"
           : "border-l-[var(--color-line-strong)]"
       }`}
     >
