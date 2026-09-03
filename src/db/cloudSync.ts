@@ -324,6 +324,18 @@ function registerAllHooks() {
 
 // ---------- session wiring ----------
 
+// Tracks which user id fullSync has already run for (or started running for),
+// so `getSession()` resolving and `onAuthStateChange`'s own initial-session
+// event — both fire on every page load — don't kick off two concurrent
+// fullSyncs for the same sign-in and race each other's merge step.
+let syncedUserId: string | null = null;
+
+function syncOnce(uid: string) {
+  if (syncedUserId === uid) return;
+  syncedUserId = uid;
+  fullSync(uid).catch((err) => console.error("Cloud sync failed", err));
+}
+
 export function initCloudSync(): void {
   if (!supabase) return;
   registerAllHooks();
@@ -331,13 +343,13 @@ export function initCloudSync(): void {
   supabase.auth.getSession().then(({ data }) => {
     const uid = data.session?.user.id ?? null;
     currentUserId = uid;
-    if (uid) fullSync(uid).catch((err) => console.error("Cloud sync failed", err));
+    if (uid) syncOnce(uid);
   });
 
   supabase.auth.onAuthStateChange((_event, session) => {
     const uid = session?.user.id ?? null;
-    const isNewSignIn = uid && uid !== currentUserId;
     currentUserId = uid;
-    if (isNewSignIn) fullSync(uid).catch((err) => console.error("Cloud sync failed", err));
+    if (uid) syncOnce(uid);
+    if (!uid) syncedUserId = null;
   });
 }
