@@ -76,7 +76,7 @@ export function Login() {
   if (!supabaseConfigured) {
     return (
       <div className="relative z-10 min-h-screen flex items-center justify-center bg-[var(--color-bg)] px-6">
-        <AmbientBackground />
+        <AmbientBackground calm />
         <div className="login-card p-6 max-w-sm w-full">
           <div className="eyebrow eyebrow-accent">Configuración pendiente</div>
           <h1 className="font-[var(--font-display)] text-lg mt-2.5">Falta conectar Supabase</h1>
@@ -95,7 +95,7 @@ export function Login() {
 
   return (
     <div className="relative z-10 min-h-screen flex items-center justify-center bg-[var(--color-bg)] px-6">
-      <AmbientBackground />
+      <AmbientBackground calm />
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="font-[var(--font-display)] text-base tracking-[0.14em]">

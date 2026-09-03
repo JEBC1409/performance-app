@@ -255,14 +255,32 @@ body {
   }
 }
 
-/* Login card: deliberately breaks from the app's flat/square panel-surface to
-   echo the Dr. Discipline landing's rounded, gradient glass cards — since the
-   landing now sits directly in front of it as the same visual flow. */
+/* Calm variant (Login): the ribbons are already skipped in JSX; this just
+   quiets the remaining glow and grain further for a sober, elegant feel. */
+.ambient-bg-calm .ambient-dune {
+  opacity: 0.6;
+}
+.ambient-bg-calm .ambient-grain {
+  opacity: 0.035;
+}
+
+/* Login card: rounded glass card echoing the Dr. Discipline landing, but
+   kept deliberately quiet — a thin red top hairline and a soft ambient glow
+   rather than a loud gradient fill, for a minimal/sober login moment. */
 .login-card {
-  background: linear-gradient(155deg, rgba(223, 37, 49, 0.16), rgba(17, 17, 20, 0.94) 42%, rgba(0, 0, 0, 0.97) 100%);
+  position: relative;
+  background: linear-gradient(180deg, rgba(20, 20, 23, 0.96), rgba(6, 6, 7, 0.98) 55%);
   border: 1px solid var(--color-line-strong);
   border-radius: 22px;
-  box-shadow: 0 24px 64px -28px rgba(223, 37, 49, 0.4), 0 1px 0 rgba(255, 255, 255, 0.05) inset;
+  box-shadow: 0 24px 56px -30px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  overflow: hidden;
+}
+.login-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-red-soft), transparent);
 }
 
 .glow-dot {
