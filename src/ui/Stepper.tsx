@@ -20,7 +20,7 @@ export function Stepper({
     return out;
   };
   return (
-    <div className="inline-flex items-stretch border border-[var(--color-line-strong)]">
+    <div className="inline-flex items-stretch rounded-full border border-[var(--color-line-strong)] overflow-hidden">
       <button
         type="button"
         onClick={() => onChange(clamp(value - step))}

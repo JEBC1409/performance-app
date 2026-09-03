@@ -23,8 +23,8 @@ export function RestTimer({
             {m}:{s.toString().padStart(2, "0")}
           </div>
         </div>
-        <div className="mt-2 h-1 bg-[var(--color-surface-2)] relative overflow-hidden">
-          <div className="h-full bg-[var(--color-red)]" style={{ width: `${pct * 100}%`, transition: "width 1s linear" }} />
+        <div className="mt-2 h-1 rounded-full bg-[var(--color-surface-2)] relative overflow-hidden">
+          <div className="h-full rounded-full bg-[var(--color-red)]" style={{ width: `${pct * 100}%`, transition: "width 1s linear" }} />
         </div>
         <div className="mt-2.5 flex gap-2">
           <button
@@ -32,7 +32,7 @@ export function RestTimer({
               timer.addTime(30);
               onAdd?.();
             }}
-            className="tap-target flex-1 border border-[var(--color-line-strong)] py-1.5 text-[11.5px] font-semibold uppercase tracking-wide hover:border-[var(--color-red)]"
+            className="tap-target flex-1 rounded-full border border-[var(--color-line-strong)] py-1.5 text-[11.5px] font-semibold uppercase tracking-wide hover:border-[var(--color-red)]"
           >
             +30s
           </button>
@@ -41,7 +41,7 @@ export function RestTimer({
               timer.skip();
               onSkip?.();
             }}
-            className="tap-target flex-1 border border-[var(--color-line-strong)] py-1.5 text-[11.5px] font-semibold uppercase tracking-wide hover:border-[var(--color-red)]"
+            className="tap-target flex-1 rounded-full border border-[var(--color-line-strong)] py-1.5 text-[11.5px] font-semibold uppercase tracking-wide hover:border-[var(--color-red)]"
           >
             Saltar
           </button>

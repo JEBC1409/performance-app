@@ -56,14 +56,14 @@ export function Habitos() {
           <div className="flex gap-1.5">
             <button
               onClick={() => setMonthDate(new Date(year, month - 1, 1))}
-              className="w-7 h-7 border border-[var(--color-line-strong)] flex items-center justify-center hover:border-[var(--color-red)]"
+              className="w-7 h-7 rounded-full border border-[var(--color-line-strong)] flex items-center justify-center hover:border-[var(--color-red)]"
               aria-label="Mes anterior"
             >
               ‹
             </button>
             <button
               onClick={() => setMonthDate(new Date(year, month + 1, 1))}
-              className="w-7 h-7 border border-[var(--color-line-strong)] flex items-center justify-center hover:border-[var(--color-red)]"
+              className="w-7 h-7 rounded-full border border-[var(--color-line-strong)] flex items-center justify-center hover:border-[var(--color-red)]"
               aria-label="Mes siguiente"
             >
               ›

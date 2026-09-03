@@ -49,34 +49,29 @@ export function Shell({
     <div className="relative z-10 min-h-[100dvh] flex flex-col">
       <AmbientBackground />
       {/* ── Top nav (desktop) ─────────────────────────────── */}
-      <header className="hidden sidebar:flex items-center justify-between gap-6 px-8 py-3.5 sticky top-0 z-20 bg-[var(--color-bg)]/92 backdrop-blur-sm border-b border-[var(--color-line)]">
-        <div className="font-[var(--font-display)] text-[13px] tracking-[0.18em] text-[var(--color-ink)] flex-none">
-          PERFORMANCE<span className="text-[var(--color-red)]">.</span>
-        </div>
-
-        <nav className="flex items-center gap-1.5">
-          {SIDEBAR_TABS.map((t) => {
-            const isActive = active === t.key;
-            return (
-              <button
-                key={t.key}
-                onClick={() => onChange(t.key)}
-                className={`nav-pill flex flex-col items-center gap-1.5 px-3 py-2 rounded-2xl transition-all duration-150 ${isActive ? "nav-pill-active" : ""}`}
-              >
-                <span className={`nav-icon-badge ${isActive ? "nav-icon-badge-active" : ""}`}>
-                  <NavGlyph tab={t.key} active={isActive} />
-                </span>
-                <span
-                  className={`text-[9px] font-semibold uppercase tracking-[0.08em] ${
-                    isActive ? "text-[var(--color-red)]" : "text-[var(--color-muted)]"
-                  }`}
+      <header className="hidden sidebar:flex items-center justify-between gap-4 px-6 py-4 sticky top-0 z-20">
+        <div className="nav-pillbar">
+          <span className="nav-logo-badge">
+            <span className="nav-logo-dot" />
+          </span>
+          <nav className="flex items-center gap-0.5">
+            {SIDEBAR_TABS.map((t) => {
+              const isActive = active === t.key;
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => onChange(t.key)}
+                  className={`nav-pill-item ${isActive ? "nav-pill-item-active" : ""}`}
                 >
-                  {t.label}
-                </span>
-              </button>
-            );
-          })}
-        </nav>
+                  <span className="nav-pill-icon">
+                    <NavGlyph tab={t.key} active={isActive} activeColor="#fff" />
+                  </span>
+                  <span className="nav-pill-label">{t.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
 
         <div className="text-[10px] num text-[var(--color-muted-2)] capitalize leading-snug flex-none text-right">
           {dateLabel}

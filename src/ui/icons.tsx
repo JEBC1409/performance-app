@@ -40,8 +40,8 @@ export function HabitGlyph({ icon, size = 8, active = false, className = "" }: G
   );
 }
 
-export function NavGlyph({ tab, active }: { tab: string; active: boolean }) {
-  const stroke = active ? "var(--color-red)" : "rgba(255,255,255,0.5)";
+export function NavGlyph({ tab, active, activeColor = "var(--color-red)" }: { tab: string; active: boolean; activeColor?: string }) {
+  const stroke = active ? activeColor : "rgba(255,255,255,0.5)";
   const common = { width: 18, height: 18, viewBox: "0 0 18 18", "aria-hidden": true as const };
   switch (tab) {
     case "hoy":

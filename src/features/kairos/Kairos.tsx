@@ -53,16 +53,16 @@ export function Kairos() {
         <h1 className="font-[var(--font-display)] text-xl mt-1.5">Biblia · Reina-Valera 1909</h1>
       </div>
 
-      <div className="flex border border-[var(--color-line)]">
+      <div className="flex gap-1 p-1 rounded-full border border-[var(--color-line)]">
         <button
           onClick={() => setView("leer")}
-          className={`tap-target flex-1 py-2.5 text-[12px] font-semibold uppercase tracking-wide ${view === "leer" ? "bg-[var(--color-red)] text-black" : "text-[var(--color-muted)]"}`}
+          className={`tap-target flex-1 rounded-full py-2 text-[12px] font-semibold uppercase tracking-wide ${view === "leer" ? "bg-[var(--color-red)] text-black" : "text-[var(--color-muted)]"}`}
         >
           Leer
         </button>
         <button
           onClick={() => setView("guardados")}
-          className={`tap-target flex-1 py-2.5 text-[12px] font-semibold uppercase tracking-wide ${view === "guardados" ? "bg-[var(--color-red)] text-black" : "text-[var(--color-muted)]"}`}
+          className={`tap-target flex-1 rounded-full py-2 text-[12px] font-semibold uppercase tracking-wide ${view === "guardados" ? "bg-[var(--color-red)] text-black" : "text-[var(--color-muted)]"}`}
         >
           Guardados ({saved?.length ?? 0})
         </button>

@@ -92,33 +92,72 @@ body {
   box-shadow: 0 22px 50px -22px rgba(0, 0, 0, 0.85), 0 0 70px -8px rgba(223, 37, 49, 0.7), 0 0 6px rgba(223, 37, 49, 0.35) inset;
 }
 
-/* Top nav (desktop): icon badges glow red per section, echoing the
-   reference "neon badge" dashboards. */
-.nav-pill {
-  border: 1px solid transparent;
+/* Top nav (desktop): a floating rounded-full pill bar — circular logo badge
+   + icon/label items, solid-color active state (no gradients, no square
+   corners), echoing the reference pill-nav look. */
+.nav-pillbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line-strong);
+  box-shadow: 0 16px 32px -18px rgba(0, 0, 0, 0.75);
 }
-.nav-pill:hover {
-  background: rgba(255, 255, 255, 0.035);
-}
-.nav-pill-active {
-  background: linear-gradient(155deg, rgba(223, 37, 49, 0.12), rgba(17, 17, 20, 0.4));
-  border-color: rgba(223, 37, 49, 0.18);
-}
-.nav-icon-badge {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+.nav-logo-badge {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 50% 32%, rgba(223, 37, 49, 0.3), rgba(15, 15, 17, 0.92) 72%);
-  border: 1px solid var(--color-line-strong);
-  box-shadow: 0 0 10px -3px rgba(223, 37, 49, 0.35);
-  transition: box-shadow 150ms ease, border-color 150ms ease;
+  background: var(--color-red);
 }
-.nav-icon-badge-active {
-  border-color: rgba(223, 37, 49, 0.65);
-  box-shadow: 0 0 18px -2px rgba(223, 37, 49, 0.75), 0 0 5px rgba(223, 37, 49, 0.5) inset;
+.nav-logo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #fff;
+}
+.nav-pill-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 6px;
+  border-radius: 999px;
+  transition: background-color 150ms ease;
+}
+.nav-pill-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.nav-pill-item-active {
+  background: rgba(223, 37, 49, 0.16);
+}
+.nav-pill-icon {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-2);
+  transition: background-color 150ms ease;
+}
+.nav-pill-item-active .nav-pill-icon {
+  background: var(--color-red);
+}
+.nav-pill-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+}
+.nav-pill-item-active .nav-pill-label {
+  color: var(--color-ink);
 }
 
 /* Ambient animated backdrop: a smooth, slow-drifting red-to-black gradient
