@@ -23,6 +23,16 @@ export function BarChart({
   return (
     <div>
       <svg viewBox={`0 0 100 ${height}`} width="100%" height={height} preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="barFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ff4d58" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="#df2531" stopOpacity="0.55" />
+          </linearGradient>
+          <linearGradient id="barFillDim" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#df2531" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#df2531" stopOpacity="0.12" />
+          </linearGradient>
+        </defs>
         <line x1="0" y1={height - 18} x2="100" y2={height - 18} stroke="var(--color-line-strong)" strokeWidth="0.4" />
         {goalLine ? (
           <line
@@ -39,6 +49,7 @@ export function BarChart({
           const h = (p.value / max) * (height - 26);
           const x = i * barW + barW * 0.22;
           const w = barW * 0.56;
+          const r = Math.min(1.6, w / 2, h / 2);
           return (
             <rect
               key={i}
@@ -46,8 +57,9 @@ export function BarChart({
               y={height - 18 - h}
               width={w}
               height={h}
-              fill={p.highlight ? "var(--color-red)" : "rgba(223,37,49,0.35)"}
-              style={{ transition: "height 400ms ease-out, y 400ms ease-out" }}
+              rx={r}
+              fill={p.highlight ? "url(#barFill)" : "url(#barFillDim)"}
+              style={{ transition: "height 400ms ease-out, y 400ms ease-out", filter: p.highlight ? "drop-shadow(0 0 4px rgba(223,37,49,0.55))" : undefined }}
             />
           );
         })}

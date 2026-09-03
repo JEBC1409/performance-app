@@ -81,9 +81,71 @@ body {
 }
 
 .panel-surface {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent);
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-line);
+  position: relative;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.05), rgba(10, 10, 12, 0.74) 55%, rgba(0, 0, 0, 0.8) 100%);
+  border: 1px solid var(--color-line-strong);
+  border-radius: 18px;
+  box-shadow: 0 18px 36px -26px rgba(0, 0, 0, 0.75), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  overflow: hidden;
+}
+
+/* Ambient animated backdrop: slow-drifting blurred red glows behind the app
+   shell and login screen, echoing the reference "dark UI" glow-wave look.
+   Cards sit above it at a higher stacking context and are translucent
+   (see .panel-surface / .login-card) so the glow tints through instead of
+   being fully hidden behind opaque panels. */
+.ambient-bg {
+  position: fixed;
+  inset: 0;
+  /* Negative so it paints behind the non-positioned in-flow content around it
+     (sidebar/main) within its positioned parent's own stacking context,
+     instead of racing them for a z-index:0 slot and winning by paint order. */
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ambient-glow {
+  position: absolute;
+  left: 50%;
+  width: 130vmax;
+  height: 130vmax;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  filter: blur(70px);
+  will-change: transform, opacity;
+}
+.ambient-glow-1 {
+  top: -12%;
+  background: radial-gradient(circle at 50% 35%, rgba(223, 37, 49, 0.4), rgba(223, 37, 49, 0.08) 42%, transparent 70%);
+  opacity: 0.55;
+  animation: ambient-drift-1 24s ease-in-out infinite;
+}
+.ambient-glow-2 {
+  top: 55%;
+  background: radial-gradient(circle at 50% 50%, rgba(223, 37, 49, 0.3), transparent 65%);
+  opacity: 0.4;
+  animation: ambient-drift-2 30s ease-in-out infinite;
+}
+.ambient-glow-3 {
+  top: 105%;
+  background: radial-gradient(circle at 50% 60%, rgba(223, 37, 49, 0.24), transparent 65%);
+  opacity: 0.35;
+  animation: ambient-drift-1 36s ease-in-out infinite reverse;
+}
+@keyframes ambient-drift-1 {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-44%, -55%) scale(1.1); }
+}
+@keyframes ambient-drift-2 {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-56%, -47%) scale(1.06); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient-glow-1,
+  .ambient-glow-2,
+  .ambient-glow-3 {
+    animation: none !important;
+  }
 }
 
 /* Login card: deliberately breaks from the app's flat/square panel-surface to

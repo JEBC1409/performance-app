@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { NavGlyph } from "@/ui";
+import { NavGlyph, AmbientBackground } from "@/ui";
 import type { Tab } from "@/App";
 
 const MOBILE_TABS: { key: Tab; label: string }[] = [
@@ -46,7 +46,8 @@ export function Shell({
   });
 
   return (
-    <div className="min-h-[100dvh] flex flex-col sidebar:flex-row">
+    <div className="relative z-10 min-h-[100dvh] flex flex-col sidebar:flex-row">
+      <AmbientBackground />
       {/* ── Sidebar (desktop) ─────────────────────────────── */}
       <aside className="hidden sidebar:flex sidebar:flex-col sidebar:w-[200px] sidebar:border-r sidebar:border-[var(--color-line)] sidebar:h-screen sidebar:sticky sidebar:top-0 bg-[var(--color-surface)]">
         {/* Logo */}
