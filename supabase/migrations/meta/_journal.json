@@ -8,6 +8,13 @@
       "when": 1788457968929,
       "tag": "0000_init_cloud_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788460898219,
+      "tag": "0001_moure_weeks_nullable_date",
+      "breakpoints": true
     }
   ]
 }

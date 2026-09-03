@@ -113,7 +113,8 @@ export const moureWeeks = pgTable(
   {
     userId: userIdColumn(),
     week: integer("week").notNull(),
-    date: date("date").notNull(),
+    // Nullable: unstarted weeks carry "" locally, which isn't a valid date literal.
+    date: date("date"),
     topic: text("topic").notNull().default(""),
     hours: real("hours"),
     project: text("project").notNull().default(""),

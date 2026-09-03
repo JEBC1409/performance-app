@@ -117,10 +117,11 @@ function fromRemoteSavedVerse(row: Record<string, unknown>): SavedVerseRecord {
 }
 
 function toRemoteMoureWeek(row: MoureWeekRecord, userId: string) {
-  return { user_id: userId, week: row.week, date: row.date, topic: row.topic, hours: row.hours, project: row.project, done: row.done };
+  // date is a real Postgres `date` column — "" (unstarted week) isn't a valid literal.
+  return { user_id: userId, week: row.week, date: row.date || null, topic: row.topic, hours: row.hours, project: row.project, done: row.done };
 }
 function fromRemoteMoureWeek(row: Record<string, unknown>): MoureWeekRecord {
-  return { week: row.week as number, date: row.date as string, topic: row.topic as string, hours: row.hours as number | null, project: row.project as string, done: row.done as boolean };
+  return { week: row.week as number, date: (row.date as string | null) ?? "", topic: row.topic as string, hours: row.hours as number | null, project: row.project as string, done: row.done as boolean };
 }
 
 function toRemoteSettings(row: SettingsRecord, userId: string) {

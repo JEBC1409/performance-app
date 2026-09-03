@@ -1,0 +1,1 @@
+ALTER TABLE "moure_weeks" ALTER COLUMN "date" DROP NOT NULL;
