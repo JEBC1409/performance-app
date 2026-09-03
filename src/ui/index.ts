@@ -5,7 +5,6 @@ export * from "./Chip";
 export * from "./Tabs";
 export * from "./Sheet";
 export * from "./Stepper";
-export * from "./Ring";
 export * from "./BarChart";
 export * from "./LineChart";
 export * from "./Radar";

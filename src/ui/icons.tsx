@@ -7,8 +7,14 @@ interface GlyphProps {
 }
 
 /** Geometric glyphs only — squares, circles, bars, diamonds. No emoji, per the visual spec. */
-export function HabitGlyph({ icon, size = 8, active = false, className = "" }: GlyphProps & { icon: HabitIcon }) {
-  const color = active ? "var(--color-red)" : "var(--color-muted-2)";
+export function HabitGlyph({
+  icon,
+  size = 8,
+  active = false,
+  activeColor = "var(--color-red)",
+  className = "",
+}: GlyphProps & { icon: HabitIcon; activeColor?: string }) {
+  const color = active ? activeColor : "var(--color-muted-2)";
   const s = size;
   if (icon === "circle") {
     return (
@@ -36,6 +42,20 @@ export function HabitGlyph({ icon, size = 8, active = false, className = "" }: G
       <rect x="0.5" y="6" width="2" height="3.5" fill={color} />
       <rect x="4" y="3" width="2" height="6.5" fill={color} />
       <rect x="7.5" y="0.5" width="2" height="9" fill={color} />
+    </svg>
+  );
+}
+
+/** Streak flame — a deliberate exception to the geometric-only rule above,
+ * per explicit request for a "neon fire" streak indicator. Glow comes from
+ * the .flame-glow CSS class (drop-shadow), not from the SVG itself. */
+export function FlameGlyph({ size = 16, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" className={className} aria-hidden>
+      <path
+        d="M8 1.2c.3 2 1.6 3.1 2.7 4.4C11.7 6.9 12.5 8.1 12.5 9.6a4.5 4.5 0 1 1-9 0c0-1.4.5-2.4 1.1-3.3.2.9-.1 1.7.6 2.1.5.3.9 0 .8-.6-.3-1.3.1-2.7 1-3.7C7.6 3.4 8 2.4 8 1.2Z"
+        fill="currentColor"
+      />
     </svg>
   );
 }

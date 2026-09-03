@@ -1,6 +1,6 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
-import { Card, Eyebrow, Stat, Ring, Button } from "@/ui";
+import { Card, Eyebrow, Stat, HabitGlyph, Button } from "@/ui";
 import { HABIT_LIST } from "@/data/habits";
 import { GYM_DIAS } from "@/data/gym";
 import { todayISO, num, DIAS, jsDowToIndex } from "@/lib/date";
@@ -172,10 +172,24 @@ export function Hoy({
             /{habitsTotal}
           </span>
         </div>
-        <div className="px-4 py-3 grid grid-cols-4 gap-3">
+        <div className="px-4 py-3 grid grid-cols-2 gap-2">
           {HABIT_LIST.map((h) => {
             const on = !!habitDay?.[h.key];
-            return <Ring key={h.key} value={on ? 1 : 0} size={48} label={h.label} />;
+            return (
+              <div
+                key={h.key}
+                className={`flex items-center gap-2.5 rounded-full border px-3 py-2 transition-colors ${
+                  on ? "border-[var(--color-red)] bg-[rgba(223,37,49,0.12)]" : "border-[var(--color-line-strong)]"
+                }`}
+              >
+                <span className={`flex h-7 w-7 flex-none items-center justify-center rounded-full ${on ? "bg-[var(--color-red)]" : "bg-[var(--color-surface-2)]"}`}>
+                  <HabitGlyph icon={h.icon} active={on} activeColor="#fff" size={12} />
+                </span>
+                <span className={`text-[10.5px] font-semibold uppercase tracking-wide leading-tight ${on ? "text-[var(--color-ink)]" : "text-[var(--color-muted)]"}`}>
+                  {h.label}
+                </span>
+              </div>
+            );
           })}
         </div>
       </div>

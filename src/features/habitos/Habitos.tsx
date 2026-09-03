@@ -3,7 +3,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
 import { HABIT_LIST, type HabitDef } from "@/data/habits";
 import { RUTINA_MATUTINA } from "@/data/gym";
-import { Card, Eyebrow, Ring, HabitGlyph } from "@/ui";
+import { Card, Eyebrow, HabitGlyph, FlameGlyph, BarChart } from "@/ui";
 import { daysInMonth, pad2, todayISO, MESES } from "@/lib/date";
 import { currentStreak } from "@/lib/streak";
 
@@ -30,6 +30,18 @@ export function Habitos() {
   const byDate = useMemo(() => new Map((monthRows ?? []).map((r) => [r.date, r])), [monthRows]);
   const todayRow = useMemo(() => allRows?.find((r) => r.date === today), [allRows, today]);
 
+  const monthlyTotals = useMemo(
+    () =>
+      Array.from({ length: nDays }, (_, i) => {
+        const d = i + 1;
+        const date = `${year}-${pad2(month + 1)}-${pad2(d)}`;
+        const row = byDate.get(date);
+        const value = row ? HABIT_LIST.filter((h) => row[h.key]).length : 0;
+        return { label: String(d), value, highlight: isCurrentMonth && d === new Date().getDate() };
+      }),
+    [nDays, year, month, byDate, isCurrentMonth]
+  );
+
   async function toggle(date: string, key: HabitDef["key"]) {
     const existing = byDate.get(date) ?? { date, sleep: false, water: false, meals: false, nophone: false };
     await db.habitDays.put({ ...existing, [key]: !existing[key] });
@@ -42,10 +54,40 @@ export function Habitos() {
         <h1 className="font-[var(--font-display)] text-xl mt-1.5">Hoy</h1>
       </div>
 
-      <div className="grid grid-cols-4 gap-2 panel-surface p-4">
-        {HABIT_LIST.map((h) => (
-          <Ring key={h.key} value={todayRow?.[h.key] ? 1 : 0} size={48} label={h.label} sub={`racha ${currentStreak(allRows ?? [], h.key)}`} />
-        ))}
+      <Card>
+        <div className="flex items-center justify-between">
+          <Eyebrow accent>Consistencia del mes</Eyebrow>
+          <span className="text-[10.5px] text-[var(--color-muted)] num">de {HABIT_LIST.length} hábitos/día</span>
+        </div>
+        <div className="mt-3">
+          <BarChart
+            points={monthlyTotals}
+            goalLine={HABIT_LIST.length}
+            unit={`${MESES[month]} · barra = hábitos marcados ese día`}
+          />
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-2 sidebar:grid-cols-4 gap-2.5">
+        {HABIT_LIST.map((h) => {
+          const streak = currentStreak(allRows ?? [], h.key);
+          const doneToday = !!todayRow?.[h.key];
+          return (
+            <div key={h.key} className={`panel-surface p-3.5 flex flex-col gap-2.5 ${streak > 0 ? "panel-surface-glow" : ""}`}>
+              <div className="flex items-center gap-2">
+                <HabitGlyph icon={h.icon} active={doneToday} size={11} />
+                <span className="text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-muted)] leading-tight">{h.label}</span>
+              </div>
+              <div className="mt-auto flex items-end gap-1.5">
+                <FlameGlyph size={20} className={streak > 0 ? "flame-glow" : "text-[var(--color-muted-2)]"} />
+                <span className={`num text-xl font-bold leading-none ${streak > 0 ? "text-[var(--color-ink)]" : "text-[var(--color-muted-2)]"}`}>
+                  {streak}
+                </span>
+                <span className="text-[9.5px] text-[var(--color-muted-2)] uppercase pb-0.5">{streak === 1 ? "día" : "días"}</span>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <Card padded={false}>
