@@ -353,3 +353,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* Kairos decorative art: unlike the pure-black-backed mascots on Hoy, this
+   source photo has a grainy dark-gray (not true black) background, so
+   mix-blend-screen alone would leave a visible hazy rectangle. A radial
+   mask fades its edges into the page so it reads as a loose silhouette
+   instead of a hard-edged image. */
+.kairos-knight-img {
+  mix-blend-mode: screen;
+  filter: brightness(0.85) contrast(1.15);
+  mask-image: radial-gradient(65% 70% at 50% 55%, black 45%, transparent 85%);
+  -webkit-mask-image: radial-gradient(65% 70% at 50% 55%, black 45%, transparent 85%);
+}
