@@ -17,7 +17,7 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end sidebar:items-center sidebar:justify-center">
       <div className="absolute inset-0 bg-black/70" onClick={onClose} />
-      <div className="relative w-full sidebar:max-w-md bg-[var(--color-surface)] border-t sidebar:border border-[var(--color-line-strong)] p-5 max-h-[85vh] overflow-y-auto enter">
+      <div className="relative w-full sidebar:max-w-md bg-[var(--color-surface)] border-t sidebar:border border-[var(--color-line-strong)] p-5 pb-[calc(1.25rem_+_env(safe-area-inset-bottom))] sidebar:pb-5 max-h-[85vh] overflow-y-auto enter">
         <div className="flex items-center justify-between mb-4">
           {title ? <div className="eyebrow">{title}</div> : <span />}
           <button onClick={onClose} className="w-7 h-7 rounded-full border border-[var(--color-line-strong)] flex items-center justify-center text-[var(--color-muted)] hover:text-[var(--color-ink)]" aria-label="Cerrar">

@@ -22,7 +22,11 @@ export default defineConfig({
         name: "PERFORMANCE",
         short_name: "PERFORMANCE",
         description: "Tracker de hábitos, gimnasio, estudio y devocional.",
-        start_url: "/",
+        // "/" alone serves the public landing page (App.tsx gates the real
+        // app behind an explicit "?enter", so a bare "/" stays a marketing
+        // page for browser visitors). The installed icon should skip that
+        // and go straight to the app/login every time it's launched.
+        start_url: "/?enter",
         scope: "/",
         display: "standalone",
         background_color: "#000000",

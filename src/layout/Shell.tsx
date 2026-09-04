@@ -91,7 +91,10 @@ export function Shell({
       {/* ── Main content ──────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile header */}
-        <header className="sticky top-0 z-20 bg-[var(--color-bg)]/95 backdrop-blur-sm border-b border-[var(--color-line)] px-4 py-3 flex items-start justify-between sidebar:hidden">
+        <header
+          className="sticky top-0 z-20 bg-[var(--color-bg)]/95 backdrop-blur-sm border-b border-[var(--color-line)] px-4 pb-3 flex items-start justify-between sidebar:hidden"
+          style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}
+        >
           <div className="flex flex-col gap-1">
             <div className="font-[var(--font-display)] text-[12.5px] tracking-[0.18em]">
               PERFORMANCE<span className="text-[var(--color-red)]">.</span>
@@ -106,13 +109,16 @@ export function Shell({
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-5 sidebar:px-8 sidebar:py-8 pb-24 sidebar:pb-10 max-w-[1000px] w-full mx-auto">
+        <main className="flex-1 px-4 py-5 pb-[calc(6rem_+_env(safe-area-inset-bottom))] sidebar:px-8 sidebar:py-8 sidebar:pb-10 max-w-[1000px] w-full mx-auto">
           {children}
         </main>
       </div>
 
       {/* ── Mobile bottom nav ─────────────────────────────── */}
-      <nav className="sidebar:hidden fixed bottom-0 left-0 right-0 z-30 bg-[var(--color-bg)]/95 backdrop-blur-sm border-t border-[var(--color-line)]">
+      <nav
+        className="sidebar:hidden fixed bottom-0 left-0 right-0 z-30 bg-[var(--color-bg)]/95 backdrop-blur-sm border-t border-[var(--color-line)]"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
         <div className="flex">
           {MOBILE_TABS.map((t) => {
             const isActive =
@@ -159,7 +165,10 @@ export function Shell({
             className="absolute inset-0 bg-black/80"
             onClick={() => setMoreOpen(false)}
           />
-          <div className="relative w-full bg-[var(--color-surface)] border-t border-[var(--color-line-strong)] p-5 enter">
+          <div
+            className="relative w-full bg-[var(--color-surface)] border-t border-[var(--color-line-strong)] p-5 enter"
+            style={{ paddingBottom: "calc(1.25rem + env(safe-area-inset-bottom))" }}
+          >
             <div className="eyebrow mb-4">Más secciones</div>
             <div className="grid grid-cols-2 gap-2">
               {MORE_TABS.map((t) => {

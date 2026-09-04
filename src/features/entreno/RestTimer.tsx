@@ -32,7 +32,7 @@ export function RestTimer({
   const urgent = timer.remaining <= 5;
 
   return (
-    <div className="fixed bottom-16 sidebar:bottom-4 left-0 right-0 z-40 flex justify-center px-4">
+    <div className="fixed bottom-[calc(4rem_+_env(safe-area-inset-bottom))] sidebar:bottom-4 left-0 right-0 z-40 flex justify-center px-4">
       <div
         className={`flex items-center gap-3 rounded-2xl border px-3.5 py-2.5 ${urgent ? "border-[var(--color-red)]" : "border-[var(--color-line-strong)]"}`}
         style={{
