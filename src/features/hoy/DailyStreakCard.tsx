@@ -15,7 +15,7 @@ export function DailyStreakCard() {
     return { date, label: DIAS_CORTO[i], done: (byDate.get(date)?.points ?? 0) > 0, isToday: date === today, isFuture: date > today };
   });
 
-  const { tier, next, pct, setsToNext } = data.progress;
+  const { tier, next, pct, daysToNext } = data.progress;
 
   return (
     <div className="panel-surface enter enter-delay-1 p-4">
@@ -56,8 +56,11 @@ export function DailyStreakCard() {
         <div className="flex items-center justify-between text-[10.5px]">
           <span className="font-semibold" style={{ color: tier.color }}>
             {tier.label}
+            <span className="ml-1.5 font-normal text-[var(--color-muted-2)]">· {data.activeDays} días activos</span>
           </span>
-          <span className="num text-[var(--color-muted-2)]">{next ? `${setsToNext} pts para ${next.label}` : "rango máximo"}</span>
+          <span className="num text-[var(--color-muted-2)]">
+            {next ? `${daysToNext} ${daysToNext === 1 ? "día" : "días"} para ${next.label}` : "rango máximo"}
+          </span>
         </div>
         {next ? (
           <div className="mt-1.5 h-1.5 rounded-full bg-[var(--color-surface-2)] overflow-hidden">

@@ -3,10 +3,6 @@ import { HABIT_LIST } from "@/data/habits";
 import { addDays, todayISO } from "./date";
 
 export const STREAK_WINDOW_DAYS = 28;
-/** Realistic 28-day max: 4 habits × 5pts every day (560) + a training bonus
- * on every A/B/C session (~7 × 25 = 175) + occasional weight/sleep logs
- * (~15) — rounded down a little so "Simétrico" is demanding, not impossible. */
-export const STREAK_CAPACITY = 700;
 
 export interface DayScore {
   date: string;
@@ -70,4 +66,26 @@ export function currentDailyStreak(scores: DayScore[]): number {
 
 export function totalPoints(scores: DayScore[]): number {
   return scores.reduce((a, s) => a + s.points, 0);
+}
+
+/** Lifetime count of distinct calendar days with *any* qualifying activity
+ * (a habit marked, a workout logged, a weight or sleep entry) — the whole
+ * history, not just the rolling window, so it only ever grows and can back
+ * a rank that feels like a real long-term milestone instead of resetting
+ * with the 28-day scoring window. */
+export async function totalActiveDays(): Promise<number> {
+  const [sets, habitDays, weights, sleeps] = await Promise.all([
+    db.sets.toArray(),
+    db.habitDays.toArray(),
+    db.weights.toArray(),
+    db.sleep.toArray(),
+  ]);
+  const active = new Set<string>();
+  sets.forEach((s) => active.add(s.date));
+  weights.forEach((w) => active.add(w.date));
+  sleeps.forEach((s) => active.add(s.date));
+  habitDays.forEach((h) => {
+    if (habitsDoneFor(h) > 0) active.add(h.date);
+  });
+  return active.size;
 }

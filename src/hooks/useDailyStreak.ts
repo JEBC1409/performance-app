@@ -1,18 +1,19 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { computeDailyScores, currentDailyStreak, totalPoints, STREAK_CAPACITY, type DayScore } from "@/lib/dailyScore";
-import { rankProgress } from "@/lib/muscleRank";
+import { computeDailyScores, currentDailyStreak, totalActiveDays, totalPoints, type DayScore } from "@/lib/dailyScore";
+import { streakRankProgress } from "@/lib/streakRank";
 
 export interface DailyStreakData {
   scores: DayScore[];
   streak: number;
   points: number;
-  progress: ReturnType<typeof rankProgress>;
+  activeDays: number;
+  progress: ReturnType<typeof streakRankProgress>;
 }
 
 export function useDailyStreak(): DailyStreakData | undefined {
   return useLiveQuery(async () => {
-    const scores = await computeDailyScores();
+    const [scores, activeDays] = await Promise.all([computeDailyScores(), totalActiveDays()]);
     const points = totalPoints(scores);
-    return { scores, streak: currentDailyStreak(scores), points, progress: rankProgress(points, STREAK_CAPACITY) };
+    return { scores, streak: currentDailyStreak(scores), points, activeDays, progress: streakRankProgress(activeDays) };
   }, []);
 }

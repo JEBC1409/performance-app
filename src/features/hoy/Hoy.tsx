@@ -29,8 +29,7 @@ export function Hoy({
   const [pickedDate, setPickedDate] = useState(today);
 
   function openStartPrompt() {
-    if (slot === "rest") return;
-    setPickedDay(slot);
+    setPickedDay(slot === "rest" ? "A" : slot);
     setPickedDate(today);
     setStartPrompt(true);
   }
@@ -135,18 +134,23 @@ export function Hoy({
         </div>
         <div className="px-4 py-3">
           {slot === "rest" ? (
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 border border-[var(--color-line-strong)] flex items-center justify-center flex-none">
-                <span className="eyebrow text-[9px]">Z</span>
-              </div>
-              <div>
-                <div className="font-[var(--font-display)] text-[13px] tracking-[0.06em]">
-                  Descanso
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 border border-[var(--color-line-strong)] flex items-center justify-center flex-none">
+                  <span className="eyebrow text-[9px]">Z</span>
                 </div>
-                <div className="text-[11px] text-[var(--color-muted)] mt-0.5">
-                  Ciclo A → B → C → descanso. Hoy toca recuperar.
+                <div>
+                  <div className="font-[var(--font-display)] text-[13px] tracking-[0.06em]">
+                    Descanso
+                  </div>
+                  <div className="text-[11px] text-[var(--color-muted)] mt-0.5">
+                    Ciclo A → B → C → descanso. Hoy toca recuperar.
+                  </div>
                 </div>
               </div>
+              <Button variant="outline" onClick={openStartPrompt}>
+                Elegir ciclo
+              </Button>
             </div>
           ) : (
             <div className="flex items-center justify-between gap-3">

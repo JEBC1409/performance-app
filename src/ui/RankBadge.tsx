@@ -1,4 +1,11 @@
-import type { RankTier } from "@/lib/muscleRank";
+/** Structurally compatible with both muscleRank's RankTier and
+ * streakRank's StreakTier — this badge only ever needs a color and a
+ * polygon side count, so it's shared by both ranking systems. */
+export interface BadgeTier {
+  key: string;
+  color: string;
+  sides: number;
+}
 
 function polygonPoints(sides: number, size: number, cx: number, cy: number): string {
   const r = size / 2;
@@ -9,7 +16,7 @@ function polygonPoints(sides: number, size: number, cx: number, cy: number): str
   }).join(" ");
 }
 
-export function RankBadge({ tier, size = 40 }: { tier: RankTier; size?: number }) {
+export function RankBadge({ tier, size = 40 }: { tier: BadgeTier; size?: number }) {
   const cx = size / 2;
   const cy = size / 2;
   const filterId = `rank-glow-${tier.key}`;
