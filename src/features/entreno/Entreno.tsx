@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
 import { GYM_DAY_ORDER, GYM_DIAS, CARDIO_NOTA, targetSetsForDay } from "@/data/gym";
-import { Tabs, Eyebrow, Card, Sheet } from "@/ui";
+import { Tabs, Eyebrow, Card, Sheet, DateField } from "@/ui";
 import { showToast } from "@/ui/Toast";
 import { todayISO, fmtDateHuman } from "@/lib/date";
 import { buildSessionSummary } from "@/lib/sessionSummary";
@@ -60,6 +60,22 @@ export function Entreno({
     timer.start(restSec);
   }
 
+  async function updateSet(id: number, payload: LogSetPayload) {
+    await db.sets.update(id, {
+      weight: payload.weight,
+      reps: payload.reps,
+      toFailure: payload.toFailure || null,
+      rpe: payload.rpe,
+      note: payload.note,
+    });
+    showToast("Serie actualizada");
+  }
+
+  async function deleteSet(id: number) {
+    await db.sets.delete(id);
+    showToast("Serie eliminada");
+  }
+
   async function copySummary() {
     const allSets = await db.sets.toArray();
     const summary = buildSessionSummary(day, sessionDate, sessionSets, allSets);
@@ -83,13 +99,7 @@ export function Entreno({
         </div>
         <label className="flex-none flex flex-col items-end gap-1">
           <span className="text-[9.5px] text-[var(--color-muted)] uppercase tracking-wide">Fecha</span>
-          <input
-            type="date"
-            value={sessionDate}
-            max={today}
-            onChange={(e) => setSessionDate(e.target.value || today)}
-            className="num rounded-lg border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-2 py-1.5 text-[11.5px] outline-none focus:border-[var(--color-red)]"
-          />
+          <DateField value={sessionDate} max={today} onChange={setSessionDate} size="sm" />
         </label>
       </div>
 
@@ -141,6 +151,8 @@ export function Entreno({
             date={sessionDate}
             exercise={openExercise}
             onLogSet={(payload) => logSet(openExercise.name, payload)}
+            onUpdateSet={updateSet}
+            onDeleteSet={deleteSet}
             allSessionSets={sessionSets}
           />
         ) : null}
@@ -154,15 +166,21 @@ function ExerciseDetail({
   date,
   exercise,
   onLogSet,
+  onUpdateSet,
+  onDeleteSet,
   allSessionSets,
 }: {
   day: GymDay;
   date: string;
   exercise: ExerciseTarget;
   onLogSet: (payload: LogSetPayload) => void;
+  onUpdateSet: (id: number, payload: LogSetPayload) => void;
+  onDeleteSet: (id: number) => void;
   allSessionSets: ReturnType<typeof useSessionSets>;
 }) {
   const lastSession = useLastSession(exercise.name, date);
   const sets = allSessionSets.filter((s) => s.exercise === exercise.name && s.day === day).sort((a, b) => a.setIndex - b.setIndex);
-  return <ExerciseLogForm exercise={exercise} sets={sets} lastSession={lastSession} onLogSet={onLogSet} />;
+  return (
+    <ExerciseLogForm exercise={exercise} sets={sets} lastSession={lastSession} onLogSet={onLogSet} onUpdateSet={onUpdateSet} onDeleteSet={onDeleteSet} />
+  );
 }

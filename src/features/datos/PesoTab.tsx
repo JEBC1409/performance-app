@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
-import { Card, Eyebrow, Chip, Button, Field, Input, BarChart, type BarPoint } from "@/ui";
+import { Card, Eyebrow, Chip, Button, Field, Input, DateField, BarChart, type BarPoint } from "@/ui";
 import { LineChart } from "@/ui/LineChart";
 import { evaluateRate } from "@/lib/weightProjection";
 import { todayISO, fmtDateHuman, startOfWeek } from "@/lib/date";
@@ -85,7 +85,7 @@ export function PesoTab() {
         <Eyebrow>Registrar peso</Eyebrow>
         <div className="grid grid-cols-2 gap-2 mt-3">
           <Field label="Fecha">
-            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            <DateField value={date} max={todayISO()} onChange={setDate} size="sm" />
           </Field>
           <Field label={`Peso (${u})`}>
             <Input inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder={unit === "lb" ? "158.7" : "72.0"} />

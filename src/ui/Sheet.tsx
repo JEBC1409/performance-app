@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 
 export function Sheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title?: string; children: ReactNode }) {
@@ -13,7 +14,7 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end sidebar:items-center sidebar:justify-center">
       <div className="absolute inset-0 bg-black/70" onClick={onClose} />
       <div className="relative w-full sidebar:max-w-md bg-[var(--color-surface)] border-t sidebar:border border-[var(--color-line-strong)] p-5 max-h-[85vh] overflow-y-auto enter">
@@ -27,6 +28,7 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

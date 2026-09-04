@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
-import { Card, Eyebrow, Field, Input, Button } from "@/ui";
+import { Card, Eyebrow, Field, Input, Button, DateField } from "@/ui";
 import { todayISO, fmtDateHuman } from "@/lib/date";
 import { showToast } from "@/ui/Toast";
 
@@ -46,7 +46,7 @@ export function MedidasTab() {
         <Eyebrow>Registrar medidas</Eyebrow>
         <div className="grid grid-cols-3 gap-2 mt-3">
           <Field label="Fecha">
-            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            <DateField value={date} max={todayISO()} onChange={setDate} size="sm" />
           </Field>
           <Field label="Pecho (cm)">
             <Input inputMode="decimal" value={pecho} onChange={(e) => setPecho(e.target.value)} />

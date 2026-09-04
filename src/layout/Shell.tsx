@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { NavGlyph, AmbientBackground } from "@/ui";
+import { NavGlyph, AmbientBackground, JourneyTicker } from "@/ui";
 import type { Tab } from "@/App";
 
 const MOBILE_TABS: { key: Tab; label: string }[] = [
@@ -50,8 +50,11 @@ export function Shell({
       <AmbientBackground />
       {/* ── Top nav (desktop) ─────────────────────────────── */}
       <header className="hidden sidebar:grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-4 sticky top-0 z-20">
-        <div className="font-[var(--font-display)] text-[13px] tracking-[0.18em] text-[var(--color-ink)] flex-none">
-          PERFORMANCE<span className="text-[var(--color-red)]">.</span>
+        <div className="flex-none flex flex-col gap-1">
+          <div className="font-[var(--font-display)] text-[13px] tracking-[0.18em] text-[var(--color-ink)]">
+            PERFORMANCE<span className="text-[var(--color-red)]">.</span>
+          </div>
+          <JourneyTicker />
         </div>
 
         <div className="nav-pillbar">
@@ -85,11 +88,14 @@ export function Shell({
       {/* ── Main content ──────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Mobile header */}
-        <header className="sticky top-0 z-20 bg-[var(--color-bg)]/95 backdrop-blur-sm border-b border-[var(--color-line)] px-4 py-3.5 flex items-center justify-between sidebar:hidden">
-          <div className="font-[var(--font-display)] text-[12.5px] tracking-[0.18em]">
-            PERFORMANCE<span className="text-[var(--color-red)]">.</span>
+        <header className="sticky top-0 z-20 bg-[var(--color-bg)]/95 backdrop-blur-sm border-b border-[var(--color-line)] px-4 py-3 flex items-start justify-between sidebar:hidden">
+          <div className="flex flex-col gap-1">
+            <div className="font-[var(--font-display)] text-[12.5px] tracking-[0.18em]">
+              PERFORMANCE<span className="text-[var(--color-red)]">.</span>
+            </div>
+            <JourneyTicker />
           </div>
-          <div className="text-[10.5px] num text-[var(--color-muted)] capitalize">
+          <div className="text-[10.5px] num text-[var(--color-muted)] capitalize mt-0.5">
             {dateLabel}
           </div>
         </header>
