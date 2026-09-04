@@ -4,7 +4,7 @@ import { db } from "@/db/db";
 import { Card, Eyebrow, RankBadge } from "@/ui";
 import { Radar } from "@/ui/Radar";
 import { MUSCLE_GROUP_ORDER, MUSCLE_GROUP_LABEL, groupForExercise, type MuscleGroup } from "@/data/muscleGroups";
-import { rankForVolume, nextRankTier } from "@/lib/muscleRank";
+import { rankProgress, groupCapacity } from "@/lib/muscleRank";
 import { addDays, todayISO } from "@/lib/date";
 import { MuscleBodyDiagram } from "./MuscleBodyDiagram";
 
@@ -24,11 +24,16 @@ export function VolumenTab() {
     return c;
   }, [sets]);
 
-  const rankByGroup = useMemo(() => {
-    const r = {} as Record<MuscleGroup, ReturnType<typeof rankForVolume>>;
-    MUSCLE_GROUP_ORDER.forEach((g) => (r[g] = rankForVolume(counts[g])));
+  const progressByGroup = useMemo(() => {
+    const r = {} as Record<MuscleGroup, ReturnType<typeof rankProgress>>;
+    MUSCLE_GROUP_ORDER.forEach((g) => (r[g] = rankProgress(counts[g], groupCapacity(g))));
     return r;
   }, [counts]);
+  const rankByGroup = useMemo(() => {
+    const r = {} as Record<MuscleGroup, ReturnType<typeof rankProgress>["tier"]>;
+    MUSCLE_GROUP_ORDER.forEach((g) => (r[g] = progressByGroup[g].tier));
+    return r;
+  }, [progressByGroup]);
 
   const axes = useMemo(() => {
     const max = Math.max(...Object.values(counts), 1);
@@ -36,8 +41,9 @@ export function VolumenTab() {
   }, [counts]);
 
   const activeGroup = selected ?? MUSCLE_GROUP_ORDER.reduce((best, g) => (counts[g] > counts[best] ? g : best), MUSCLE_GROUP_ORDER[0]);
-  const activeTier = rankByGroup[activeGroup];
-  const next = nextRankTier(activeTier);
+  const activeProgress = progressByGroup[activeGroup];
+  const activeTier = activeProgress.tier;
+  const next = activeProgress.next;
 
   return (
     <Card>
@@ -50,18 +56,32 @@ export function VolumenTab() {
         <MuscleBodyDiagram rankByGroup={rankByGroup} selected={selected} onSelect={setSelected} />
 
         <div className="w-full flex-1">
-          <div className="panel-surface panel-surface-glow flex items-center gap-3 p-4">
-            <RankBadge tier={activeTier} size={48} />
-            <div className="flex-1">
-              <div className="text-[10px] uppercase tracking-wide text-[var(--color-muted)]">{MUSCLE_GROUP_LABEL[activeGroup]}</div>
-              <div className="text-[15px] font-bold leading-tight" style={{ color: activeTier.color }}>
-                {activeTier.label}
-              </div>
-              <div className="num mt-0.5 text-[11px] text-[var(--color-muted-2)]">
-                {counts[activeGroup]} series
-                {next ? ` · faltan ${next.min - counts[activeGroup]} para ${next.label}` : " · rango máximo"}
+          <div className="panel-surface panel-surface-glow p-4">
+            <div className="flex items-center gap-3">
+              <RankBadge tier={activeTier} size={48} />
+              <div className="flex-1">
+                <div className="text-[10px] uppercase tracking-wide text-[var(--color-muted)]">{MUSCLE_GROUP_LABEL[activeGroup]}</div>
+                <div className="text-[15px] font-bold leading-tight" style={{ color: activeTier.color }}>
+                  {activeTier.label}
+                </div>
+                <div className="num mt-0.5 text-[11px] text-[var(--color-muted-2)]">
+                  {counts[activeGroup]} series
+                  {next ? ` · faltan ${activeProgress.setsToNext} para ${next.label}` : " · rango máximo"}
+                </div>
               </div>
             </div>
+            {next ? (
+              <div className="mt-3 h-1.5 rounded-full bg-[var(--color-surface-2)] overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${activeProgress.pct * 100}%`,
+                    background: `linear-gradient(90deg, ${activeTier.color}, ${next.color})`,
+                    transition: "width 400ms ease-out",
+                  }}
+                />
+              </div>
+            ) : null}
           </div>
 
           <div className="mt-3 grid grid-cols-3 gap-2">

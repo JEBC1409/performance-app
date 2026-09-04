@@ -1,7 +1,24 @@
+import { useState } from "react";
+
 export interface BarPoint {
   label: string;
   value: number;
   highlight?: boolean;
+}
+
+/** A single point isn't a comparison — it's a fact. A one-bar "chart" reads as
+ * a stray red rectangle with nothing to compare it to, so under two points we
+ * show a stat tile instead (the dataviz-correct call, not just a style fix). */
+function StatTile({ point, unit }: { point: BarPoint; unit?: string }) {
+  return (
+    <div className="flex h-full flex-col justify-center gap-1 py-2">
+      <div className="num text-[26px] font-bold leading-none text-[var(--color-ink)]">
+        {point.value}
+        {unit ? <span className="ml-1 text-[13px] font-medium text-[var(--color-muted)]">{unit}</span> : null}
+      </div>
+      <div className="text-[10px] text-[var(--color-muted-2)] num">{point.label}</div>
+    </div>
+  );
 }
 
 export function BarChart({
@@ -15,63 +32,79 @@ export function BarChart({
   goalLine?: number;
   unit?: string;
 }) {
+  const [hover, setHover] = useState<number | null>(null);
+
   if (!points.length) {
     return <div className="text-center py-8 text-[13px] text-[var(--color-muted)]">Todavía no hay datos.</div>;
   }
-  const max = Math.max(...points.map((p) => p.value), goalLine ?? 0) * 1.15 || 1;
+  if (points.length === 1) {
+    return <StatTile point={points[0]} unit={unit} />;
+  }
+
+  const max = Math.max(...points.map((p) => p.value), goalLine ?? 0) * 1.12 || 1;
+  const baseline = height - 18;
+  const plotH = height - 28;
   const barW = 100 / points.length;
+  const active = hover ?? points.length - 1;
+  const activePoint = points[active];
+
   return (
     <div>
-      <svg viewBox={`0 0 100 ${height}`} width="100%" height={height} preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="barFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#ff4d58" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="#df2531" stopOpacity="0.55" />
-          </linearGradient>
-          <linearGradient id="barFillDim" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#df2531" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#df2531" stopOpacity="0.12" />
-          </linearGradient>
-        </defs>
-        <line x1="0" y1={height - 18} x2="100" y2={height - 18} stroke="var(--color-line-strong)" strokeWidth="0.4" />
+      <div className="flex items-baseline justify-between">
+        <span className="num text-[15px] font-bold text-[var(--color-ink)]">
+          {activePoint.value}
+          {unit ? <span className="ml-1 text-[10px] font-medium text-[var(--color-muted)]">{unit}</span> : null}
+        </span>
+        <span className="text-[9.5px] text-[var(--color-muted-2)] num">{activePoint.label}</span>
+      </div>
+      <svg viewBox={`0 0 100 ${height}`} width="100%" height={height} preserveAspectRatio="none" className="mt-1">
+        <line x1="0" y1={baseline} x2="100" y2={baseline} stroke="var(--color-line)" strokeWidth="0.5" />
         {goalLine ? (
           <line
             x1="0"
-            y1={height - 18 - (goalLine / max) * (height - 26)}
+            y1={baseline - (goalLine / max) * plotH}
             x2="100"
-            y2={height - 18 - (goalLine / max) * (height - 26)}
+            y2={baseline - (goalLine / max) * plotH}
             stroke="var(--color-muted-2)"
             strokeWidth="0.4"
             strokeDasharray="2,2"
           />
         ) : null}
         {points.map((p, i) => {
-          const h = (p.value / max) * (height - 26);
-          const x = i * barW + barW * 0.22;
-          const w = barW * 0.56;
-          const r = Math.min(1.6, w / 2, h / 2);
+          const h = Math.max(1.5, (p.value / max) * plotH);
+          const slotW = Math.min(barW * 0.42, 6.5);
+          const x = i * barW + (barW - slotW) / 2;
+          const isActive = i === active;
           return (
             <rect
               key={i}
               x={x}
-              y={height - 18 - h}
-              width={w}
+              y={baseline - h}
+              width={slotW}
               height={h}
-              rx={r}
-              fill={p.highlight ? "url(#barFill)" : "url(#barFillDim)"}
-              style={{ transition: "height 400ms ease-out, y 400ms ease-out", filter: p.highlight ? "drop-shadow(0 0 4px rgba(223,37,49,0.55))" : undefined }}
+              rx={Math.min(2, slotW / 2)}
+              fill={isActive ? "var(--color-red)" : "var(--color-line-strong)"}
+              style={{ transition: "height 400ms ease-out, y 400ms ease-out, fill 150ms ease" }}
+              onMouseEnter={() => setHover(i)}
+              onMouseLeave={() => setHover(null)}
             />
           );
         })}
       </svg>
       <div className="flex mt-1">
         {points.map((p, i) => (
-          <div key={i} className="text-center text-[9.5px] text-[var(--color-muted-2)] num" style={{ width: `${barW}%` }}>
+          <button
+            key={i}
+            onMouseEnter={() => setHover(i)}
+            onMouseLeave={() => setHover(null)}
+            onClick={() => setHover(i)}
+            className={`text-center text-[9px] num transition-colors ${i === active ? "text-[var(--color-ink)]" : "text-[var(--color-muted-2)]"}`}
+            style={{ width: `${barW}%` }}
+          >
             {p.label}
-          </div>
+          </button>
         ))}
       </div>
-      {unit ? <div className="text-[10px] text-[var(--color-muted-2)] mt-1">{unit}</div> : null}
     </div>
   );
 }

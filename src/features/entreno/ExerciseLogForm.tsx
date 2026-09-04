@@ -122,7 +122,7 @@ export function ExerciseLogForm({
       />
       <button
         onClick={save}
-        className="tap-target mt-1 w-full rounded-full bg-[var(--color-red)] py-2.5 text-[12.5px] font-semibold uppercase tracking-wide text-black hover:brightness-110"
+        className="tap-target mt-1 w-full btn-primary text-white border border-[rgba(255,120,128,0.5)] rounded-full py-2.5 text-[12.5px] font-semibold uppercase tracking-wide shadow-[0_1px_0_rgba(255,255,255,0.35)_inset,0_-6px_10px_-6px_rgba(0,0,0,0.45)_inset,0_10px_24px_-10px_rgba(223,37,49,0.75)] hover:brightness-110 active:brightness-95 active:translate-y-px transition-all duration-150"
       >
         Guardar serie
       </button>
