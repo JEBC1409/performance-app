@@ -60,6 +60,21 @@ export function FlameGlyph({ size = 16, className = "" }: { size?: number; class
   );
 }
 
+/** Streak freeze — three crossing strokes, kept to straight lines/ticks like
+ * the rest of the glyph set (no literal snowflake glyph) to mark a day the
+ * streak survived on a grace day instead of real activity. */
+export function FreezeGlyph({ size = 10, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 10 10" className={className} aria-hidden>
+      <g stroke="currentColor" strokeWidth="1.1" strokeLinecap="round">
+        <path d="M5 0.8v8.4" />
+        <path d="M1.3 2.7l7.4 4.6" />
+        <path d="M8.7 2.7l-7.4 4.6" />
+      </g>
+    </svg>
+  );
+}
+
 export function NavGlyph({ tab, active, activeColor = "var(--color-red)" }: { tab: string; active: boolean; activeColor?: string }) {
   const stroke = active ? activeColor : "rgba(255,255,255,0.5)";
   const common = { width: 18, height: 18, viewBox: "0 0 18 18", "aria-hidden": true as const };

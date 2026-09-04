@@ -16,3 +16,4 @@ export * from "./ErrorBoundary";
 export * from "./AmbientBackground";
 export * from "./RankBadge";
 export * from "./JourneyTicker";
+export * from "./SyncStatusDot";

@@ -1,5 +1,6 @@
 import type { Table } from "dexie";
 import { supabase } from "@/lib/supabase";
+import { syncStarted, syncFinished } from "./syncStatus";
 import {
   db,
   type SetRecord,
@@ -242,7 +243,14 @@ async function syncSettings(userId: string) {
 }
 
 export async function fullSync(userId: string): Promise<void> {
-  await Promise.all([...COLLECTION_TABLES.map((cfg) => syncCollection(cfg, userId)), syncSettings(userId)]);
+  syncStarted();
+  try {
+    await Promise.all([...COLLECTION_TABLES.map((cfg) => syncCollection(cfg, userId)), syncSettings(userId)]);
+    syncFinished();
+  } catch (err) {
+    syncFinished(err instanceof Error ? err.message : "Error de sincronización");
+    throw err;
+  }
 }
 
 // ---------- write-through hooks ----------
@@ -254,11 +262,17 @@ function logPushError(table: string, error: unknown) {
 function registerHook(cfg: TableSync) {
   function push(row: unknown) {
     if (suppressHooks || !currentUserId || !supabase) return;
+    syncStarted();
     supabase
       .from(cfg.remoteTable)
       .upsert(cfg.toRemote(row as never, currentUserId))
       .then(({ error }) => {
-        if (error) logPushError(cfg.remoteTable, error);
+        if (error) {
+          logPushError(cfg.remoteTable, error);
+          syncFinished(error.message);
+        } else {
+          syncFinished();
+        }
       });
   }
 
@@ -284,12 +298,18 @@ function registerHook(cfg: TableSync) {
     if (suppressHooks) return;
     (this as { onsuccess?: () => void }).onsuccess = () => {
       if (suppressHooks || !currentUserId || !supabase) return;
+      syncStarted();
       supabase
         .from(cfg.remoteTable)
         .delete()
         .match(cfg.remoteMatch(primKey, obj))
         .then(({ error }) => {
-          if (error) logPushError(cfg.remoteTable, error);
+          if (error) {
+            logPushError(cfg.remoteTable, error);
+            syncFinished(error.message);
+          } else {
+            syncFinished();
+          }
         });
     };
   });
@@ -298,11 +318,17 @@ function registerHook(cfg: TableSync) {
 function registerSettingsHooks() {
   const push = (row: SettingsRecord) => {
     if (suppressHooks || !currentUserId || !supabase) return;
+    syncStarted();
     supabase
       .from("settings")
       .upsert(toRemoteSettings(row, currentUserId))
       .then(({ error }) => {
-        if (error) logPushError("settings", error);
+        if (error) {
+          logPushError("settings", error);
+          syncFinished(error.message);
+        } else {
+          syncFinished();
+        }
       });
   };
   db.settings.hook("creating", function (_primKey, obj) {

@@ -47,21 +47,51 @@ export async function computeDailyScores(days: number = STREAK_WINDOW_DAYS): Pro
   return out;
 }
 
+/** Grace days per calendar month that keep a streak alive across a missed
+ * day instead of resetting it — the same idea as Duolingo's streak freezes
+ * or Streaks' "grace days": a streak that punishes one bad day too harshly
+ * just trains people to give up on it instead of restarting it. Applied
+ * automatically, no need to spend/equip anything. */
+export const STREAK_FREEZES_PER_MONTH = 2;
+
+export interface StreakResult {
+  days: number;
+  /** Past dates within the current streak that were covered by a freeze
+   * instead of real activity — so the UI can mark them distinctly. */
+  frozenDates: Set<string>;
+  freezesUsedThisMonth: number;
+  freezesAvailable: number;
+}
+
 /** Consecutive days up to today (or yesterday, if today has nothing logged
  * *yet* — an in-progress day shouldn't read as a broken streak first thing
- * in the morning) where something — a habit, a workout, a log — happened. */
-export function currentDailyStreak(scores: DayScore[]): number {
+ * in the morning) where something — a habit, a workout, a log — happened,
+ * tolerating up to STREAK_FREEZES_PER_MONTH gap days (this month's quota,
+ * not each visited date's own month — walking a gap back across a month
+ * boundary must not grant a second, fresh budget) before the streak
+ * actually breaks. */
+export function currentDailyStreak(scores: DayScore[]): StreakResult {
   const byDate = new Map(scores.map((s) => [s.date, s]));
   let cursor = todayISO();
   if ((byDate.get(cursor)?.points ?? 0) === 0) cursor = addDays(cursor, -1);
-  let streak = 0;
-  let day = byDate.get(cursor);
-  while (day && day.points > 0) {
-    streak++;
+
+  let days = 0;
+  const frozenDates = new Set<string>();
+  let freezesUsed = 0;
+
+  for (let day = byDate.get(cursor); day; day = byDate.get(cursor)) {
+    if (day.points > 0) {
+      days++;
+      cursor = addDays(cursor, -1);
+      continue;
+    }
+    if (freezesUsed >= STREAK_FREEZES_PER_MONTH) break;
+    freezesUsed++;
+    frozenDates.add(cursor);
     cursor = addDays(cursor, -1);
-    day = byDate.get(cursor);
   }
-  return streak;
+
+  return { days, frozenDates, freezesUsedThisMonth: freezesUsed, freezesAvailable: STREAK_FREEZES_PER_MONTH - freezesUsed };
 }
 
 export function totalPoints(scores: DayScore[]): number {

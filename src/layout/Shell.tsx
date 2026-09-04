@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { NavGlyph, AmbientBackground, JourneyTicker } from "@/ui";
+import { NavGlyph, AmbientBackground, JourneyTicker, SyncStatusDot } from "@/ui";
 import type { Tab } from "@/App";
 
 const MOBILE_TABS: { key: Tab; label: string }[] = [
@@ -13,7 +13,7 @@ const MOBILE_TABS: { key: Tab; label: string }[] = [
 
 const MORE_TABS: { key: Tab; label: string }[] = [
   { key: "horario", label: "Horario" },
-  { key: "kairos", label: "Kairos" },
+  { key: "kairos", label: "Oración" },
   { key: "mouredev", label: "MoureDev" },
   { key: "perfil", label: "Perfil" },
 ];
@@ -24,7 +24,7 @@ const SIDEBAR_TABS: { key: Tab; label: string }[] = [
   { key: "habitos", label: "Hábitos" },
   { key: "datos", label: "Datos" },
   { key: "horario", label: "Horario" },
-  { key: "kairos", label: "Kairos" },
+  { key: "kairos", label: "Oración" },
   { key: "mouredev", label: "MoureDev" },
   { key: "perfil", label: "Perfil" },
 ];
@@ -80,8 +80,11 @@ export function Shell({
           </nav>
         </div>
 
-        <div className="text-[10px] num text-[var(--color-muted-2)] capitalize leading-snug flex-none text-right">
-          {dateLabel}
+        <div className="flex-none flex flex-col items-end gap-1">
+          <div className="text-[10px] num text-[var(--color-muted-2)] capitalize leading-snug">
+            {dateLabel}
+          </div>
+          <SyncStatusDot />
         </div>
       </header>
 
@@ -95,8 +98,11 @@ export function Shell({
             </div>
             <JourneyTicker />
           </div>
-          <div className="text-[10.5px] num text-[var(--color-muted)] capitalize mt-0.5">
-            {dateLabel}
+          <div className="flex flex-col items-end gap-1 mt-0.5">
+            <div className="text-[10.5px] num text-[var(--color-muted)] capitalize">
+              {dateLabel}
+            </div>
+            <SyncStatusDot />
           </div>
         </header>
 

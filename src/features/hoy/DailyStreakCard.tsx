@@ -1,7 +1,9 @@
 import { useDailyStreak } from "@/hooks/useDailyStreak";
 import { RankBadge } from "@/ui";
-import { FlameGlyph } from "@/ui/icons";
+import { FlameGlyph, FreezeGlyph } from "@/ui/icons";
 import { addDays, startOfWeek, todayISO, DIAS_CORTO } from "@/lib/date";
+
+const FREEZE_COLOR = "#4fa8c9";
 
 export function DailyStreakCard() {
   const data = useDailyStreak();
@@ -12,7 +14,14 @@ export function DailyStreakCard() {
   const byDate = new Map(data.scores.map((s) => [s.date, s]));
   const week = Array.from({ length: 7 }, (_, i) => {
     const date = addDays(weekStart, i);
-    return { date, label: DIAS_CORTO[i], done: (byDate.get(date)?.points ?? 0) > 0, isToday: date === today, isFuture: date > today };
+    return {
+      date,
+      label: DIAS_CORTO[i],
+      done: (byDate.get(date)?.points ?? 0) > 0,
+      frozen: data.frozenDates.has(date),
+      isToday: date === today,
+      isFuture: date > today,
+    };
   });
 
   const { tier, next, pct, daysToNext } = data.progress;
@@ -27,7 +36,17 @@ export function DailyStreakCard() {
               {data.streak}
               <span className="ml-1 text-[12px] font-medium text-[var(--color-muted)]">{data.streak === 1 ? "día" : "días"}</span>
             </div>
-            <div className="text-[9.5px] uppercase tracking-wide text-[var(--color-muted-2)] mt-1">Racha de constancia</div>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="text-[9.5px] uppercase tracking-wide text-[var(--color-muted-2)]">Racha de constancia</span>
+              <span
+                className="flex items-center gap-0.5 text-[9px]"
+                style={{ color: FREEZE_COLOR }}
+                title={`${data.freezesAvailable} comodines disponibles este mes`}
+              >
+                <FreezeGlyph size={8} />
+                {data.freezesAvailable}
+              </span>
+            </div>
           </div>
         </div>
         <RankBadge tier={tier} size={40} />
@@ -40,12 +59,16 @@ export function DailyStreakCard() {
               className={`flex h-7 w-full items-center justify-center rounded-lg border text-[10px] transition-colors ${
                 d.done
                   ? "border-[var(--color-good)] bg-[var(--color-good-soft)] text-[var(--color-good)]"
-                  : d.isToday
-                    ? "border-[var(--color-red)] text-[var(--color-red)]"
-                    : "border-[var(--color-line-strong)] text-[var(--color-muted-2)]"
+                  : d.frozen
+                    ? "text-[var(--color-ink)]"
+                    : d.isToday
+                      ? "border-[var(--color-red)] text-[var(--color-red)]"
+                      : "border-[var(--color-line-strong)] text-[var(--color-muted-2)]"
               }`}
+              style={d.frozen ? { borderColor: FREEZE_COLOR, background: `${FREEZE_COLOR}26`, color: FREEZE_COLOR } : undefined}
+              title={d.frozen ? "Cubierto con un comodín" : undefined}
             >
-              {d.done ? "✓" : d.isFuture ? "" : d.isToday ? "…" : "·"}
+              {d.done ? "✓" : d.frozen ? <FreezeGlyph size={10} /> : d.isFuture ? "" : d.isToday ? "…" : "·"}
             </div>
             <span className={`text-[8.5px] uppercase ${d.isToday ? "text-[var(--color-red)]" : "text-[var(--color-muted-2)]"}`}>{d.label}</span>
           </div>

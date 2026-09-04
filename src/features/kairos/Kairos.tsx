@@ -4,8 +4,10 @@ import { db } from "@/db/db";
 import { useBible } from "@/hooks/useBible";
 import { BIBLE_BOOKS } from "@/data/bible/books";
 import { getChapter, chapterCount } from "@/data/bible/loader";
-import { Eyebrow, Card, Sheet, Field, Select, Input, Button } from "@/ui";
+import { Eyebrow, Card, Sheet, Field, Input, Button } from "@/ui";
 import { showToast } from "@/ui/Toast";
+import { BookPicker } from "./BookPicker";
+import { ChapterPicker } from "./ChapterPicker";
 
 type View = "leer" | "guardados";
 
@@ -68,7 +70,7 @@ export function Kairos() {
 
       <div className="flex flex-col gap-4 enter">
         <div>
-          <Eyebrow accent>Kairos</Eyebrow>
+          <Eyebrow accent>Oración</Eyebrow>
           <h1 className="font-[var(--font-display)] text-xl mt-1.5">Biblia · Reina-Valera 1909</h1>
         </div>
 
@@ -94,37 +96,17 @@ export function Kairos() {
             <>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Libro">
-                  <Select
+                  <BookPicker
                     value={abbrev}
-                    onChange={(e) => {
-                      setAbbrev(e.target.value);
+                    books={BIBLE_BOOKS}
+                    onChange={(next) => {
+                      setAbbrev(next);
                       setChapter(1);
                     }}
-                  >
-                    <optgroup label="Antiguo Testamento">
-                      {BIBLE_BOOKS.filter((b) => b.testament === "AT").map((b) => (
-                        <option key={b.abbrev} value={b.abbrev}>
-                          {b.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Nuevo Testamento">
-                      {BIBLE_BOOKS.filter((b) => b.testament === "NT").map((b) => (
-                        <option key={b.abbrev} value={b.abbrev}>
-                          {b.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  </Select>
+                  />
                 </Field>
                 <Field label="Capítulo">
-                  <Select value={chapter} onChange={(e) => setChapter(Number(e.target.value))}>
-                    {Array.from({ length: chapters }, (_, i) => i + 1).map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </Select>
+                  <ChapterPicker value={chapter} count={chapters} onChange={setChapter} />
                 </Field>
               </div>
 

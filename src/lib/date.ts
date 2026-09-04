@@ -63,6 +63,17 @@ export function startOfWeek(iso: string): string {
   return addDays(iso, -idx);
 }
 
+export function fmtRelativeTime(epochMs: number): string {
+  const diffSec = Math.max(0, Math.floor((Date.now() - epochMs) / 1000));
+  if (diffSec < 60) return "justo ahora";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `hace ${diffMin} min`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `hace ${diffHr} h`;
+  const diffDay = Math.floor(diffHr / 24);
+  return `hace ${diffDay} d`;
+}
+
 export function num(v: unknown): number | null {
   if (v === null || v === undefined || v === "") return null;
   const n = typeof v === "number" ? v : parseFloat(String(v));

@@ -241,7 +241,7 @@ export function Hoy({
             onClick={() => onNavigate("kairos")}
             className="text-[10px] text-[var(--color-muted)] hover:text-[var(--color-red)] uppercase tracking-[0.12em] transition-colors"
           >
-            Kairos →
+            Oración →
           </button>
         </div>
         {verse ? (
