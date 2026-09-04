@@ -13,9 +13,10 @@ function fmtSet(s: Pick<SetRecord, "weight" | "reps" | "toFailure">): string {
  * exercise next to the most recent prior session for that same exercise —
  * meant for pasting into a separate chat tracking long-term progress,
  * since training here isn't logged on a fixed weekly page but session by
- * session. */
+ * session. No top-level "PERFORMANCE —" branding line here: this is always
+ * nested under dailySummary.ts's own header, which already owns that. */
 export function buildSessionSummary(day: GymDay, date: string, sessionSets: SetRecord[], allSets: SetRecord[]): string {
-  const lines: string[] = [`PERFORMANCE — Día ${day} (${GYM_DIAS[day].nombre}) — ${fmtDateHuman(date)}`, ""];
+  const lines: string[] = [`ENTRENO — Día ${day} (${GYM_DIAS[day].nombre})`, ""];
   let totalSeries = 0;
 
   for (const ex of GYM_DIAS[day].ex) {

@@ -12,6 +12,8 @@ import { useCycleSlot } from "@/hooks/useCycle";
 import { useBible } from "@/hooks/useBible";
 import { verseOfDay } from "@/data/bible/loader";
 import { fromKg, unitLabel } from "@/lib/units";
+import { buildDailySummary } from "@/lib/dailySummary";
+import { showToast } from "@/ui/Toast";
 import type { Tab } from "@/App";
 import type { GymDay } from "@/lib/cycle";
 
@@ -64,6 +66,16 @@ export function Hoy({
 
   const habitsCompleted = HABIT_LIST.filter((h) => habitDay?.[h.key]).length;
   const habitsTotal = HABIT_LIST.length;
+
+  async function copyDailySummary() {
+    const summary = await buildDailySummary(today);
+    try {
+      await navigator.clipboard.writeText(summary);
+      showToast("Resumen copiado — pegalo en tu chat de progreso");
+    } catch {
+      showToast("No se pudo copiar");
+    }
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -179,6 +191,13 @@ export function Hoy({
 
       {/* ── Racha diaria ────────────────────────────────────── */}
       <DailyStreakCard />
+
+      <button
+        onClick={copyDailySummary}
+        className="tap-target w-full rounded-full border border-[var(--color-line-strong)] py-2.5 text-[11.5px] font-semibold uppercase tracking-wide hover:border-[var(--color-red)]"
+      >
+        Copiar resumen del día
+      </button>
 
       {/* ── Hábitos hoy ─────────────────────────────────────── */}
       <div className="panel-surface enter enter-delay-2">

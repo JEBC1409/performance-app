@@ -4,7 +4,7 @@ import { GYM_DAY_ORDER, GYM_DIAS, CARDIO_NOTA, targetSetsForDay } from "@/data/g
 import { Tabs, Eyebrow, Card, Sheet, DateField } from "@/ui";
 import { showToast } from "@/ui/Toast";
 import { todayISO, fmtDateHuman } from "@/lib/date";
-import { buildSessionSummary } from "@/lib/sessionSummary";
+import { buildDailySummary } from "@/lib/dailySummary";
 import type { GymDay } from "@/lib/cycle";
 import { useSessionSets, useLastSession } from "./useEntrenoData";
 import { ExerciseCard } from "./ExerciseCard";
@@ -77,8 +77,7 @@ export function Entreno({
   }
 
   async function copySummary() {
-    const allSets = await db.sets.toArray();
-    const summary = buildSessionSummary(day, sessionDate, sessionSets, allSets);
+    const summary = await buildDailySummary(sessionDate);
     try {
       await navigator.clipboard.writeText(summary);
       showToast("Resumen copiado — pegalo en tu chat de progreso");
