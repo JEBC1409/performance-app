@@ -15,8 +15,8 @@
   --color-good: #2fae66;
   --color-good-soft: rgba(47, 174, 102, 0.4);
 
-  --font-display: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-body: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: "Space Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
 
   --radius-none: 0px;
 
