@@ -4,7 +4,7 @@ import { db } from "@/db/db";
 import { Card, Eyebrow, RankBadge } from "@/ui";
 import { Radar } from "@/ui/Radar";
 import { MUSCLE_GROUP_ORDER, MUSCLE_GROUP_LABEL, groupForExercise, type MuscleGroup } from "@/data/muscleGroups";
-import { rankProgress, groupEliteRatio, groupStrengthRatio } from "@/lib/muscleRank";
+import { rankProgress, groupStrengthPct } from "@/lib/muscleRank";
 import { roundKg } from "@/lib/epley";
 import { addDays, todayISO } from "@/lib/date";
 import { MuscleBodyDiagram } from "./MuscleBodyDiagram";
@@ -27,17 +27,17 @@ export function VolumenTab() {
     return c;
   }, [sets]);
 
-  const ratios = useMemo(() => {
-    const r = {} as Record<MuscleGroup, number>;
-    MUSCLE_GROUP_ORDER.forEach((g) => (r[g] = groupStrengthRatio(sets ?? [], g, bodyweightKg)));
+  const strength = useMemo(() => {
+    const r = {} as Record<MuscleGroup, ReturnType<typeof groupStrengthPct>>;
+    MUSCLE_GROUP_ORDER.forEach((g) => (r[g] = groupStrengthPct(sets ?? [], g, bodyweightKg)));
     return r;
   }, [sets, bodyweightKg]);
 
   const progressByGroup = useMemo(() => {
     const r = {} as Record<MuscleGroup, ReturnType<typeof rankProgress>>;
-    MUSCLE_GROUP_ORDER.forEach((g) => (r[g] = rankProgress(ratios[g], groupEliteRatio(g))));
+    MUSCLE_GROUP_ORDER.forEach((g) => (r[g] = rankProgress(strength[g].pct, 1)));
     return r;
-  }, [ratios]);
+  }, [strength]);
   const rankByGroup = useMemo(() => {
     const r = {} as Record<MuscleGroup, ReturnType<typeof rankProgress>["tier"]>;
     MUSCLE_GROUP_ORDER.forEach((g) => (r[g] = progressByGroup[g].tier));
@@ -76,8 +76,10 @@ export function VolumenTab() {
                 <div className="num mt-0.5 text-[11px] text-[var(--color-muted-2)]">
                   {bodyweightKg > 0 ? (
                     <>
-                      1RM est. {roundKg(ratios[activeGroup] * bodyweightKg)}kg
-                      {next ? ` · faltan ${roundKg((activeProgress.gapToNext ?? 0) * bodyweightKg)}kg para ${next.label}` : " · rango máximo"}
+                      1RM est. {roundKg(strength[activeGroup].bestKg)}kg
+                      {next
+                        ? ` · faltan ${roundKg((activeProgress.gapToNext ?? 0) * strength[activeGroup].bestCeiling * bodyweightKg)}kg para ${next.label}`
+                        : " · rango máximo"}
                     </>
                   ) : (
                     "Registra tu peso en Datos para ver tu rango"

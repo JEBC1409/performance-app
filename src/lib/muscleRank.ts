@@ -80,49 +80,112 @@ const TIER_START_FRACTIONS: number[] = (() => {
   return out;
 })();
 
-/** Elite-level bodyweight-ratio ceiling per muscle group — the "100%" mark
- * the tier ladder below is scaled against, so a rank reflects actual load
- * lifted relative to bodyweight (how liftoffrank.com's ranked system works:
- * bodyweight + 1RM per exercise, not time spent or sets done), rather than
- * training volume. Pecho/espalda/hombro are adapted from published
- * strength-standard tables for their closest classic barbell lift (bench
- * press, deadlift, and overhead press respectively — Liftoff's own cutoffs
- * aren't published, so these come from public strength-standard research
- * instead). Pierna uses leg-press/hack-squat standards rather than free
- * squat: this routine's heaviest "pierna" exercise is a plate-loaded
- * leg/hack press (see data/muscleGroups.ts), and a machine's mechanical
- * leverage lets the same person move ~40% more there than on a free squat —
- * scoring it against squat standards falsely maxes the rank out. Brazo/core
+/** Elite-level bodyweight-ratio ceiling per muscle group — the fallback used
+ * for any exercise in that group without its own entry in
+ * EXERCISE_ELITE_RATIO below. Reflects actual load lifted relative to
+ * bodyweight (how liftoffrank.com's ranked system works: bodyweight + 1RM
+ * per exercise, not time spent or sets done), rather than training volume.
+ * Pecho/espalda/hombro are adapted from published strength-standard tables
+ * for their closest classic barbell lift (bench press, deadlift, and
+ * overhead press respectively — Liftoff's own cutoffs aren't published, so
+ * these come from public strength-standard research instead). Brazo/core
  * have no comparable published bodyweight-ratio standard for an isolation
  * lift, so those two are a rough scaled-down estimate, not a cited number
- * like the other four. */
+ * like the other three. Pierna's *group* default doesn't matter in
+ * practice: every pierna exercise has its own entry below. */
 const GROUP_ELITE_RATIO: Record<MuscleGroup, number> = {
   pecho: 1.85,
-  pierna: 3.5,
+  pierna: 2.5,
   espalda: 2.75,
   hombro: 1.25,
   brazo: 0.7,
   core: 0.7,
 };
 
-export function groupEliteRatio(group: MuscleGroup): number {
-  return GROUP_ELITE_RATIO[group];
+/** Per-exercise override, for exercises whose realistic ceiling differs too
+ * much from their muscle group's other exercises to share one number — a
+ * free squat and a leverage-assisted leg press are both "pierna", but a
+ * lifter can move ~40% more on the press than on a free squat, so judging
+ * both against one ceiling either maxes the press out too easily or judges
+ * the squat as weaker than it is. Each exercise is normalized against its
+ * *own* ceiling (see groupStrengthPct), so mixing lift types in one group
+ * no longer distorts the rank. Free squat and leg press/hack squat are
+ * cited standards (2.5x / 3.5x bodyweight respectively); Romanian deadlift
+ * and Bulgarian split squat have no widely published bodyweight-ratio
+ * table for that specific movement, so they're estimates, same caveat as
+ * brazo/core above. "Sentadilla libre / Prensa" is scored as the (lower,
+ * more conservative) free-squat number since the routine names it as
+ * either movement and there's no way to tell which one was actually
+ * performed from the logged set alone. Isolation exercises (leg extension,
+ * curls, lateral raises, pullovers...) aren't listed here at all — see
+ * RANK_ACCESSORY_EXERCISES below, they don't count toward the rank. */
+const EXERCISE_ELITE_RATIO: Partial<Record<string, number>> = {
+  "Sentadilla libre / Prensa": 2.5,
+  "Prensa / Hack squat": 3.5,
+  "Peso muerto rumano": 2.0,
+  "Sentadilla búlgara": 1.1,
+};
+
+function exerciseEliteRatio(exercise: string, group: MuscleGroup): number {
+  return EXERCISE_ELITE_RATIO[exercise] ?? GROUP_ELITE_RATIO[group];
 }
 
-/** Best estimated one-rep max ever logged for a muscle group, as a fraction
- * of bodyweight — the "load" a rank is based on now. Looks across every
- * logged set rather than a recent window: a PR doesn't expire just because
- * it hasn't been repeated lately. */
-export function groupStrengthRatio(sets: SetRecord[], group: MuscleGroup, bodyweightKg: number): number {
-  if (bodyweightKg <= 0) return 0;
-  let best = 0;
+/** Isolation/accessory movements — excluded from the strength rank (they
+ * still count toward training volume, the Radar chart above). A
+ * bodyweight-ratio "elite" ceiling only makes sense for the compound
+ * lift(s) that actually test a muscle group's raw strength; an isolation
+ * exercise's ceiling is inherently a rougher guess (no published standard
+ * table exists for most of these), so letting one occasionally "win" the
+ * group's rank just because its estimate happens to be easy to clear would
+ * undermine the entire point of ranking by real strength instead of
+ * volume. Core's only exercise stays eligible — with no compound
+ * alternative, excluding it would leave core permanently unranked. */
+const RANK_ACCESSORY_EXERCISES = new Set<string>([
+  "Pullover en banco",
+  "Pullover en polea",
+  "Aperturas mancuerna inclinado",
+  "Pec deck",
+  "Face pulls",
+  "Laterales con mancuerna",
+  "Laterales mancuerna",
+  "Curl barra Z",
+  "Curl martillo",
+  "Extensión trícep cuerda",
+  "Extensiones de piernas",
+  "Extensión de piernas unilateral",
+  "Curl femoral sentado",
+  "Curl femoral acostado",
+  "Extensión pantorrilla",
+]);
+
+export interface GroupStrength {
+  /** Best % of any one exercise's own ceiling reached (can exceed 1). */
+  pct: number;
+  /** The estimated 1RM, in kg, behind that best %. */
+  bestKg: number;
+  /** The ceiling (bodyweight ratio) that produced the best %, so a caller
+   * can convert a further pct gap back into kg for that same exercise. */
+  bestCeiling: number;
+}
+
+/** The best result across every exercise ever logged for a muscle group,
+ * each judged against its own ceiling rather than the group sharing one —
+ * looks across all logged sets rather than a recent window, since a PR
+ * doesn't expire just because it hasn't been repeated lately. */
+export function groupStrengthPct(sets: SetRecord[], group: MuscleGroup, bodyweightKg: number): GroupStrength {
+  const fallbackCeiling = GROUP_ELITE_RATIO[group];
+  if (bodyweightKg <= 0) return { pct: 0, bestKg: 0, bestCeiling: fallbackCeiling };
+  let best: GroupStrength = { pct: 0, bestKg: 0, bestCeiling: fallbackCeiling };
   for (const s of sets) {
     if (s.weight == null || s.reps == null) continue;
     if (groupForExercise(s.exercise) !== group) continue;
+    if (RANK_ACCESSORY_EXERCISES.has(s.exercise)) continue;
     const oneRm = epley1RM(s.weight, s.reps);
-    if (oneRm > best) best = oneRm;
+    const ceiling = exerciseEliteRatio(s.exercise, group);
+    const pct = oneRm / bodyweightKg / ceiling;
+    if (pct > best.pct) best = { pct, bestKg: oneRm, bestCeiling: ceiling };
   }
-  return best / bodyweightKg;
+  return best;
 }
 
 /** The minimum value for each entry in RANK_TIERS, for a given ceiling —
