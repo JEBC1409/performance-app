@@ -74,7 +74,16 @@ function fromRemoteSet(row: Record<string, unknown>): SetRecord {
 function toRemoteHabitDay(row: HabitDayRecord, userId: string) {
   return { user_id: userId, date: row.date, done: row.done };
 }
-function fromRemoteHabitDay(row: Record<string, unknown>): HabitDayRecord {
+/** Returns null when the remote row predates the habit_days migration
+ * (supabase/migrations/0002_*) — it still has the old fixed boolean
+ * columns instead of `done`, and no `done` field at all. Treating that as
+ * an empty array would be a lossy, wrong read: syncCollection would then
+ * bulkPut `done: []` over whatever the user had actually marked locally,
+ * silently erasing marked habits. Returning null instead tells the caller
+ * to skip the row entirely and leave local data alone until the account's
+ * Supabase project has actually run the migration. */
+export function fromRemoteHabitDay(row: Record<string, unknown>): HabitDayRecord | null {
+  if (!("done" in row)) return null;
   return { date: row.date as string, done: (row.done as string[] | null) ?? [] };
 }
 
@@ -228,7 +237,11 @@ async function syncCollection(cfg: TableSync, userId: string) {
       if (cfg.idKeyed) {
         await mergeByRemoteId(cfg, data);
       } else {
-        await cfg.localTable.bulkPut(data.map((row) => cfg.fromRemote(row)));
+        // fromRemote can return null to reject a row (e.g. one that predates
+        // a schema migration and would otherwise convert into a lossy,
+        // wrong local value) — bulkPut only the rows that actually convert.
+        const converted = data.map((row) => cfg.fromRemote(row)).filter((row) => row != null);
+        if (converted.length) await cfg.localTable.bulkPut(converted);
       }
     });
   }
@@ -251,15 +264,18 @@ async function syncSettings(userId: string) {
   }
 }
 
+/** Each table syncs independently (allSettled, not all) — a table that
+ * doesn't exist yet remotely (e.g. habit_defs, before its migration has
+ * been applied) or otherwise fails must not block every *other* table from
+ * syncing normally. A single such failure used to reject the whole
+ * Promise.all, which could leave the rest of the account's data stuck
+ * unsynced for reasons that had nothing to do with it. */
 export async function fullSync(userId: string): Promise<void> {
   syncStarted();
-  try {
-    await Promise.all([...COLLECTION_TABLES.map((cfg) => syncCollection(cfg, userId)), syncSettings(userId)]);
-    syncFinished();
-  } catch (err) {
-    syncFinished(err instanceof Error ? err.message : "Error de sincronización");
-    throw err;
-  }
+  const results = await Promise.allSettled([...COLLECTION_TABLES.map((cfg) => syncCollection(cfg, userId)), syncSettings(userId)]);
+  const failures = results.filter((r): r is PromiseRejectedResult => r.status === "rejected");
+  for (const f of failures) console.error("Cloud sync: a table failed to sync", f.reason);
+  syncFinished(failures[0] ? (failures[0].reason instanceof Error ? failures[0].reason.message : "Error de sincronización") : undefined);
 }
 
 // ---------- write-through hooks ----------
