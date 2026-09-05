@@ -19,10 +19,26 @@ export interface SetRecord {
 
 export interface HabitDayRecord {
   date: string;
-  sleep: boolean;
-  water: boolean;
-  meals: boolean;
-  nophone: boolean;
+  /** Keys of habits (HabitDefRecord.key) marked done that day. A flexible
+   * array instead of fixed columns, since which habits exist is itself now
+   * user-editable — see HabitDefRecord. */
+  done: string[];
+}
+
+/** Geometric glyphs only — squares, circles, bars, diamonds. No emoji, per
+ * the visual spec (src/ui/icons.tsx). */
+export type HabitIcon = "square" | "circle" | "bars" | "diamond";
+
+export interface HabitDefRecord {
+  /** Stable slug, generated once from the label at creation time and never
+   * changed by a rename — this is what HabitDayRecord.done entries
+   * reference, so renaming a habit later doesn't disconnect it from days
+   * already marked done under the old label. */
+  key: string;
+  label: string;
+  icon: HabitIcon;
+  /** Display order; new habits append at the end. */
+  order: number;
 }
 
 export interface WeightRecord {
@@ -84,6 +100,7 @@ export interface SettingsRecord {
 export const db = new Dexie("performance-db") as Dexie & {
   sets: EntityTable<SetRecord, "id">;
   habitDays: EntityTable<HabitDayRecord, "date">;
+  habitDefs: EntityTable<HabitDefRecord, "key">;
   weights: EntityTable<WeightRecord, "id">;
   sleep: EntityTable<SleepRecord, "id">;
   savedVerses: EntityTable<SavedVerseRecord, "id">;
@@ -124,6 +141,44 @@ db.version(2)
           row.remoteId = crypto.randomUUID();
         });
     }
+  });
+
+export const DEFAULT_HABIT_DEFS: HabitDefRecord[] = [
+  { key: "sleep", label: "Dormir 7h+", icon: "circle", order: 0 },
+  { key: "water", label: "Agua 2L+", icon: "bars", order: 1 },
+  { key: "meals", label: "Comidas OK", icon: "square", order: 2 },
+  { key: "nophone", label: "Sin cel 21:30", icon: "diamond", order: 3 },
+];
+
+/** v3 turns habitDays' four fixed boolean columns into a flexible `done`
+ * array, and introduces habitDefs so the habits themselves become
+ * user-editable (add/rename) instead of a hardcoded list — which habits
+ * matter changes month to month. Existing boolean rows are converted
+ * losslessly (each true field becomes an entry in `done`), and the four
+ * original habits are seeded into habitDefs so existing data keeps its
+ * labels and streaks. */
+db.version(3)
+  .stores({
+    sets: "++id, date, day, exercise, createdAt, remoteId",
+    habitDays: "date",
+    habitDefs: "key, order",
+    weights: "++id, date, remoteId",
+    sleep: "++id, date, remoteId",
+    savedVerses: "++id, createdAt, abbrev, remoteId",
+    moureWeeks: "week",
+    settings: "id",
+  })
+  .upgrade(async (tx) => {
+    const OLD_KEYS = ["sleep", "water", "meals", "nophone"] as const;
+    await tx
+      .table("habitDays")
+      .toCollection()
+      .modify((row: Record<string, unknown>) => {
+        const done = OLD_KEYS.filter((k) => row[k]);
+        for (const k of OLD_KEYS) delete row[k];
+        row.done = done;
+      });
+    await tx.table("habitDefs").bulkAdd(DEFAULT_HABIT_DEFS);
   });
 
 export const DEFAULT_SETTINGS: SettingsRecord = {

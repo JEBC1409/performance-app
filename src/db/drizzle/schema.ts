@@ -56,12 +56,26 @@ export const habitDays = pgTable(
   {
     userId: userIdColumn(),
     date: date("date").notNull(),
-    sleep: boolean("sleep").notNull().default(false),
-    water: boolean("water").notNull().default(false),
-    meals: boolean("meals").notNull().default(false),
-    nophone: boolean("nophone").notNull().default(false),
+    // Keys of habitDefs.key marked done that day — flexible instead of
+    // fixed columns, since which habits exist is itself user-editable now.
+    done: text("done").array().notNull().default(sql`'{}'::text[]`),
   },
   (table) => [primaryKey({ columns: [table.userId, table.date] }), ownedByUser(table)],
+).enableRLS();
+
+export const habitDefs = pgTable(
+  "habit_defs",
+  {
+    userId: userIdColumn(),
+    // Stable slug generated once at creation — never changes on rename, so
+    // renaming a habit doesn't disconnect it from habit_days rows already
+    // referencing it.
+    key: text("key").notNull(),
+    label: text("label").notNull(),
+    icon: text("icon").notNull(),
+    sortOrder: integer("sort_order").notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.key] }), ownedByUser(table)],
 ).enableRLS();
 
 export const weights = pgTable(

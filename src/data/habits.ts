@@ -1,14 +1,8 @@
-export type HabitIcon = "square" | "circle" | "bars" | "diamond";
+import type { HabitIcon } from "@/db/db";
 
-export interface HabitDef {
-  key: "sleep" | "water" | "meals" | "nophone";
-  label: string;
-  icon: HabitIcon;
-}
+export type { HabitIcon, HabitDefRecord } from "@/db/db";
 
-export const HABIT_LIST: HabitDef[] = [
-  { key: "sleep", label: "Dormir 7h+", icon: "circle" },
-  { key: "water", label: "Agua 2L+", icon: "bars" },
-  { key: "meals", label: "Comidas OK", icon: "square" },
-  { key: "nophone", label: "Sin cel 21:30", icon: "diamond" },
-];
+/** The four geometric icon shapes a habit can use — matches the app's
+ * "no emoji" visual spec (src/ui/icons.tsx). Offered as a small fixed set
+ * when creating a habit, rather than free-form icon input. */
+export const HABIT_ICONS: HabitIcon[] = ["circle", "square", "bars", "diamond"];

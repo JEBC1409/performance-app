@@ -1,5 +1,4 @@
 import { db, DEFAULT_SETTINGS } from "@/db/db";
-import { HABIT_LIST } from "@/data/habits";
 import { fmtDateFull } from "./date";
 import { buildSessionSummary } from "./sessionSummary";
 import { computeDailyScores, currentDailyStreak, totalActiveDays } from "./dailyScore";
@@ -11,9 +10,10 @@ import { fromKg, unitLabel } from "./units";
  * an external chat acting as a coach, so it evaluates the whole day and not
  * just the workout in isolation. */
 export async function buildDailySummary(date: string): Promise<string> {
-  const [sets, habitDay, weight, sleep, settings, scores, activeDays] = await Promise.all([
+  const [sets, habitDay, habitDefs, weight, sleep, settings, scores, activeDays] = await Promise.all([
     db.sets.where("date").equals(date).toArray(),
     db.habitDays.get(date),
+    db.habitDefs.orderBy("order").toArray(),
     db.weights.where("date").equals(date).first(),
     db.sleep.where("date").equals(date).first(),
     db.settings.get("app"),
@@ -30,10 +30,11 @@ export async function buildDailySummary(date: string): Promise<string> {
     lines.push("ENTRENO: sin sesión registrada", "");
   }
 
-  const habitsDone = HABIT_LIST.filter((h) => !!habitDay?.[h.key]).length;
-  lines.push(`HÁBITOS (${habitsDone}/${HABIT_LIST.length})`);
-  for (const h of HABIT_LIST) {
-    lines.push(`${habitDay?.[h.key] ? "✓" : "✗"} ${h.label}`);
+  const doneSet = new Set(habitDay?.done ?? []);
+  const habitsDone = habitDefs.filter((h) => doneSet.has(h.key)).length;
+  lines.push(`HÁBITOS (${habitsDone}/${habitDefs.length})`);
+  for (const h of habitDefs) {
+    lines.push(`${doneSet.has(h.key) ? "✓" : "✗"} ${h.label}`);
   }
   lines.push("");
 

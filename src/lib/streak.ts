@@ -2,14 +2,11 @@ import { addDays, todayISO } from "./date";
 
 export interface HabitDayLike {
   date: string;
-}
-
-function getField(d: HabitDayLike, key: string): unknown {
-  return (d as unknown as Record<string, unknown>)[key];
+  done: string[];
 }
 
 /**
- * Consecutive days (ending at `from`) where habitKey is truthy, breaking on the first missed day.
+ * Consecutive days (ending at `from`) where habitKey is in `done`, breaking on the first missed day.
  * If `from` has no record at all (e.g. today, before it's been logged), the count starts from the day before instead.
  */
 export function currentStreak<T extends HabitDayLike>(days: T[], habitKey: string, from: string = todayISO()): number {
@@ -20,7 +17,7 @@ export function currentStreak<T extends HabitDayLike>(days: T[], habitKey: strin
   }
   let streak = 0;
   let day = byDate.get(cursor);
-  while (day && getField(day, habitKey)) {
+  while (day && day.done.includes(habitKey)) {
     streak++;
     cursor = addDays(cursor, -1);
     day = byDate.get(cursor);
@@ -29,5 +26,5 @@ export function currentStreak<T extends HabitDayLike>(days: T[], habitKey: strin
 }
 
 export function totalCount<T extends HabitDayLike>(days: T[], habitKey: string): number {
-  return days.filter((d) => !!getField(d, habitKey)).length;
+  return days.filter((d) => d.done.includes(habitKey)).length;
 }

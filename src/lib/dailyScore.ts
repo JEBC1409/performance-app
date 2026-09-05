@@ -1,5 +1,4 @@
 import { db, type HabitDayRecord } from "@/db/db";
-import { HABIT_LIST } from "@/data/habits";
 import { addDays, todayISO } from "./date";
 
 export const STREAK_WINDOW_DAYS = 28;
@@ -12,8 +11,7 @@ export interface DayScore {
 }
 
 function habitsDoneFor(day: HabitDayRecord | undefined): number {
-  if (!day) return 0;
-  return HABIT_LIST.filter((h) => !!day[h.key]).length;
+  return day?.done.length ?? 0;
 }
 
 /** One entry per day in the window, oldest first, even for days with

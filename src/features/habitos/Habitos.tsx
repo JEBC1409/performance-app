@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/db/db";
-import { HABIT_LIST, type HabitDef } from "@/data/habits";
+import { db, type HabitDefRecord } from "@/db/db";
+import { useHabitDefs } from "@/hooks/useHabitDefs";
 import { RUTINA_MATUTINA } from "@/data/gym";
 import { Card, Eyebrow, HabitGlyph, FlameGlyph, BarChart } from "@/ui";
 import { daysInMonth, pad2, todayISO, MESES } from "@/lib/date";
 import { currentStreak } from "@/lib/streak";
+
+const EMPTY_HABITS: HabitDefRecord[] = [];
 
 export function Habitos() {
   const [monthDate, setMonthDate] = useState(() => {
@@ -13,6 +15,9 @@ export function Habitos() {
     d.setDate(1);
     return d;
   });
+
+  const habitDefs = useHabitDefs();
+  const habitList = habitDefs ?? EMPTY_HABITS;
 
   const year = monthDate.getFullYear();
   const month = monthDate.getMonth();
@@ -36,15 +41,16 @@ export function Habitos() {
         const d = i + 1;
         const date = `${year}-${pad2(month + 1)}-${pad2(d)}`;
         const row = byDate.get(date);
-        const value = row ? HABIT_LIST.filter((h) => row[h.key]).length : 0;
+        const value = row ? habitList.filter((h) => row.done.includes(h.key)).length : 0;
         return { label: String(d), value, highlight: isCurrentMonth && d === new Date().getDate() };
       }),
-    [nDays, year, month, byDate, isCurrentMonth]
+    [nDays, year, month, byDate, isCurrentMonth, habitList]
   );
 
-  async function toggle(date: string, key: HabitDef["key"]) {
-    const existing = byDate.get(date) ?? { date, sleep: false, water: false, meals: false, nophone: false };
-    await db.habitDays.put({ ...existing, [key]: !existing[key] });
+  async function toggle(date: string, key: string) {
+    const existing = byDate.get(date) ?? { date, done: [] };
+    const done = existing.done.includes(key) ? existing.done.filter((k) => k !== key) : [...existing.done, key];
+    await db.habitDays.put({ ...existing, done });
   }
 
   return (
@@ -57,21 +63,21 @@ export function Habitos() {
       <Card>
         <div className="flex items-center justify-between">
           <Eyebrow accent>Consistencia del mes</Eyebrow>
-          <span className="text-[10.5px] text-[var(--color-muted)] num">de {HABIT_LIST.length} hábitos/día</span>
+          <span className="text-[10.5px] text-[var(--color-muted)] num">de {habitList.length} hábitos/día</span>
         </div>
         <div className="mt-3">
           <BarChart
             points={monthlyTotals}
-            goalLine={HABIT_LIST.length}
+            goalLine={habitList.length}
             unit={`${MESES[month]} · barra = hábitos marcados ese día`}
           />
         </div>
       </Card>
 
       <div className="grid grid-cols-2 sidebar:grid-cols-4 gap-2.5">
-        {HABIT_LIST.map((h) => {
+        {habitList.map((h) => {
           const streak = currentStreak(allRows ?? [], h.key);
-          const doneToday = !!todayRow?.[h.key];
+          const doneToday = !!todayRow?.done.includes(h.key);
           return (
             <div key={h.key} className={`panel-surface p-3.5 flex flex-col gap-2.5 ${streak > 0 ? "panel-surface-glow" : ""}`}>
               <div className="flex items-center gap-2">
@@ -129,7 +135,7 @@ export function Habitos() {
               </tr>
             </thead>
             <tbody>
-              {HABIT_LIST.map((h) => {
+              {habitList.map((h) => {
                 let total = 0;
                 return (
                   <tr key={h.key} className="border-t border-[var(--color-line)]">
@@ -139,7 +145,7 @@ export function Habitos() {
                     </td>
                     {Array.from({ length: nDays }, (_, i) => i + 1).map((d) => {
                       const date = `${year}-${pad2(month + 1)}-${pad2(d)}`;
-                      const on = !!byDate.get(date)?.[h.key];
+                      const on = !!byDate.get(date)?.done.includes(h.key);
                       if (on) total++;
                       const isToday = isCurrentMonth && d === new Date().getDate();
                       return (

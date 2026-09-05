@@ -2,16 +2,16 @@ import { describe, expect, it } from "vitest";
 import { currentStreak, totalCount } from "../streak";
 
 const days = [
-  { date: "2026-08-01", sleep: true },
-  { date: "2026-08-02", sleep: true },
-  { date: "2026-08-03", sleep: false },
-  { date: "2026-08-04", sleep: true },
-  { date: "2026-08-05", sleep: true },
-  { date: "2026-08-06", sleep: true },
+  { date: "2026-08-01", done: ["sleep"] },
+  { date: "2026-08-02", done: ["sleep"] },
+  { date: "2026-08-03", done: [] },
+  { date: "2026-08-04", done: ["sleep"] },
+  { date: "2026-08-05", done: ["sleep"] },
+  { date: "2026-08-06", done: ["sleep"] },
 ];
 
 describe("currentStreak", () => {
-  it("counts consecutive truthy days ending at the given date", () => {
+  it("counts consecutive days where the habit is in `done`, ending at the given date", () => {
     expect(currentStreak(days, "sleep", "2026-08-06")).toBe(3);
   });
 
@@ -29,7 +29,7 @@ describe("currentStreak", () => {
 });
 
 describe("totalCount", () => {
-  it("counts all truthy days regardless of order or gaps", () => {
+  it("counts all days the habit appears in `done`, regardless of order or gaps", () => {
     expect(totalCount(days, "sleep")).toBe(5);
   });
 });

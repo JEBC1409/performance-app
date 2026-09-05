@@ -11,7 +11,8 @@ import { fromKg, toKg, unitLabel } from "@/lib/units";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import { currentStreak } from "@/lib/streak";
-import { HABIT_LIST } from "@/data/habits";
+import { useHabitDefs } from "@/hooks/useHabitDefs";
+import { HabitManager } from "./HabitManager";
 
 const HEAVY_DUTY_RULES = [
   "Pre-fatigá el músculo objetivo con una serie de aislamiento antes del compuesto principal.",
@@ -36,7 +37,8 @@ export function Perfil() {
 
   const totalSets = useLiveQuery(() => db.sets.count(), []);
   const habitDays = useLiveQuery(() => db.habitDays.toArray(), []);
-  const bestStreak = habitDays ? Math.max(0, ...HABIT_LIST.map((h) => currentStreak(habitDays, h.key))) : 0;
+  const habitDefs = useHabitDefs();
+  const bestStreak = habitDays && habitDefs ? Math.max(0, ...habitDefs.map((h) => currentStreak(habitDays, h.key))) : 0;
 
   async function patch(fields: Partial<typeof DEFAULT_SETTINGS>) {
     const current = settings ?? DEFAULT_SETTINGS;
@@ -208,6 +210,8 @@ export function Perfil() {
           </Field>
         </div>
       </Card>
+
+      <HabitManager />
 
       <Card>
         <div className="flex items-center justify-between">

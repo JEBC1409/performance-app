@@ -3,7 +3,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
 import { Card, Eyebrow, Stat, HabitGlyph, Button, Sheet, DateField } from "@/ui";
 import { DailyStreakCard } from "./DailyStreakCard";
-import { HABIT_LIST } from "@/data/habits";
+import { useHabitDefs } from "@/hooks/useHabitDefs";
 import { GYM_DAY_ORDER, GYM_DIAS } from "@/data/gym";
 import { todayISO, num, DIAS, jsDowToIndex } from "@/lib/date";
 import { currentBlockInfo } from "@/lib/scheduleBlock";
@@ -36,6 +36,7 @@ export function Hoy({
     setStartPrompt(true);
   }
   const habitDay = useLiveQuery(() => db.habitDays.get(today), [today]);
+  const habitDefs = useHabitDefs();
   const lastWeight = useLiveQuery(() => db.weights.orderBy("date").last(), []);
   const firstWeight = useLiveQuery(
     () => db.weights.orderBy("date").first(),
@@ -64,8 +65,9 @@ export function Hoy({
       ? lastWeight.weightKg - firstWeight.weightKg
       : 0;
 
-  const habitsCompleted = HABIT_LIST.filter((h) => habitDay?.[h.key]).length;
-  const habitsTotal = HABIT_LIST.length;
+  const habitList = habitDefs ?? [];
+  const habitsCompleted = habitList.filter((h) => habitDay?.done.includes(h.key)).length;
+  const habitsTotal = habitList.length;
 
   async function copyDailySummary() {
     const summary = await buildDailySummary(today);
@@ -211,8 +213,8 @@ export function Hoy({
           </span>
         </div>
         <div className="px-4 py-3 grid grid-cols-2 gap-2">
-          {HABIT_LIST.map((h) => {
-            const on = !!habitDay?.[h.key];
+          {habitList.map((h) => {
+            const on = !!habitDay?.done.includes(h.key);
             return (
               <div
                 key={h.key}

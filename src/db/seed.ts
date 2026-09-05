@@ -1,4 +1,4 @@
-import { db, DEFAULT_SETTINGS, type SetRecord } from "./db";
+import { db, DEFAULT_SETTINGS, DEFAULT_HABIT_DEFS, type SetRecord } from "./db";
 import type { GymDay } from "@/lib/cycle";
 import { seedMouredev } from "@/data/mouredev";
 import { parseNum } from "@/lib/parseNum";
@@ -78,6 +78,14 @@ function seedSets(): SetRecord[] {
 }
 
 export async function seedIfNeeded(): Promise<void> {
+  // Not gated by the `seeded` flag below (that's only for the one-time demo
+  // data) — a brand-new install creates the Dexie database straight at the
+  // latest schema version and never runs the v3 upgrade callback that seeds
+  // habitDefs for an *existing* database, so this is the fresh-install path.
+  if ((await db.habitDefs.count()) === 0) {
+    await db.habitDefs.bulkAdd(DEFAULT_HABIT_DEFS);
+  }
+
   const existing = await db.settings.get("app");
   if (existing?.seeded) return;
 
@@ -90,10 +98,7 @@ export async function seedIfNeeded(): Promise<void> {
       await db.habitDays.bulkAdd(
         days.map((date) => ({
           date,
-          sleep: true,
-          water: true,
-          meals: date !== "2026-08-03",
-          nophone: true,
+          done: date !== "2026-08-03" ? ["sleep", "water", "meals", "nophone"] : ["sleep", "water", "nophone"],
         })),
       );
     }
