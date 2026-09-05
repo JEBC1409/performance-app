@@ -95,6 +95,10 @@ export interface SettingsRecord {
   seeded: boolean;
   displayName?: string;
   avatarDataUrl?: string | null;
+  /** The Bible passage you last marked as "aquí voy" in Oración — set
+   * explicitly (not on every navigation), so casually browsing to a
+   * different passage doesn't silently move your actual bookmark. */
+  readingProgress?: { abbrev: string; chapter: number } | null;
 }
 
 export const db = new Dexie("performance-db") as Dexie & {
@@ -192,4 +196,5 @@ export const DEFAULT_SETTINGS: SettingsRecord = {
   seeded: false,
   displayName: "",
   avatarDataUrl: null,
+  readingProgress: null,
 };

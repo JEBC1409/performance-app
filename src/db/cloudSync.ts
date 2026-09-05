@@ -154,9 +154,22 @@ function toRemoteSettings(row: SettingsRecord, userId: string) {
     seeded: row.seeded,
     display_name: row.displayName ?? "",
     avatar_data_url: row.avatarDataUrl ?? null,
+    reading_abbrev: row.readingProgress?.abbrev ?? null,
+    reading_chapter: row.readingProgress?.chapter ?? null,
   };
 }
-function fromRemoteSettings(row: Record<string, unknown>): SettingsRecord {
+/** `local` backs the reading-progress fields when the remote row predates
+ * supabase/migrations/0003 (adds reading_abbrev/reading_chapter) — same
+ * fix as fromRemoteHabitDay: a pre-migration row has no such columns at
+ * all, and reading that absence as "no bookmark set" would put(), wiping
+ * whatever the user had actually marked locally on the very next sync. */
+function fromRemoteSettings(row: Record<string, unknown>, local?: SettingsRecord): SettingsRecord {
+  const readingProgress =
+    "reading_abbrev" in row
+      ? row.reading_abbrev
+        ? { abbrev: row.reading_abbrev as string, chapter: row.reading_chapter as number }
+        : null
+      : (local?.readingProgress ?? null);
   return {
     id: "app",
     unit: row.unit as SettingsRecord["unit"],
@@ -168,6 +181,7 @@ function fromRemoteSettings(row: Record<string, unknown>): SettingsRecord {
     seeded: row.seeded as boolean,
     displayName: row.display_name as string,
     avatarDataUrl: row.avatar_data_url as string | null,
+    readingProgress,
   };
 }
 
@@ -259,7 +273,8 @@ async function syncSettings(userId: string) {
     }
   } else {
     await withHooksSuppressed(async () => {
-      await db.settings.put(fromRemoteSettings(data));
+      const local = await db.settings.get("app");
+      await db.settings.put(fromRemoteSettings(data, local));
     });
   }
 }

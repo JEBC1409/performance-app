@@ -152,6 +152,10 @@ export const settings = pgTable(
     seeded: boolean("seeded").notNull().default(false),
     displayName: text("display_name").notNull().default(""),
     avatarDataUrl: text("avatar_data_url"),
+    // The passage last marked "aquí voy" in Oración — both null together
+    // means no bookmark set.
+    readingAbbrev: text("reading_abbrev"),
+    readingChapter: integer("reading_chapter"),
   },
   (table) => [ownedByUser(table)],
 ).enableRLS();

@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/db/db";
+import { db, DEFAULT_SETTINGS } from "@/db/db";
 import { useBible } from "@/hooks/useBible";
 import { BIBLE_BOOKS } from "@/data/bible/books";
 import { getChapter, chapterCount } from "@/data/bible/loader";
@@ -11,6 +11,20 @@ import { ChapterPicker } from "./ChapterPicker";
 
 type View = "leer" | "guardados";
 
+function BookmarkGlyph({ filled = false, className = "" }: { filled?: boolean; className?: string }) {
+  return (
+    <svg width="11" height="11" viewBox="0 0 10 10" className={className} aria-hidden>
+      <path
+        d="M2.5 1h5a.5.5 0 0 1 .5.5v7l-3-2-3 2v-7a.5.5 0 0 1 .5-.5Z"
+        fill={filled ? "currentColor" : "none"}
+        stroke="currentColor"
+        strokeWidth="1"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function Kairos() {
   const [view, setView] = useState<View>("leer");
   const { bible, loading } = useBible();
@@ -20,9 +34,28 @@ export function Kairos() {
   const [note, setNote] = useState("");
   const [query, setQuery] = useState("");
 
+  const settings = useLiveQuery(() => db.settings.get("app"), []);
+  const bookmark = settings?.readingProgress ?? null;
+  const loadedBookmarkRef = useRef(false);
+  useEffect(() => {
+    if (loadedBookmarkRef.current || !settings) return;
+    loadedBookmarkRef.current = true;
+    if (settings.readingProgress) {
+      setAbbrev(settings.readingProgress.abbrev);
+      setChapter(settings.readingProgress.chapter);
+    }
+  }, [settings]);
+
+  async function markHere() {
+    await db.settings.put({ ...(settings ?? DEFAULT_SETTINGS), readingProgress: { abbrev, chapter } });
+    showToast("Marcado — aquí vas");
+  }
+
   const chapters = bible ? chapterCount(bible, abbrev) : 0;
   const verses = bible ? getChapter(bible, abbrev, chapter) : [];
   const bookName = BIBLE_BOOKS.find((b) => b.abbrev === abbrev)?.name ?? abbrev;
+  const bookmarkBookName = bookmark ? (BIBLE_BOOKS.find((b) => b.abbrev === bookmark.abbrev)?.name ?? bookmark.abbrev) : null;
+  const isAtBookmark = !!bookmark && bookmark.abbrev === abbrev && bookmark.chapter === chapter;
 
   const saved = useLiveQuery(() => db.savedVerses.orderBy("createdAt").reverse().toArray(), []);
   const filteredSaved = useMemo(() => {
@@ -94,6 +127,22 @@ export function Kairos() {
             <div className="text-center py-10 text-[13px] text-[var(--color-muted)]">Cargando biblia…</div>
           ) : (
             <>
+              {bookmark && !isAtBookmark ? (
+                <button
+                  onClick={() => {
+                    setAbbrev(bookmark.abbrev);
+                    setChapter(bookmark.chapter);
+                  }}
+                  className="flex items-center gap-2 rounded-xl border border-[var(--color-red-soft)] bg-[rgba(223,37,49,0.08)] px-3.5 py-2.5 text-left transition-colors hover:bg-[rgba(223,37,49,0.14)]"
+                >
+                  <BookmarkGlyph filled className="flex-none text-[var(--color-red)]" />
+                  <span className="text-[12px] text-[var(--color-ink)]">
+                    Ibas en <span className="font-semibold">{bookmarkBookName} {bookmark.chapter}</span>
+                  </span>
+                  <span className="ml-auto flex-none text-[10px] uppercase tracking-wide text-[var(--color-red)]">Continuar →</span>
+                </button>
+              ) : null}
+
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Libro">
                   <BookPicker
@@ -118,7 +167,21 @@ export function Kairos() {
                       {bookName} {chapter}
                     </div>
                   </div>
-                  <span className="text-[10px] text-[var(--color-muted-2)] num uppercase tracking-wide">{verses.length} versículos</span>
+                  <div className="flex flex-none flex-col items-end gap-1.5">
+                    <span className="text-[10px] text-[var(--color-muted-2)] num uppercase tracking-wide">{verses.length} versículos</span>
+                    <button
+                      onClick={markHere}
+                      disabled={isAtBookmark}
+                      className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-wide transition-colors ${
+                        isAtBookmark
+                          ? "border-[var(--color-red-soft)] text-[var(--color-red)]"
+                          : "border-[var(--color-line-strong)] text-[var(--color-muted)] hover:border-[var(--color-red)] hover:text-[var(--color-red)]"
+                      }`}
+                    >
+                      <BookmarkGlyph filled={isAtBookmark} />
+                      {isAtBookmark ? "Aquí voy" : "Marcar aquí"}
+                    </button>
+                  </div>
                 </div>
                 <div className="flex flex-col divide-y divide-[var(--color-line)]">
                   {verses.map((text, i) => (

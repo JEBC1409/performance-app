@@ -45,8 +45,17 @@ export function BarChart({
   const baseline = height - 18;
   const plotH = height - 28;
   const barW = 100 / points.length;
-  const active = hover ?? points.length - 1;
+  // Default focus is the flagged point (typically "today") rather than
+  // always the last one — for a chart that includes points past the
+  // present (e.g. the rest of a calendar month), the last point is
+  // usually an empty future day, not the one worth landing on.
+  const highlightIdx = points.findIndex((p) => p.highlight);
+  const active = hover ?? (highlightIdx >= 0 ? highlightIdx : points.length - 1);
   const activePoint = points[active];
+  // Past ~15 bars, a label under every single one turns into unreadable
+  // noise — thin out to every 5th, always keeping the highlighted/active
+  // ones so "today" stays findable.
+  const showAllLabels = points.length <= 15;
 
   return (
     <div>
@@ -75,6 +84,7 @@ export function BarChart({
           const slotW = Math.min(barW * 0.42, 6.5);
           const x = i * barW + (barW - slotW) / 2;
           const isActive = i === active;
+          const fill = isActive ? "var(--color-red)" : p.highlight ? "var(--color-red-soft)" : "var(--color-line-strong)";
           return (
             <rect
               key={i}
@@ -83,7 +93,7 @@ export function BarChart({
               width={slotW}
               height={h}
               rx={Math.min(2, slotW / 2)}
-              fill={isActive ? "var(--color-red)" : "var(--color-line-strong)"}
+              fill={fill}
               style={{ transition: "height 400ms ease-out, y 400ms ease-out, fill 150ms ease" }}
               onMouseEnter={() => setHover(i)}
               onMouseLeave={() => setHover(null)}
@@ -92,18 +102,21 @@ export function BarChart({
         })}
       </svg>
       <div className="flex mt-1">
-        {points.map((p, i) => (
-          <button
-            key={i}
-            onMouseEnter={() => setHover(i)}
-            onMouseLeave={() => setHover(null)}
-            onClick={() => setHover(i)}
-            className={`text-center text-[9px] num transition-colors ${i === active ? "text-[var(--color-ink)]" : "text-[var(--color-muted-2)]"}`}
-            style={{ width: `${barW}%` }}
-          >
-            {p.label}
-          </button>
-        ))}
+        {points.map((p, i) => {
+          const showLabel = showAllLabels || i === active || p.highlight || i % 5 === 0 || i === points.length - 1;
+          return (
+            <button
+              key={i}
+              onMouseEnter={() => setHover(i)}
+              onMouseLeave={() => setHover(null)}
+              onClick={() => setHover(i)}
+              className={`text-center text-[9px] num transition-colors ${i === active ? "font-semibold text-[var(--color-ink)]" : "text-[var(--color-muted-2)]"}`}
+              style={{ width: `${barW}%` }}
+            >
+              {showLabel ? p.label : ""}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
