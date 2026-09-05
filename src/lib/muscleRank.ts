@@ -1,5 +1,6 @@
-import { GYM_DIAS } from "@/data/gym";
+import type { SetRecord } from "@/db/db";
 import { groupForExercise, type MuscleGroup } from "@/data/muscleGroups";
+import { epley1RM } from "./epley";
 
 export interface RankTier {
   key: string;
@@ -79,41 +80,57 @@ const TIER_START_FRACTIONS: number[] = (() => {
   return out;
 })();
 
-const CYCLE_DAYS = 4; // A → B → C → descanso
-const WINDOW_DAYS = 28;
+/** Elite-level bodyweight-ratio ceiling per muscle group — the "100%" mark
+ * the tier ladder below is scaled against, so a rank reflects actual load
+ * lifted relative to bodyweight (how liftoffrank.com's ranked system works:
+ * bodyweight + 1RM per exercise, not time spent or sets done), rather than
+ * training volume. Pecho/espalda/hombro are adapted from published
+ * strength-standard tables for their closest classic barbell lift (bench
+ * press, deadlift, and overhead press respectively — Liftoff's own cutoffs
+ * aren't published, so these come from public strength-standard research
+ * instead). Pierna uses leg-press/hack-squat standards rather than free
+ * squat: this routine's heaviest "pierna" exercise is a plate-loaded
+ * leg/hack press (see data/muscleGroups.ts), and a machine's mechanical
+ * leverage lets the same person move ~40% more there than on a free squat —
+ * scoring it against squat standards falsely maxes the rank out. Brazo/core
+ * have no comparable published bodyweight-ratio standard for an isolation
+ * lift, so those two are a rough scaled-down estimate, not a cited number
+ * like the other four. */
+const GROUP_ELITE_RATIO: Record<MuscleGroup, number> = {
+  pecho: 1.85,
+  pierna: 3.5,
+  espalda: 2.75,
+  hombro: 1.25,
+  brazo: 0.7,
+  core: 0.7,
+};
 
-let capacityCache: Partial<Record<MuscleGroup, number>> = {};
-
-/** How many sets of a muscle group the routine itself produces in 28 days if
- * every A/B/C session in the cycle actually happens — the realistic ceiling
- * a tier ladder should be scaled against, per group (leg day alone throws
- * far more volume than, say, core, so a single global threshold table either
- * maxes out "pierna" immediately or leaves "core" stuck at Hierro forever). */
-export function groupCapacity(group: MuscleGroup): number {
-  if (capacityCache[group] != null) return capacityCache[group]!;
-  let perCycle = 0;
-  for (const day of Object.values(GYM_DIAS)) {
-    for (const ex of day.ex) {
-      if (groupForExercise(ex.name) === group) perCycle += ex.series;
-    }
-  }
-  const capacity = Math.max(1, Math.round((perCycle * WINDOW_DAYS) / CYCLE_DAYS));
-  capacityCache[group] = capacity;
-  return capacity;
+export function groupEliteRatio(group: MuscleGroup): number {
+  return GROUP_ELITE_RATIO[group];
 }
 
-/** The minimum set count for each entry in RANK_TIERS, for a given capacity. */
+/** Best estimated one-rep max ever logged for a muscle group, as a fraction
+ * of bodyweight — the "load" a rank is based on now. Looks across every
+ * logged set rather than a recent window: a PR doesn't expire just because
+ * it hasn't been repeated lately. */
+export function groupStrengthRatio(sets: SetRecord[], group: MuscleGroup, bodyweightKg: number): number {
+  if (bodyweightKg <= 0) return 0;
+  let best = 0;
+  for (const s of sets) {
+    if (s.weight == null || s.reps == null) continue;
+    if (groupForExercise(s.exercise) !== group) continue;
+    const oneRm = epley1RM(s.weight, s.reps);
+    if (oneRm > best) best = oneRm;
+  }
+  return best / bodyweightKg;
+}
+
+/** The minimum value for each entry in RANK_TIERS, for a given ceiling —
+ * not rounded to an integer, since a strength ratio's ceiling is a small
+ * float (e.g. 1.85) where rounding would collapse almost every threshold
+ * to 0 or 1. */
 export function tierThresholds(capacity: number): number[] {
-  return TIER_START_FRACTIONS.map((f) => Math.round(f * capacity));
-}
-
-export function rankForVolume(setCount: number, capacity: number): RankTier {
-  const thresholds = tierThresholds(capacity);
-  let tier = RANK_TIERS[0];
-  for (let i = 0; i < RANK_TIERS.length; i++) {
-    if (setCount >= thresholds[i]) tier = RANK_TIERS[i];
-  }
-  return tier;
+  return TIER_START_FRACTIONS.map((f) => f * capacity);
 }
 
 export function nextRankTier(tier: RankTier): RankTier | null {
@@ -126,25 +143,28 @@ export interface RankProgress {
   next: RankTier | null;
   /** 0–1 fill through the current division's range, LP-bar style. */
   pct: number;
-  setsToNext: number | null;
+  /** Raw gap to the next tier's threshold, in whatever unit `value` was
+   * given in (a strength ratio here) — the caller converts it to something
+   * displayable (e.g. kg needed). */
+  gapToNext: number | null;
 }
 
 /** Everything a rank card needs in one shot: current tier, next tier, and
- * how far through the current division's band the set count sits — the "LP
- * bar" equivalent, so a rank feels like it's *progressing* instead of just
+ * how far through the current division's band `value` sits — the "LP bar"
+ * equivalent, so a rank feels like it's *progressing* instead of just
  * snapping from one badge to the next. */
-export function rankProgress(setCount: number, capacity: number): RankProgress {
+export function rankProgress(value: number, capacity: number): RankProgress {
   const thresholds = tierThresholds(capacity);
   const idx = RANK_TIERS.findIndex((_t, i) => {
     const lower = thresholds[i];
     const upper = thresholds[i + 1] ?? Infinity;
-    return setCount >= lower && setCount < upper;
+    return value >= lower && value < upper;
   });
   const i = idx === -1 ? RANK_TIERS.length - 1 : idx;
   const tier = RANK_TIERS[i];
   const next = nextRankTier(tier);
   const lower = thresholds[i];
   const upper = thresholds[i + 1];
-  const pct = next && upper != null && upper > lower ? Math.min(1, (setCount - lower) / (upper - lower)) : 1;
-  return { tier, next, pct, setsToNext: next && upper != null ? Math.max(0, upper - setCount) : null };
+  const pct = next && upper != null && upper > lower ? Math.min(1, (value - lower) / (upper - lower)) : 1;
+  return { tier, next, pct, gapToNext: next && upper != null ? Math.max(0, upper - value) : null };
 }
