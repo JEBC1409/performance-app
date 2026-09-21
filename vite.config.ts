@@ -17,6 +17,8 @@ export default defineConfig({
         // keeps serving the previous build's cached JS indefinitely.
         clientsClaim: true,
         skipWaiting: true,
+        // Adds the notification-tap handler used by schedule reminders.
+        importScripts: ["sw-notify.js"],
       },
       manifest: {
         name: "PERFORMANCE",

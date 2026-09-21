@@ -1,6 +1,7 @@
 import { HORARIO, HORARIO_NOTE, HORARIO_GOAL, BLOCK_COLOR, BLOCK_LABEL, BLOCK_TINT, BLOCK_BORDER, BLOCK_TEXT, type BlockType, type HorarioCell } from "@/data/horario";
 import { DIAS_CORTO, jsDowToIndex } from "@/lib/date";
 import { Card, Eyebrow } from "@/ui";
+import { ScheduleNotifyCard } from "./ScheduleNotifyCard";
 
 const LEGEND: BlockType[] = ["clase", "gym", "mouredev", "ingles", "libre"];
 
@@ -73,6 +74,8 @@ export function Horario() {
         ))}
       </div>
       <p className="-mt-1 text-[11px] leading-snug text-[var(--color-muted-2)]">{HORARIO_GOAL}</p>
+
+      <ScheduleNotifyCard />
     </div>
   );
 }

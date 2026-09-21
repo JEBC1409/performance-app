@@ -6,6 +6,7 @@ import { seedIfNeeded } from "@/db/seed";
 import { db } from "@/db/db";
 import { useReminders } from "@/hooks/useReminders";
 import { useFocusWatcher } from "@/hooks/useFocusTimer";
+import { useScheduleNotifications } from "@/hooks/useScheduleNotifications";
 import { useAuth } from "@/hooks/useAuth";
 import { Login } from "@/features/auth/Login";
 import { Hoy } from "@/features/hoy/Hoy";
@@ -53,6 +54,7 @@ export default function App() {
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   useReminders(settings);
   useFocusWatcher();
+  useScheduleNotifications();
   useLandingRedirect(!authLoading && !session);
 
   useEffect(() => {

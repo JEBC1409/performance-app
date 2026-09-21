@@ -11,6 +11,8 @@ export interface HorarioCell {
   span?: number;
   /** Continuation of the block started in an earlier row (the table skips it). */
   cont?: boolean;
+  /** Nothing to do (free time, sleep, empty): never worth a reminder. */
+  quiet?: boolean;
 }
 
 export interface HorarioRow {
@@ -18,8 +20,15 @@ export interface HorarioRow {
   cells: HorarioCell[]; // Lun..Dom
 }
 
+/** Free time, sleep (its own reminder exists) and empty slots are quiet —
+ * unless the free slot carries a to-do ("Pendientes…", "…escribir…"). */
+function isQuiet(text: string, type: BlockType): boolean {
+  if (text === "—" || /^dormir/i.test(text)) return true;
+  return type === "libre" && !/pendientes|escribir/i.test(text);
+}
+
 function c(text: string, type: BlockType, extra: Partial<HorarioCell> = {}): HorarioCell {
-  return { text, type, ...extra };
+  return { text, type, ...(isQuiet(text, type) ? { quiet: true } : {}), ...extra };
 }
 
 export const BLOCK_COLOR: Record<BlockType, string> = {
