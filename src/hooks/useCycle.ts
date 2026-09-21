@@ -1,12 +1,40 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
-import { nextCycleSlot, type CycleSlot } from "@/lib/cycle";
+import { saveConfig } from "@/lib/appConfig";
+import { nextCycleSlot, offsetForSlot, type CycleSlot, type GymDay } from "@/lib/cycle";
+import { todayISO } from "@/lib/date";
+
+/** Synced setting: how far the user has moved the cycle from the logged-session count. */
+const CONFIG_CYCLE_OFFSET = "cycle_offset";
+
+async function countSessions(): Promise<number> {
+  const rows = await db.sets.toArray();
+  return new Set(rows.map((r) => `${r.date}__${r.day}`)).size;
+}
+
+async function readOffset(): Promise<number> {
+  const row = await db.appConfig.get(CONFIG_CYCLE_OFFSET);
+  return typeof row?.value === "number" ? row.value : 0;
+}
 
 export function useCycleSlot(): CycleSlot {
-  const sessionsLogged = useLiveQuery(async () => {
-    const rows = await db.sets.toArray();
-    const distinct = new Set(rows.map((r) => `${r.date}__${r.day}`));
-    return distinct.size;
+  const state = useLiveQuery(async () => ({ sessions: await countSessions(), offset: await readOffset() }), []);
+  return nextCycleSlot(state?.sessions ?? 0, state?.offset ?? 0);
+}
+
+/** Says "the cycle is on this day now" (e.g. "today is B"), and it stays that way. */
+export async function setCycleSlot(slot: CycleSlot): Promise<void> {
+  await saveConfig(CONFIG_CYCLE_OFFSET, offsetForSlot(slot, await countSessions()));
+}
+
+/** The day Entreno should open on: the one already being trained today (so it stays
+ * put while you log sets), otherwise the cycle's turn. On a rest turn it falls back to A. */
+export function useDefaultGymDay(): GymDay {
+  const slot = useCycleSlot();
+  const started = useLiveQuery(async () => {
+    const today = await db.sets.where("date").equals(todayISO()).toArray();
+    return today.length ? today[today.length - 1].day : null;
   }, []);
-  return nextCycleSlot(sessionsLogged ?? 0);
+  if (started) return started as GymDay;
+  return slot === "rest" ? "A" : slot;
 }

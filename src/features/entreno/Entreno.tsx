@@ -11,6 +11,7 @@ import { SessionReviewSheet } from "./SessionReviewSheet";
 import { GymMode } from "./GymMode";
 import { useConfigVersion } from "@/hooks/useConfigVersion";
 import { useSwipe } from "@/hooks/useSwipe";
+import { useDefaultGymDay } from "@/hooks/useCycle";
 import { useSessionSets, useLastSession } from "./useEntrenoData";
 import { ExerciseCard } from "./ExerciseCard";
 import { ExercisePhotoEditor } from "./ExercisePhoto";
@@ -45,7 +46,11 @@ export function Entreno({
   onConsumeAutoStart: () => void;
 }) {
   useConfigVersion(); // routine edits re-render this screen
-  const [day, setDay] = useState<GymDay>(autoStart?.day ?? "A");
+  // Opens on today's turn in the cycle (or the day already being trained today);
+  // once you pick a day yourself, that choice sticks.
+  const defaultDay = useDefaultGymDay();
+  const [pickedDay, setDay] = useState<GymDay | null>(autoStart?.day ?? null);
+  const day = pickedDay ?? defaultDay;
   const [sessionDate, setSessionDate] = useState<string>(autoStart?.date ?? todayISO());
   const [openExercise, setOpenExercise] = useState<ExerciseTarget | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);

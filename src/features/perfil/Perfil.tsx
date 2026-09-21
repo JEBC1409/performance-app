@@ -3,7 +3,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS, type Unit } from "@/db/db";
 import { Card, Eyebrow, Field, Input, Select, Button, Chip, Stat } from "@/ui";
 import { showToast } from "@/ui/Toast";
-import { useCycleSlot } from "@/hooks/useCycle";
+import { setCycleSlot, useCycleSlot } from "@/hooks/useCycle";
 import { exportBackup, importBackup } from "@/lib/jsonBackup";
 import { importExcelFile } from "@/lib/excelImport";
 import { resizeImageToDataUrl } from "@/lib/image";
@@ -279,6 +279,23 @@ export function Perfil() {
           <div className="mt-2 flex items-center gap-2">
             <Chip tone="accent">{slot === "rest" ? "Descanso" : `Día ${slot}`}</Chip>
             <span className="text-[11.5px] text-[var(--color-muted)]">A → B → C → descanso → repetir</span>
+          </div>
+          <div className="mt-3 text-[11.5px] text-[var(--color-muted)]">¿Te toca otro día hoy? Cámbialo y el ciclo sigue desde ahí.</div>
+          <div role="group" aria-label="Día que te toca" className="mt-2 grid grid-cols-4 gap-2">
+            {(["A", "B", "C", "rest"] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                aria-pressed={slot === s}
+                onClick={() => {
+                  void setCycleSlot(s);
+                  showToast(s === "rest" ? "Hoy toca descanso" : `Te toca el día ${s}`);
+                }}
+                className={`tap-target rounded-full py-2 text-[12px] font-semibold uppercase tracking-[0.08em] ${slot === s ? "btn-primary" : "glass text-[var(--color-muted)]"}`}
+              >
+                {s === "rest" ? "Descanso" : s}
+              </button>
+            ))}
           </div>
         </Card>
 
