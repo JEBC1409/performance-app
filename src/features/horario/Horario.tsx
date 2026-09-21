@@ -1,4 +1,4 @@
-import { HORARIO, HORARIO_NOTE, BLOCK_COLOR, BLOCK_LABEL, BLOCK_TINT, BLOCK_BORDER, BLOCK_TEXT, type BlockType, type HorarioCell } from "@/data/horario";
+import { HORARIO, HORARIO_NOTE, HORARIO_GOAL, BLOCK_COLOR, BLOCK_LABEL, BLOCK_TINT, BLOCK_BORDER, BLOCK_TEXT, type BlockType, type HorarioCell } from "@/data/horario";
 import { DIAS_CORTO, jsDowToIndex } from "@/lib/date";
 import { Card, Eyebrow } from "@/ui";
 
@@ -43,11 +43,17 @@ export function Horario() {
                   <td className="sticky left-0 bg-[var(--color-surface)] num px-4 py-2.5 text-[11.5px] font-medium text-[var(--color-muted)] whitespace-nowrap">
                     {row.time}
                   </td>
-                  {row.cells.map((cell, i) => (
-                    <td key={i} className={`px-1.5 py-1.5 align-top ${i === todayCol ? "bg-[rgba(223,37,49,0.05)]" : ""}`}>
-                      <BlockChip cell={cell} />
-                    </td>
-                  ))}
+                  {row.cells.map((cell, i) =>
+                    cell.cont ? null : (
+                      <td
+                        key={i}
+                        rowSpan={cell.span}
+                        className={`h-px px-1.5 py-1.5 align-top ${i === todayCol ? "bg-[rgba(223,37,49,0.05)]" : ""}`}
+                      >
+                        <BlockChip cell={cell} />
+                      </td>
+                    ),
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -66,6 +72,7 @@ export function Horario() {
           </div>
         ))}
       </div>
+      <p className="-mt-1 text-[11px] leading-snug text-[var(--color-muted-2)]">{HORARIO_GOAL}</p>
     </div>
   );
 }
@@ -76,12 +83,22 @@ function BlockChip({ cell }: { cell: HorarioCell }) {
   }
   return (
     <div
-      className="rounded-xl px-2.5 py-2 text-[12px] font-semibold leading-snug"
-      style={{
-        background: BLOCK_TINT[cell.type],
-        border: `1px solid ${BLOCK_BORDER[cell.type]}`,
-        color: BLOCK_TEXT[cell.type],
-      }}
+      className={`h-full rounded-xl px-2.5 py-2 text-[12px] leading-snug ${cell.soft ? "font-medium" : "font-semibold"}`}
+      style={
+        cell.key
+          ? {
+              background: "rgba(223, 37, 49, 0.3)",
+              border: "1.5px solid var(--color-red)",
+              color: "var(--color-ink)",
+              boxShadow: "0 0 18px -4px rgba(223, 37, 49, 0.75), 0 0 0 1px rgba(223, 37, 49, 0.25) inset",
+            }
+          : {
+              background: BLOCK_TINT[cell.type],
+              border: `1px ${cell.soft ? "dashed" : "solid"} ${BLOCK_BORDER[cell.type]}`,
+              color: BLOCK_TEXT[cell.type],
+              opacity: cell.soft ? 0.55 : 1,
+            }
+      }
     >
       {cell.text}
     </div>

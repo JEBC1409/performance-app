@@ -11,16 +11,16 @@ function toMin(hhmm: string): number {
   return h * 60 + m;
 }
 
+/** A row's time label is "start-end" or just "start". Either way a row lasts
+ * until the next one starts (the last one until midnight), so the short gaps
+ * between labelled blocks belong to the block before them. */
 export function currentBlockInfo(now: Date = new Date()): BlockInfo {
   const col = jsDowToIndex(now.getDay());
   const mins = now.getHours() * 60 + now.getMinutes();
   let rowIndex = -1;
   for (let i = 0; i < HORARIO.length; i++) {
-    const [start, end] = HORARIO[i].time.split("-");
-    if (mins >= toMin(start) && mins < toMin(end)) {
-      rowIndex = i;
-      break;
-    }
+    if (mins >= toMin(HORARIO[i].time.split("-")[0])) rowIndex = i;
+    else break;
   }
   return { col, rowIndex };
 }
