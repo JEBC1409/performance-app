@@ -101,7 +101,8 @@ describe("RoutineEditor", () => {
 
     await waitFor(async () => {
       const row = await db.appConfig.get("routine");
-      expect((row?.value as { A: { ex: { series: number }[] } }).A.ex[0].series).toBe(5);
+      const saved = row?.value as { A: { ex: { series: number }[] } } | undefined;
+      expect(saved?.A.ex[0].series).toBe(5);
     });
   });
 
