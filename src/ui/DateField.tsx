@@ -167,7 +167,7 @@ export function DateField({
 
               <div className="grid grid-cols-7 gap-y-1">
                 {DIAS_CORTO.map((d) => (
-                  <div key={d} className="flex h-6 items-center justify-center text-[9px] uppercase tracking-wide text-[var(--color-muted-2)]">
+                  <div key={d} className="flex h-6 items-center justify-center text-[10.5px] uppercase tracking-wide text-[var(--color-muted-2)]">
                     {d[0]}
                   </div>
                 ))}

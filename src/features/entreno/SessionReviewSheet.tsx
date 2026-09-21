@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { Sheet, Button } from "@/ui";
+import { celebrate, haptic } from "@/lib/feedback";
 import { GYM_DIAS } from "@/data/gym";
 import type { CycleSlot, GymDay } from "@/lib/cycle";
 import { fmtDateHuman } from "@/lib/date";
@@ -40,7 +42,7 @@ function ExerciseRow({ e }: { e: ExerciseReview }) {
         <div className="flex items-center gap-1.5">
           <span className="truncate text-[13px] font-semibold">{e.name}</span>
           {e.pr ? (
-            <span className="flex-none rounded-full border border-[#e2b96f] px-1.5 py-px text-[9px] font-bold tracking-wider text-[#e2b96f]">PR</span>
+            <span className="pr-badge flex-none rounded-full border border-[#e2b96f] px-1.5 py-px text-[10.5px] font-bold tracking-wider text-[#e2b96f]">PR</span>
           ) : null}
         </div>
         <div className="num mt-0.5 text-[11px] text-[var(--color-muted)]">
@@ -87,6 +89,14 @@ export function SessionReviewSheet({
 function Body({ review: r, next, onGoDay, onClose }: { review: SessionReview; next: { slot: CycleSlot; then: CycleSlot }; onGoDay: (d: GymDay) => void; onClose: () => void }) {
   const h = headline(r);
   const def = GYM_DIAS[r.day];
+  const won = r.improved > 0 || r.exercises.some((e) => e.pr);
+  useEffect(() => {
+    // A little fanfare when the session moved the needle.
+    if (!won) return;
+    haptic([20, 50, 20]);
+    celebrate(undefined, r.exercises.some((e) => e.pr) ? 38 : 24);
+  }, [won]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const pct = r.volumeDeltaPct;
   const facts = [
     `${r.setsDone}/${r.setsTarget} series`,

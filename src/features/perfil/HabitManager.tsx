@@ -82,7 +82,7 @@ export function HabitManager() {
               type="button"
               onClick={() => removeHabit(h.key, h.label)}
               aria-label={`Eliminar ${h.label}`}
-              className="glass flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-red)]"
+              className="glass hit flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-red)]"
             >
               <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden>
                 <path d="M1 1l8 8M9 1l-8 8" stroke="currentColor" strokeWidth="1.4" />

@@ -105,7 +105,7 @@ export function ExerciseLogForm({
           <div className="num text-[13px] font-semibold text-[var(--color-red)]">
             {done}/{target}
           </div>
-          <div className="num text-[10px] text-[var(--color-muted-2)]">
+          <div className="num text-[11px] text-[var(--color-muted-2)]">
             {exercise.series}×{exercise.repsLabel}
           </div>
         </div>
@@ -122,11 +122,11 @@ export function ExerciseLogForm({
         <div className="flex items-center gap-3 rounded-2xl border border-[var(--color-line-strong)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-[9.5px] font-semibold uppercase tracking-[0.14em]" style={{ color: SUGGESTION_COLOR[suggestion.kind] }}>
+              <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em]" style={{ color: SUGGESTION_COLOR[suggestion.kind] }}>
                 Hoy · {SUGGESTION_LABEL[suggestion.kind]}
               </span>
               {suggestion.delta != null ? (
-                <span className="num text-[10px] text-[var(--color-muted)]">
+                <span className="num text-[11px] text-[var(--color-muted)]">
                   {suggestion.delta > 0 ? "+" : ""}
                   {fmtNum(suggestion.delta)} kg
                 </span>
@@ -170,7 +170,7 @@ export function ExerciseLogForm({
                   onDeleteSet(s.id!);
                 }}
                 aria-label="Eliminar serie"
-                className="flex h-4 w-4 flex-none items-center justify-center rounded-full text-[var(--color-muted-2)] hover:bg-[var(--color-red)] hover:text-white"
+                className="hit flex h-4 w-4 flex-none items-center justify-center rounded-full text-[var(--color-muted-2)] hover:bg-[var(--color-red)] hover:text-white"
               >
                 <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden>
                   <path d="M1 1l6 6M7 1l-6 6" stroke="currentColor" strokeWidth="1.3" />
@@ -220,7 +220,8 @@ export function ExerciseLogForm({
         placeholder="Nota (opcional)"
         className="mt-2 w-full rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-2.5 py-2 text-[13px] outline-none focus:border-[var(--color-red)]"
       />
-      <div className="mt-1 flex gap-2">
+      {/* Pinned to the bottom of the sheet so saving never needs a scroll. */}
+      <div className="sticky bottom-0 z-10 -mx-5 mt-1 flex gap-2 bg-gradient-to-t from-[var(--color-surface)] via-[var(--color-surface)] to-transparent px-5 pb-1 pt-4">
         {editing ? (
           <button
             onClick={cancelEdit}

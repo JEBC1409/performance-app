@@ -87,7 +87,7 @@ export function BookPicker({ value, onChange, books }: { value: string; onChange
             >
               {(["AT", "NT"] as const).map((testament) => (
                 <div key={testament}>
-                  <div className="sticky top-0 z-10 bg-[var(--color-surface)] px-3.5 pb-1.5 pt-2.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--color-muted-2)]">
+                  <div className="sticky top-0 z-10 bg-[var(--color-surface)] px-3.5 pb-1.5 pt-2.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--color-muted-2)]">
                     {testament === "AT" ? "Antiguo Testamento" : "Nuevo Testamento"}
                   </div>
                   {books

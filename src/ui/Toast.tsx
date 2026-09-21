@@ -24,8 +24,16 @@ export function ToastHost() {
     return () => clearTimeout(t);
   }, [msg]);
 
-  if (!msg) return null;
+  // The live region stays mounted (so screen readers reliably announce a new
+  // message); the visible toast comes and goes inside it.
+  return (
+    <div role="status" aria-live="polite">
+      {msg ? <ToastBubble msg={msg} /> : null}
+    </div>
+  );
+}
 
+function ToastBubble({ msg }: { msg: string }) {
   return (
     <div className="fixed bottom-[calc(5rem_+_env(safe-area-inset-bottom))] sidebar:bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-[var(--color-ink)] text-black px-4 py-2 text-[12.5px] font-semibold enter">
       {msg}

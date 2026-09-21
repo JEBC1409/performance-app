@@ -144,7 +144,7 @@ export function Perfil() {
               className="w-full bg-transparent text-[16px] font-bold outline-none focus:text-[var(--color-red)]"
             />
             <div className="truncate text-[11.5px] text-[var(--color-muted)] mt-0.5">{session?.user.email}</div>
-            <div className="text-[10px] text-[var(--color-muted-2)] mt-1 uppercase tracking-wide num">Miembro desde {memberSince}</div>
+            <div className="text-[11px] text-[var(--color-muted-2)] mt-1 uppercase tracking-wide num">Miembro desde {memberSince}</div>
           </div>
         </div>
         <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={onAvatarChange} />

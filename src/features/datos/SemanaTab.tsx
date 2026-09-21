@@ -160,7 +160,7 @@ function Hero({ cur, prev }: { cur: WeekStats; prev: WeekStats }) {
         </div>
         <div className="text-right">
           <DeltaChip d={delta(cur.activeDays, prev.activeDays)} />
-          <div className="mt-1 text-[10px] text-[var(--color-muted-2)]">vs semana anterior ({prev.activeDays})</div>
+          <div className="mt-1 text-[11px] text-[var(--color-muted-2)]">vs semana anterior ({prev.activeDays})</div>
         </div>
       </div>
       <div className="mt-4 grid grid-cols-7 gap-1.5">
@@ -174,7 +174,7 @@ function Hero({ cur, prev }: { cur: WeekStats; prev: WeekStats }) {
                 boxShadow: on ? "0 0 12px -2px var(--color-red-soft)" : "none",
               }}
             />
-            <span className="text-[9.5px] font-semibold text-[var(--color-muted)]">{DAY_LETTERS[i]}</span>
+            <span className="text-[10.5px] font-semibold text-[var(--color-muted)]">{DAY_LETTERS[i]}</span>
           </div>
         ))}
       </div>

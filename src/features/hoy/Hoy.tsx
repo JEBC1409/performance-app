@@ -8,6 +8,8 @@ import { GYM_DAY_ORDER, GYM_DIAS } from "@/data/gym";
 import { todayISO, num, DIAS, jsDowToIndex } from "@/lib/date";
 import { currentBlockInfo } from "@/lib/scheduleBlock";
 import { hintDatosTab } from "@/features/datos/tabHint";
+import { habitForBlock, toggleHabitDay } from "@/lib/habits";
+import { celebrate, haptic } from "@/lib/feedback";
 import { HORARIO } from "@/data/horario";
 import { useCycleSlot } from "@/hooks/useCycle";
 import { useBible } from "@/hooks/useBible";
@@ -70,6 +72,21 @@ export function Hoy({
   const habitsCompleted = habitList.filter((h) => habitDay?.done.includes(h.key)).length;
   const habitsTotal = habitList.length;
 
+  async function checkHabit(key: string) {
+    const on = await toggleHabitDay(today, key);
+    if (!on) return;
+    haptic();
+    // Marking the last one of the day is worth a little fanfare.
+    const doneNow = new Set([...(habitDay?.done ?? []), key]);
+    if (habitList.length > 0 && habitList.every((h) => doneNow.has(h.key))) {
+      haptic([20, 60, 20]);
+      celebrate();
+    }
+  }
+
+  const blockHabit = habitForBlock(nowCell, habitList);
+  const blockHabitDone = !!blockHabit && !!habitDay?.done.includes(blockHabit.key);
+
   async function copyDailySummary() {
     const summary = await buildDailySummary(today);
     try {
@@ -103,7 +120,7 @@ export function Hoy({
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-red)] glow-dot" />
-              <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--color-muted)]">
+              <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[var(--color-muted)]">
                 Dr. Discipline
               </span>
             </div>
@@ -116,7 +133,7 @@ export function Hoy({
           </div>
           <button
             onClick={() => onNavigate("horario")}
-            className="text-[10px] text-[var(--color-muted)] hover:text-[var(--color-red)] uppercase tracking-[0.12em] transition-colors"
+            className="text-[11px] text-[var(--color-muted)] hover:text-[var(--color-red)] uppercase tracking-[0.12em] transition-colors"
           >
             Ver horario →
           </button>
@@ -130,6 +147,23 @@ export function Hoy({
             <div className="text-[13.5px] leading-snug text-[var(--color-ink)] whitespace-pre-line">
               {nowCell ? nowCell.text : "Bloque libre / fuera de horario"}
             </div>
+            {blockHabit ? (
+              <button
+                onClick={() => checkHabit(blockHabit.key)}
+                aria-pressed={blockHabitDone}
+                className={`tap-target mt-3 flex w-full items-center justify-center gap-2 rounded-full py-3 text-[12.5px] font-semibold uppercase tracking-[0.1em] ${
+                  blockHabitDone ? "glass text-[var(--color-good)]" : "glass-on"
+                }`}
+              >
+                {blockHabitDone ? (
+                  <>
+                    <span className="pop">✓</span> {blockHabit.label} hecho
+                  </>
+                ) : (
+                  <>Marcar {blockHabit.label}</>
+                )}
+              </button>
+            ) : null}
             {nextCell && (
               <div className="mt-2 text-[11px] text-[var(--color-muted)] leading-tight">
                 Siguiente{nextRow?.time ? ` (${nextRow.time})` : ""}:{" "}
@@ -152,7 +186,7 @@ export function Hoy({
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 border border-[var(--color-line-strong)] flex items-center justify-center flex-none">
-                  <span className="eyebrow text-[9px]">Z</span>
+                  <span className="eyebrow text-[10.5px]">Z</span>
                 </div>
                 <div>
                   <div className="font-[var(--font-display)] text-[13px] tracking-[0.06em]">
@@ -171,7 +205,7 @@ export function Hoy({
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-[var(--color-red)] flex items-center justify-center flex-none">
-                  <span className="font-[var(--font-display)] text-[10px] text-white tracking-wide">
+                  <span className="font-[var(--font-display)] text-[11px] text-white tracking-wide">
                     {slot}
                   </span>
                 </div>
@@ -235,19 +269,19 @@ export function Hoy({
           {habitList.map((h) => {
             const on = !!habitDay?.done.includes(h.key);
             return (
-              <div
+              <button
                 key={h.key}
-                className={`flex items-center gap-2.5 rounded-full border px-3 py-2 transition-colors ${
-                  on ? "border-[var(--color-red)] bg-[rgba(223,37,49,0.12)]" : "border-[var(--color-line-strong)]"
-                }`}
+                onClick={() => checkHabit(h.key)}
+                aria-pressed={on}
+                className={`tap-target flex items-center gap-2.5 rounded-full px-3 py-2 text-left ${on ? "glass-on" : "glass"}`}
               >
-                <span className={`flex h-7 w-7 flex-none items-center justify-center rounded-full ${on ? "bg-[var(--color-red)]" : "bg-[var(--color-surface-2)]"}`}>
+                <span className={`flex h-7 w-7 flex-none items-center justify-center rounded-full ${on ? "bg-[rgba(255,255,255,0.22)] pop" : "bg-[rgba(255,255,255,0.06)]"}`}>
                   <HabitGlyph icon={h.icon} active={on} activeColor="#fff" size={12} />
                 </span>
-                <span className={`text-[10.5px] font-semibold uppercase tracking-wide leading-tight ${on ? "text-[var(--color-ink)]" : "text-[var(--color-muted)]"}`}>
+                <span className={`text-[11px] font-semibold uppercase tracking-wide leading-tight ${on ? "text-white" : "text-[var(--color-muted)]"}`}>
                   {h.label}
                 </span>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -279,7 +313,7 @@ export function Hoy({
           <Eyebrow accent>Versículo del día</Eyebrow>
           <button
             onClick={() => onNavigate("kairos")}
-            className="text-[10px] text-[var(--color-muted)] hover:text-[var(--color-red)] uppercase tracking-[0.12em] transition-colors"
+            className="text-[11px] text-[var(--color-muted)] hover:text-[var(--color-red)] uppercase tracking-[0.12em] transition-colors"
           >
             Oración →
           </button>
@@ -314,7 +348,7 @@ export function Hoy({
                   }`}
                 >
                   <div className="font-[var(--font-display)] text-[13px]">Día {d}</div>
-                  <div className="text-[10px] mt-0.5">{GYM_DIAS[d].nombre}</div>
+                  <div className="text-[11px] mt-0.5">{GYM_DIAS[d].nombre}</div>
                 </button>
               ))}
             </div>

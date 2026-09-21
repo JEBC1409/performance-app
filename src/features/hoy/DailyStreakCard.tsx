@@ -37,9 +37,9 @@ export function DailyStreakCard() {
               <span className="ml-1 text-[12px] font-medium text-[var(--color-muted)]">{data.streak === 1 ? "día" : "días"}</span>
             </div>
             <div className="flex items-center gap-1.5 mt-1">
-              <span className="text-[9.5px] uppercase tracking-wide text-[var(--color-muted-2)]">Racha de constancia</span>
+              <span className="text-[10.5px] uppercase tracking-wide text-[var(--color-muted-2)]">Racha de constancia</span>
               <span
-                className="flex items-center gap-0.5 text-[9px]"
+                className="flex items-center gap-0.5 text-[10.5px]"
                 style={{ color: FREEZE_COLOR }}
                 title={`${data.freezesAvailable} comodines disponibles este mes`}
               >
@@ -56,7 +56,7 @@ export function DailyStreakCard() {
         {week.map((d) => (
           <div key={d.date} className="flex flex-1 flex-col items-center gap-1">
             <div
-              className={`flex h-7 w-full items-center justify-center rounded-lg border text-[10px] transition-colors ${
+              className={`flex h-7 w-full items-center justify-center rounded-lg border text-[11px] transition-colors ${
                 d.done
                   ? "border-[var(--color-good)] bg-[var(--color-good-soft)] text-[var(--color-good)]"
                   : d.frozen

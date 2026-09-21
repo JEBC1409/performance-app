@@ -16,7 +16,7 @@ function StatTile({ point, unit }: { point: BarPoint; unit?: string }) {
         {point.value}
         {unit ? <span className="ml-1 text-[13px] font-medium text-[var(--color-muted)]">{unit}</span> : null}
       </div>
-      <div className="text-[10px] text-[var(--color-muted-2)] num">{point.label}</div>
+      <div className="text-[11px] text-[var(--color-muted-2)] num">{point.label}</div>
     </div>
   );
 }
@@ -62,9 +62,9 @@ export function BarChart({
       <div className="flex items-baseline justify-between">
         <span className="num text-[15px] font-bold text-[var(--color-ink)]">
           {activePoint.value}
-          {unit ? <span className="ml-1 text-[10px] font-medium text-[var(--color-muted)]">{unit}</span> : null}
+          {unit ? <span className="ml-1 text-[11px] font-medium text-[var(--color-muted)]">{unit}</span> : null}
         </span>
-        <span className="text-[9.5px] text-[var(--color-muted-2)] num">{activePoint.label}</span>
+        <span className="text-[10.5px] text-[var(--color-muted-2)] num">{activePoint.label}</span>
       </div>
       <svg viewBox={`0 0 100 ${height}`} width="100%" height={height} preserveAspectRatio="none" className="mt-1">
         <line x1="0" y1={baseline} x2="100" y2={baseline} stroke="var(--color-line)" strokeWidth="0.5" />
@@ -110,7 +110,7 @@ export function BarChart({
               onMouseEnter={() => setHover(i)}
               onMouseLeave={() => setHover(null)}
               onClick={() => setHover(i)}
-              className={`text-center text-[9px] num transition-colors ${i === active ? "font-semibold text-[var(--color-ink)]" : "text-[var(--color-muted-2)]"}`}
+              className={`text-center text-[10.5px] num transition-colors ${i === active ? "font-semibold text-[var(--color-ink)]" : "text-[var(--color-muted-2)]"}`}
               style={{ width: `${barW}%` }}
             >
               {showLabel ? p.label : ""}

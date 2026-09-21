@@ -27,13 +27,13 @@ export function ExerciseCard({
             className="h-full w-full object-cover opacity-85 transition-all duration-300 group-hover:scale-105 group-hover:opacity-100"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center px-2 text-center text-[9.5px] uppercase tracking-wide text-[var(--color-muted-2)]">
+          <div className="flex h-full w-full items-center justify-center px-2 text-center text-[10.5px] uppercase tracking-wide text-[var(--color-muted-2)]">
             {exercise.name}
           </div>
         )}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-transparent" />
         {photo.caption ? (
-          <span className="absolute bottom-2 left-2 max-w-[85%] truncate rounded-full bg-black/70 px-2 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide text-[var(--color-ink)]">
+          <span className="absolute bottom-2 left-2 max-w-[85%] truncate rounded-full bg-black/70 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-ink)]">
             {photo.caption}
           </span>
         ) : null}
@@ -43,7 +43,7 @@ export function ExerciseCard({
           </span>
         ) : null}
         {complete ? (
-          <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-good)] text-[10px] font-bold text-black">
+          <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-good)] text-[11px] font-bold text-black">
             ✓
           </span>
         ) : null}
@@ -54,7 +54,7 @@ export function ExerciseCard({
           <span className="num text-[11.5px] font-semibold text-[var(--color-red)]">
             {done}/{target}
           </span>
-          <span className="num text-[9.5px] text-[var(--color-muted-2)]">
+          <span className="num text-[10.5px] text-[var(--color-muted-2)]">
             {exercise.series}×{exercise.repsLabel}
           </span>
         </div>

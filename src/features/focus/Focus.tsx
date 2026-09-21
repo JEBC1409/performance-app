@@ -225,7 +225,7 @@ function FocusView() {
         {/* status row */}
         <div className="flex items-center justify-between">
           <span
-            className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]"
+            className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em]"
             style={{ borderColor: active ? accent : "var(--color-line-strong)", color: active ? accent : "var(--color-muted)" }}
           >
             <span
@@ -258,7 +258,7 @@ function FocusView() {
             <div className="num font-[var(--font-display)] text-[62px] font-light leading-none tracking-tight">
               {active ? fmtClock(left) : fmtClock(focusMin * 60)}
             </div>
-            <div className="mt-3 text-[10px] font-medium uppercase tracking-[0.22em] text-[var(--color-muted)]">
+            <div className="mt-3 text-[11px] font-medium uppercase tracking-[0.22em] text-[var(--color-muted)]">
               {!active ? "minutos" : isBreak ? "respira" : `bloque de ${timer.focusMin} min`}
             </div>
           </Dial>
@@ -372,7 +372,7 @@ function FocusView() {
                     }`}
                   >
                     {m}
-                    <span className="ml-0.5 text-[9px] font-medium opacity-70">m</span>
+                    <span className="ml-0.5 text-[10.5px] font-medium opacity-70">m</span>
                   </button>
                 );
               })}
@@ -404,7 +404,7 @@ function FocusView() {
                 />
                 <span className="text-[11.5px] text-[var(--color-muted)]">
                   minutos
-                  <span className="block text-[10px] text-[var(--color-muted-2)]">
+                  <span className="block text-[11px] text-[var(--color-muted-2)]">
                     de {MIN_FOCUS_MIN} a {MAX_FOCUS_MIN}
                   </span>
                 </span>
@@ -475,7 +475,7 @@ function FocusView() {
                 <button
                   onClick={() => s.id != null && db.focusSessions.delete(s.id)}
                   aria-label={`Eliminar ${s.task}`}
-                  className="flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted-2)] transition-colors hover:text-[var(--color-red)]"
+                  className="hit flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted-2)] transition-colors hover:text-[var(--color-red)]"
                 >
                   <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden>
                     <path d="M1 1l8 8M9 1l-8 8" stroke="currentColor" strokeWidth="1.4" />

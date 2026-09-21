@@ -103,7 +103,7 @@ export function Mouredev() {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-[12px] min-w-[560px]">
               <thead>
-                <tr className="text-[10px] uppercase tracking-wide text-[var(--color-muted)] border-b border-[var(--color-line)]">
+                <tr className="text-[11px] uppercase tracking-wide text-[var(--color-muted)] border-b border-[var(--color-line)]">
                   <th className="text-left px-3 py-2.5">Sem</th>
                   <th className="text-left px-2 py-2.5">Fecha</th>
                   <th className="text-left px-2 py-2.5">Tema / módulo</th>
@@ -152,7 +152,7 @@ export function Mouredev() {
                     <td className="text-center px-2 py-1.5">
                       <button
                         onClick={() => toggleDone(w.week, w.done)}
-                        className={`h-5 w-5 rounded-full ${
+                        className={`hit h-5 w-5 rounded-full ${
                           w.done ? "glass !border-[var(--color-good)] !bg-[rgba(47,174,102,0.55)] text-white" : "glass"
                         }`}
                       >

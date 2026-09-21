@@ -131,7 +131,7 @@ export function Entreno({
           <div className="text-[12px] text-[var(--color-muted)] mt-1">{GYM_DIAS[day].grupo}</div>
         </div>
         <label className="flex-none flex flex-col items-end gap-1">
-          <span className="text-[9.5px] text-[var(--color-muted)] uppercase tracking-wide">Fecha</span>
+          <span className="text-[10.5px] text-[var(--color-muted)] uppercase tracking-wide">Fecha</span>
           <DateField value={sessionDate} max={today} onChange={setSessionDate} size="sm" />
         </label>
       </div>

@@ -51,7 +51,7 @@ export function SyncStatusDot() {
         className={`h-1.5 w-1.5 rounded-full flex-none ${status.state === "syncing" ? "animate-pulse" : ""}`}
         style={{ background: dotColor, boxShadow: status.state !== "offline" || n > 0 ? `0 0 6px ${dotColor}` : "none" }}
       />
-      <span className="text-[9px] uppercase tracking-wide text-[var(--color-muted-2)]">{label}</span>
+      <span className="text-[10.5px] uppercase tracking-wide text-[var(--color-muted-2)]">{label}</span>
     </button>
   );
 }

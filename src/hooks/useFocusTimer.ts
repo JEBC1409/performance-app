@@ -3,6 +3,7 @@ import { showToast } from "@/ui/Toast";
 import { completeIfDue, getFocusState, remainingSeconds, subscribeFocus } from "@/lib/focusTimer";
 import { initAudioUnlock, playChime } from "@/lib/focusSound";
 import { subscribeTick } from "@/lib/ticker";
+import { celebrate } from "@/lib/feedback";
 
 export function useFocusTimer() {
   return useSyncExternalStore(subscribeFocus, getFocusState, getFocusState);
@@ -73,6 +74,7 @@ export function useFocusWatcher(): void {
       showToast(msg);
       if (done.late) return;
       void playChime(done.finished);
+      if (done.finished === "focus" && document.visibilityState === "visible") celebrate();
       if (navigator.vibrate) navigator.vibrate([200, 80, 200]);
       notify(msg);
     }

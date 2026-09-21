@@ -70,7 +70,7 @@ export function PesoTab() {
             />
           </div>
           <div>
-            <div className="mb-1 text-[9.5px] uppercase tracking-wide text-[var(--color-muted-2)]">Promedio semanal</div>
+            <div className="mb-1 text-[10.5px] uppercase tracking-wide text-[var(--color-muted-2)]">Promedio semanal</div>
             <BarChart points={weeklyAvgPoints} height={110} unit="" />
           </div>
         </div>

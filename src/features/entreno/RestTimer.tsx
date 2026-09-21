@@ -60,7 +60,7 @@ export function RestTimer({
               timer.addTime(30);
               onAdd?.();
             }}
-            className="glass tap-target rounded-full px-3 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-muted)] hover:text-[var(--color-red)]"
+            className="glass tap-target rounded-full px-3 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-muted)] hover:text-[var(--color-red)]"
           >
             +30s
           </button>
@@ -69,7 +69,7 @@ export function RestTimer({
               timer.skip();
               onSkip?.();
             }}
-            className="glass tap-target rounded-full px-3 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+            className="glass tap-target rounded-full px-3 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-muted)] hover:text-[var(--color-ink)]"
           >
             Saltar
           </button>

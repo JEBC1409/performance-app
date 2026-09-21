@@ -84,7 +84,7 @@ export function Shell({
         </div>
 
         <div className="flex-none flex flex-col items-end gap-1">
-          <div className="text-[10px] num text-[var(--color-muted-2)] capitalize leading-snug">
+          <div className="text-[11px] num text-[var(--color-muted-2)] capitalize leading-snug">
             {dateLabel}
           </div>
           <SyncStatusDot />
@@ -143,7 +143,7 @@ export function Shell({
               >
                 <NavGlyph tab={t.key} active={isActive} />
                 <span
-                  className={`text-[9px] font-semibold uppercase tracking-[0.08em] ${
+                  className={`text-[10.5px] font-semibold uppercase tracking-[0.08em] ${
                     isActive ? "text-[var(--color-red)]" : ""
                   }`}
                 >

@@ -1,3 +1,5 @@
+import { toggleHabitDay } from "@/lib/habits";
+import { haptic } from "@/lib/feedback";
 import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, type HabitDefRecord } from "@/db/db";
@@ -48,9 +50,7 @@ export function Habitos() {
   );
 
   async function toggle(date: string, key: string) {
-    const existing = byDate.get(date) ?? { date, done: [] };
-    const done = existing.done.includes(key) ? existing.done.filter((k) => k !== key) : [...existing.done, key];
-    await db.habitDays.put({ ...existing, done });
+    if (await toggleHabitDay(date, key)) haptic();
   }
 
   return (
@@ -89,7 +89,7 @@ export function Habitos() {
                 <span className={`num text-xl font-bold leading-none ${streak > 0 ? "text-[var(--color-ink)]" : "text-[var(--color-muted-2)]"}`}>
                   {streak}
                 </span>
-                <span className="text-[9.5px] text-[var(--color-muted-2)] uppercase pb-0.5">{streak === 1 ? "día" : "días"}</span>
+                <span className="text-[10.5px] text-[var(--color-muted-2)] uppercase pb-0.5">{streak === 1 ? "día" : "días"}</span>
               </div>
             </div>
           );
@@ -104,14 +104,14 @@ export function Habitos() {
           <div className="flex gap-1.5">
             <button
               onClick={() => setMonthDate(new Date(year, month - 1, 1))}
-              className="glass w-7 h-7 rounded-full flex items-center justify-center"
+              className="glass hit w-7 h-7 rounded-full flex items-center justify-center"
               aria-label="Mes anterior"
             >
               ‹
             </button>
             <button
               onClick={() => setMonthDate(new Date(year, month + 1, 1))}
-              className="glass w-7 h-7 rounded-full flex items-center justify-center"
+              className="glass hit w-7 h-7 rounded-full flex items-center justify-center"
               aria-label="Mes siguiente"
             >
               ›
@@ -152,7 +152,7 @@ export function Habitos() {
                         <td key={d} className={`p-0 text-center ${isToday ? "shadow-[inset_0_0_0_1px_#df2531]" : ""}`}>
                           <button
                             onClick={() => toggle(date, h.key)}
-                            className={`w-6 h-6 ${on ? "bg-[var(--color-red-soft)]" : ""}`}
+                            className={`hit w-6 h-6 ${on ? "bg-[var(--color-red-soft)]" : ""}`}
                             aria-label={`${h.label} ${date}`}
                           >
                             {on ? <span className="text-[var(--color-red)] text-[11px]">✓</span> : null}

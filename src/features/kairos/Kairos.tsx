@@ -139,7 +139,7 @@ export function Kairos() {
                   <span className="text-[12px] text-[var(--color-ink)]">
                     Ibas en <span className="font-semibold">{bookmarkBookName} {bookmark.chapter}</span>
                   </span>
-                  <span className="ml-auto flex-none text-[10px] uppercase tracking-wide text-[var(--color-red)]">Continuar →</span>
+                  <span className="ml-auto flex-none text-[11px] uppercase tracking-wide text-[var(--color-red)]">Continuar →</span>
                 </button>
               ) : null}
 
@@ -168,11 +168,11 @@ export function Kairos() {
                     </div>
                   </div>
                   <div className="flex flex-none flex-col items-end gap-1.5">
-                    <span className="text-[10px] text-[var(--color-muted-2)] num uppercase tracking-wide">{verses.length} versículos</span>
+                    <span className="text-[11px] text-[var(--color-muted-2)] num uppercase tracking-wide">{verses.length} versículos</span>
                     <button
                       onClick={markHere}
                       disabled={isAtBookmark}
-                      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-wide ${
+                      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wide ${
                         isAtBookmark ? "glass-accent" : "glass text-[var(--color-muted)] hover:text-[var(--color-red)]"
                       }`}
                     >
@@ -188,7 +188,7 @@ export function Kairos() {
                       onClick={() => setPickedVerse({ verse: i + 1, text })}
                       className="group flex items-start gap-3 py-3 text-left first:pt-0 last:pb-0"
                     >
-                      <span className="num mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-[var(--color-surface-2)] text-[9.5px] font-bold text-[var(--color-red)] transition-colors group-hover:bg-[var(--color-red)] group-hover:text-white">
+                      <span className="num mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-[var(--color-surface-2)] text-[10.5px] font-bold text-[var(--color-red)] transition-colors group-hover:bg-[var(--color-red)] group-hover:text-white">
                         {i + 1}
                       </span>
                       <span className="text-[14px] leading-relaxed text-[rgba(255,255,255,0.82)] transition-colors group-hover:text-[var(--color-ink)]">

@@ -10,8 +10,8 @@
   --color-red-soft: rgba(223, 37, 49, 0.45);
   --color-red-softer: rgba(223, 37, 49, 0.65);
   --color-ink: #ffffff;
-  --color-muted: rgba(255, 255, 255, 0.56);
-  --color-muted-2: rgba(255, 255, 255, 0.34);
+  --color-muted: rgba(255, 255, 255, 0.64);
+  --color-muted-2: rgba(255, 255, 255, 0.5);
   --color-good: #2fae66;
   --color-good-soft: rgba(47, 174, 102, 0.4);
 
@@ -67,7 +67,7 @@ body {
   font-family: var(--font-display);
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  font-size: 9.5px;
+  font-size: 10.5px;
   color: var(--color-muted);
 }
 
@@ -156,7 +156,7 @@ body {
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 0 14px -2px rgba(223, 37, 49, 0.7);
 }
 .nav-pill-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -537,4 +537,113 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   filter: brightness(0.85) contrast(1.15);
   mask-image: radial-gradient(65% 70% at 50% 55%, black 45%, transparent 85%);
   -webkit-mask-image: radial-gradient(65% 70% at 50% 55%, black 45%, transparent 85%);
+}
+
+/* ── Accessibility: transparency and contrast preferences ────────────────
+   People who ask their system for less transparency (or more contrast) get
+   solid surfaces: no blur, opaque fills, stronger edges. */
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .glass,
+  .glass-on,
+  .glass-accent,
+  .glass-track,
+  .nav-pillbar,
+  .nav-pill-item-active,
+  .btn-primary {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .glass {
+    background: #17171b;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  .glass-accent {
+    background: #2a0f13;
+    border-color: rgba(255, 110, 118, 0.8);
+  }
+  .glass-on,
+  .btn-primary {
+    background: #b3202b;
+    border-color: #ff8a92;
+    color: #fff;
+  }
+  .glass-track {
+    background: #0b0b0d;
+    border-color: rgba(255, 255, 255, 0.28);
+  }
+  .nav-pillbar {
+    background: #0b0b0d;
+  }
+  .panel-surface {
+    background: #0d0d10;
+    border-color: rgba(255, 255, 255, 0.24);
+  }
+  .glass::before,
+  .glass-on::before,
+  .glass-accent::before {
+    display: none;
+  }
+}
+@media (prefers-contrast: more) {
+  :root {
+    --color-muted: rgba(255, 255, 255, 0.85);
+    --color-muted-2: rgba(255, 255, 255, 0.72);
+  }
+}
+
+/* Small visual controls keep their look but get a 44px touch area. */
+.hit {
+  position: relative;
+}
+.hit::after {
+  content: "";
+  position: absolute;
+  inset: -10px;
+}
+
+/* ── Celebrations: a quick burst + a "pop" for checks. Decorative only. ── */
+@keyframes confetti-burst {
+  0% { transform: translate(0, 0) rotate(0deg) scale(0.6); opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(1); opacity: 0; }
+}
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+  overflow: hidden;
+}
+.confetti-bit {
+  position: absolute;
+  width: 7px;
+  height: 11px;
+  border-radius: 2px;
+  animation: confetti-burst 1100ms cubic-bezier(0.15, 0.7, 0.3, 1) forwards;
+}
+@keyframes pop {
+  0% { transform: scale(0.6); }
+  55% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+.pop {
+  animation: pop 320ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+@keyframes shimmer-pr {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(226, 185, 111, 0); }
+  50% { box-shadow: 0 0 12px 1px rgba(226, 185, 111, 0.55); }
+}
+.pr-badge {
+  animation: shimmer-pr 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .confetti-layer,
+  .pop,
+  .pr-badge {
+    animation: none !important;
+    display: none;
+  }
+  .pop {
+    display: revert;
+  }
 }

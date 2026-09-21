@@ -81,13 +81,13 @@ function LoadProgressCard({ exercise, sets }: { exercise: string; sets: SetRecor
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-[12px] font-semibold leading-snug">{exercise}</div>
-          {start?.note ? <div className="mt-0.5 text-[10px] text-[var(--color-muted)]">{start.note}</div> : null}
+          {start?.note ? <div className="mt-0.5 text-[11px] text-[var(--color-muted)]">{start.note}</div> : null}
         </div>
         {last ? (
           <div className="flex-none text-right">
             <div className="num text-[13px] font-semibold text-[var(--color-red)]">{last.value}kg</div>
             {hasDelta ? (
-              <div className={`num text-[10px] ${delta >= 0 ? "text-[var(--color-good)]" : "text-[var(--color-muted-2)]"}`}>
+              <div className={`num text-[11px] ${delta >= 0 ? "text-[var(--color-good)]" : "text-[var(--color-muted-2)]"}`}>
                 {delta >= 0 ? "+" : ""}
                 {delta.toFixed(1)}kg
               </div>

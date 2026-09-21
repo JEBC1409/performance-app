@@ -27,7 +27,7 @@ export function JourneyTicker() {
   const seconds = totalSeconds % 60;
 
   return (
-    <div className="flex items-center gap-1.5 num text-[10px] text-[var(--color-muted-2)]" aria-label="Días desde tu primer registro">
+    <div className="flex items-center gap-1.5 num text-[11px] text-[var(--color-muted-2)]" aria-label="Días desde tu primer registro">
       <span className="w-1 h-1 rounded-full bg-[var(--color-red)] glow-dot" />
       <span className="text-[var(--color-muted)]">
         Día <span className="text-[var(--color-red)] font-semibold">{days}</span>
