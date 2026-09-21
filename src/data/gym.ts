@@ -8,7 +8,17 @@ export interface ExerciseTarget {
   toFailureLast?: boolean;
   dropset?: boolean;
   note?: string;
+  /** Where you're at today, before any logged history: the working weight
+   * (kg) and reps. Feeds the suggested load until real sets take over. */
+  startKg?: number;
+  startReps?: number;
+  /** How the load is counted ("por lado", "agarre abierto"…), shown with it. */
+  loadNote?: string;
 }
+
+/** The day the starting weights (startKg/startReps below) were given. Logged
+ * sessions before it are older than that and don't drive the suggestion. */
+export const START_WEIGHTS_AS_OF = "2026-09-21";
 
 export interface GymDayDef {
   key: GymDay;
@@ -25,15 +35,15 @@ export const GYM_DIAS: Record<GymDay, GymDayDef> = {
     nombre: "PULL",
     grupo: "Espalda · Bíceps + Laterales",
     ex: [
-      { name: "Pullover en polea", series: 3, repsLabel: "8-10", preFatiga: true, toFailureLast: true, note: "Pre-fatiga el dorsal" },
-      { name: "Jalón al pecho agarre ancho", series: 3, repsLabel: "6-10", toFailureLast: true, note: "Negativas lentas 4s en la última" },
-      { name: "Remo en máquina Hammer", series: 3, repsLabel: "8-12", toFailureLast: true },
-      { name: "Remo unilateral en Hammer", series: 3, repsLabel: "10-12 c/lado", toFailureLast: true },
-      { name: "Face pulls", series: 3, repsLabel: "15-20", toFailureLast: true, note: "Deltoides posterior" },
-      { name: "Curl barra Z", series: 3, repsLabel: "10-12", toFailureLast: true },
-      { name: "Curl sentado inclinado", series: 3, repsLabel: "10-12", toFailureLast: true },
-      { name: "Curl en máquina", series: 3, repsLabel: "10-12", toFailureLast: true },
-      { name: "Laterales con mancuerna", series: 3, repsLabel: "12-15", toFailureLast: true, note: "V-TAPER: peso liviano" },
+      { name: "Pullover en polea", series: 3, repsLabel: "8-10", preFatiga: true, toFailureLast: true, note: "Pre-fatiga el dorsal", startKg: 21.5 },
+      { name: "Jalón al pecho agarre ancho", series: 3, repsLabel: "6-10", toFailureLast: true, note: "Negativas lentas 4s en la última", startKg: 66 },
+      { name: "Remo en máquina Hammer", series: 3, repsLabel: "8-12", toFailureLast: true, startKg: 35, loadNote: "por lado · agarre abierto" },
+      { name: "Remo unilateral en Hammer", series: 3, repsLabel: "10-12 c/lado", toFailureLast: true, startKg: 60, loadNote: "por lado" },
+      { name: "Face pulls", series: 3, repsLabel: "15-20", toFailureLast: true, note: "Deltoides posterior", startKg: 17.5 },
+      { name: "Curl barra Z", series: 3, repsLabel: "10-12", toFailureLast: true, startKg: 10, loadNote: "por lado" },
+      { name: "Curl sentado inclinado", series: 3, repsLabel: "10-12", toFailureLast: true, startKg: 14 },
+      { name: "Curl en máquina", series: 3, repsLabel: "10-12", toFailureLast: true, startKg: 40 },
+      { name: "Laterales con mancuerna", series: 3, repsLabel: "12-15", toFailureLast: true, note: "V-TAPER: peso liviano", startKg: 12 },
     ],
   },
   B: {
@@ -42,14 +52,14 @@ export const GYM_DIAS: Record<GymDay, GymDayDef> = {
     nombre: "PUSH",
     grupo: "Pecho · Hombro · Tríceps",
     ex: [
-      { name: "Aperturas mancuerna inclinado", series: 3, repsLabel: "12", preFatiga: true, toFailureLast: true, note: "Pre-fatiga el pecho" },
-      { name: "Press inclinado mancuernas", series: 3, repsLabel: "6-10", toFailureLast: true, note: "Negativas en la última" },
-      { name: "Press plano en máquina", series: 3, repsLabel: "8-12", toFailureLast: true },
-      { name: "Pec deck", series: 3, repsLabel: "10-12", toFailureLast: true, note: "Squeeze 1s en contracción" },
-      { name: "Press militar mancuernas sentado", series: 3, repsLabel: "8-10", toFailureLast: true },
-      { name: "Laterales mancuerna", series: 4, repsLabel: "12-15", toFailureLast: true, dropset: true, note: "V-TAPER: dropset 50% al fallo en la última" },
-      { name: "Fondos en paralelas", series: 3, repsLabel: "al fallo", toFailureLast: true },
-      { name: "Extensión trícep cuerda", series: 3, repsLabel: "12-15", toFailureLast: true },
+      { name: "Aperturas mancuerna inclinado", series: 3, repsLabel: "12", preFatiga: true, toFailureLast: true, note: "Pre-fatiga el pecho", startKg: 18 },
+      { name: "Press inclinado mancuernas", series: 3, repsLabel: "6-10", toFailureLast: true, note: "Negativas en la última", startKg: 32 },
+      { name: "Press plano en máquina", series: 3, repsLabel: "8-12", toFailureLast: true, startKg: 63 },
+      { name: "Pec deck", series: 3, repsLabel: "10-12", toFailureLast: true, note: "Squeeze 1s en contracción", startKg: 66 },
+      { name: "Press militar mancuernas sentado", series: 3, repsLabel: "8-10", toFailureLast: true, startKg: 22 },
+      { name: "Laterales mancuerna", series: 4, repsLabel: "12-15", toFailureLast: true, dropset: true, note: "V-TAPER: dropset 50% al fallo en la última", startKg: 12, loadNote: "dropset a 10 kg" },
+      { name: "Fondos en paralelas", series: 3, repsLabel: "al fallo", toFailureLast: true, startReps: 8, loadNote: "peso corporal · haces 6-8" },
+      { name: "Extensión trícep cuerda", series: 3, repsLabel: "12-15", toFailureLast: true, startKg: 28 },
     ],
   },
   C: {
@@ -58,12 +68,12 @@ export const GYM_DIAS: Record<GymDay, GymDayDef> = {
     nombre: "PIERNAS + CORE",
     grupo: "Cintura angosta",
     ex: [
-      { name: "Extensiones de piernas", series: 3, repsLabel: "12", preFatiga: true, toFailureLast: true, note: "Pre-fatiga cuádriceps" },
-      { name: "Sentadilla libre / Prensa", series: 3, repsLabel: "8-12", toFailureLast: true, note: "Profundidad completa" },
-      { name: "Extensión de piernas unilateral", series: 3, repsLabel: "10-12 c/lado", toFailureLast: true },
-      { name: "Peso muerto rumano", series: 3, repsLabel: "8-10", toFailureLast: true, note: "Bisagra de cadera, espalda neutra" },
-      { name: "Curl femoral sentado", series: 3, repsLabel: "10-12", toFailureLast: true },
-      { name: "Extensión pantorrilla", series: 4, repsLabel: "15-20", toFailureLast: true, note: "Pausa 2s abajo" },
+      { name: "Extensiones de piernas", series: 3, repsLabel: "12", preFatiga: true, toFailureLast: true, note: "Pre-fatiga cuádriceps", startKg: 100 },
+      { name: "Sentadilla libre / Prensa", series: 3, repsLabel: "8-12", toFailureLast: true, note: "Profundidad completa", startKg: 110 },
+      { name: "Extensión de piernas unilateral", series: 3, repsLabel: "10-12 c/lado", toFailureLast: true, startKg: 53 },
+      { name: "Peso muerto rumano", series: 3, repsLabel: "8-10", toFailureLast: true, note: "Bisagra de cadera, espalda neutra", startKg: 110 },
+      { name: "Curl femoral sentado", series: 3, repsLabel: "10-12", toFailureLast: true, startKg: 35 },
+      { name: "Extensión pantorrilla", series: 4, repsLabel: "15-20", toFailureLast: true, note: "Pausa 2s abajo", startKg: 50 },
       { name: "Circuito core", series: 3, repsLabel: "rondas", note: "Plancha 30-45s + Dead bug 10/lado + Pallof press 12/lado" },
     ],
   },

@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { START_WEIGHTS_AS_OF } from "@/data/gym";
 import type { ExerciseTarget } from "@/data/gym";
 import type { SetRecord } from "@/db/db";
 import type { LastSession } from "./useEntrenoData";
 import { fmtDateHuman } from "@/lib/date";
-import { parseRepRange, suggestNext } from "@/lib/progression";
+import { parseRepRange, suggestFromStart, suggestNext } from "@/lib/progression";
 import type { SuggestionKind } from "@/lib/progression";
 
 export interface LogSetPayload {
@@ -77,7 +78,12 @@ export function ExerciseLogForm({
     setEditingId(null);
   }
 
-  const suggestion = suggestNext(parseRepRange(exercise.repsLabel), lastSession?.sets ?? []);
+  const range = parseRepRange(exercise.repsLabel);
+  // Until a session is logged after the starting weights were set, those
+  // weights (what you're at today) drive the suggestion, not older history.
+  const hasStart = exercise.startKg != null || exercise.startReps != null;
+  const fromStart = hasStart && (!lastSession || lastSession.date < START_WEIGHTS_AS_OF);
+  const suggestion = fromStart || !lastSession ? suggestFromStart(range, exercise.startKg, exercise.startReps) : suggestNext(range, lastSession.sets);
   const fmtNum = (n: number) => String(Math.round(n * 10) / 10);
 
   function applySuggestion() {
@@ -129,6 +135,7 @@ export function ExerciseLogForm({
             <div className="num mt-0.5 text-[17px] font-semibold leading-tight">
               {suggestion.weight != null ? `${fmtNum(suggestion.weight)} kg × ${suggestion.reps}` : `${suggestion.reps} reps`}
             </div>
+            {exercise.loadNote ? <div className="text-[10.5px] font-medium text-[var(--color-muted)]">{exercise.loadNote}</div> : null}
             <div className="mt-0.5 text-[10.5px] leading-snug text-[var(--color-muted)]">{suggestion.reason}</div>
           </div>
           <button
@@ -138,7 +145,7 @@ export function ExerciseLogForm({
             Usar
           </button>
         </div>
-      ) : !lastSession && parseRepRange(exercise.repsLabel) ? (
+      ) : !lastSession && range ? (
         <div className="rounded-2xl border border-dashed border-[var(--color-line-strong)] px-3 py-2.5 text-[11px] leading-snug text-[var(--color-muted)]">
           Primera vez: elige un peso con el que llegues al fallo dentro del rango ({exercise.repsLabel}). Desde la próxima te sugiero cuánto subir.
         </div>

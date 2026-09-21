@@ -99,3 +99,24 @@ export function suggestNext(range: RepRange | "fail" | null, last: LoggedSet[]):
     reason: `Mismo peso. Última vez tu mejor serie fue de ${best}: apunta a ${target}.`,
   };
 }
+
+/** Where to start when there's no logged history yet, from the weight (and
+ * reps) you told the app you're at today. No "increase" here: the first
+ * session is about matching it and logging it, and from the second one the
+ * real progression rule takes over. */
+export function suggestFromStart(range: RepRange | "fail" | null, startKg: number | undefined, startReps: number | undefined): Suggestion | null {
+  if (!range) return null;
+  if (startKg == null && startReps == null) return null;
+  if (range === "fail") {
+    const reps = (startReps ?? 0) + 1;
+    return { kind: "repeat", weight: startKg ?? null, reps, delta: null, reason: `Vienes haciendo ${startReps}: intenta ${reps} al fallo.` };
+  }
+  const reps = Math.min(range.max, Math.max(range.min, startReps ?? range.min));
+  return {
+    kind: "repeat",
+    weight: startKg ?? null,
+    reps,
+    delta: null,
+    reason: `Tu peso actual. Apunta a ${reps} reps; si llegas a ${range.max} en todas, la próxima te digo cuánto subir.`,
+  };
+}

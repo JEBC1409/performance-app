@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseRepRange, suggestNext, weightIncrement } from "../progression";
+import { parseRepRange, suggestFromStart, suggestNext, weightIncrement } from "../progression";
 
 const sets = (...pairs: [number | null, number][]) => pairs.map(([weight, reps]) => ({ weight, reps }));
 
@@ -66,5 +66,22 @@ describe("weightIncrement", () => {
     expect(weightIncrement(50)).toBe(2.5);
     expect(weightIncrement(80)).toBe(4);
     expect(weightIncrement(200)).toBe(5);
+  });
+});
+
+describe("suggestFromStart", () => {
+  it("starts at the weight you're at, at the bottom of the range", () => {
+    expect(suggestFromStart({ min: 8, max: 10 }, 21.5, undefined)).toMatchObject({ kind: "repeat", weight: 21.5, reps: 8 });
+  });
+  it("starts from the reps you already do, kept inside the range", () => {
+    expect(suggestFromStart({ min: 8, max: 10 }, 20, 9)).toMatchObject({ weight: 20, reps: 9 });
+    expect(suggestFromStart({ min: 8, max: 10 }, 20, 15)).toMatchObject({ reps: 10 });
+  });
+  it("bodyweight to failure: beat what you do now by one", () => {
+    expect(suggestFromStart("fail", undefined, 8)).toMatchObject({ weight: null, reps: 9 });
+  });
+  it("says nothing without a start or a range", () => {
+    expect(suggestFromStart({ min: 8, max: 10 }, undefined, undefined)).toBeNull();
+    expect(suggestFromStart(null, 20, 8)).toBeNull();
   });
 });
