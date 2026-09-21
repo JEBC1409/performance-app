@@ -6,6 +6,7 @@ import {
   type SetRecord,
   type HabitDayRecord,
   type HabitDefRecord,
+  type FocusSessionRecord,
   type WeightRecord,
   type SleepRecord,
   type SavedVerseRecord,
@@ -92,6 +93,19 @@ function toRemoteHabitDef(row: HabitDefRecord, userId: string) {
 }
 function fromRemoteHabitDef(row: Record<string, unknown>): HabitDefRecord {
   return { key: row.key as string, label: row.label as string, icon: row.icon as HabitDefRecord["icon"], order: row.sort_order as number };
+}
+
+function toRemoteFocusSession(row: FocusSessionRecord, userId: string) {
+  return { id: row.remoteId, user_id: userId, date: row.date, task: row.task, minutes: row.minutes, created_at: new Date(row.createdAt).toISOString() };
+}
+function fromRemoteFocusSession(row: Record<string, unknown>): FocusSessionRecord {
+  return {
+    remoteId: row.id as string,
+    date: row.date as string,
+    task: row.task as string,
+    minutes: row.minutes as number,
+    createdAt: new Date(row.created_at as string).getTime(),
+  };
 }
 
 function toRemoteWeight(row: WeightRecord, userId: string) {
@@ -212,12 +226,13 @@ interface TableSync {
 const setsSync: TableSync = { remoteTable: "sets", localTable: db.sets, toRemote: toRemoteSet, fromRemote: fromRemoteSet, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true };
 const habitDaysSync: TableSync = { remoteTable: "habit_days", localTable: db.habitDays, toRemote: toRemoteHabitDay, fromRemote: fromRemoteHabitDay, remoteMatch: (date) => ({ date }), idKeyed: false };
 const habitDefsSync: TableSync = { remoteTable: "habit_defs", localTable: db.habitDefs, toRemote: toRemoteHabitDef, fromRemote: fromRemoteHabitDef, remoteMatch: (key) => ({ key }), idKeyed: false };
+const focusSessionsSync: TableSync = { remoteTable: "focus_sessions", localTable: db.focusSessions, toRemote: toRemoteFocusSession, fromRemote: fromRemoteFocusSession, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true };
 const weightsSync: TableSync = { remoteTable: "weights", localTable: db.weights, toRemote: toRemoteWeight, fromRemote: fromRemoteWeight, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true };
 const sleepSync: TableSync = { remoteTable: "sleep", localTable: db.sleep, toRemote: toRemoteSleep, fromRemote: fromRemoteSleep, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true };
 const savedVersesSync: TableSync = { remoteTable: "saved_verses", localTable: db.savedVerses, toRemote: toRemoteSavedVerse, fromRemote: fromRemoteSavedVerse, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true };
 const moureWeeksSync: TableSync = { remoteTable: "moure_weeks", localTable: db.moureWeeks, toRemote: toRemoteMoureWeek, fromRemote: fromRemoteMoureWeek, remoteMatch: (week) => ({ week }), idKeyed: false };
 
-const COLLECTION_TABLES: TableSync[] = [setsSync, habitDaysSync, habitDefsSync, weightsSync, sleepSync, savedVersesSync, moureWeeksSync];
+const COLLECTION_TABLES: TableSync[] = [setsSync, habitDaysSync, habitDefsSync, focusSessionsSync, weightsSync, sleepSync, savedVersesSync, moureWeeksSync];
 
 /** Id-keyed tables can't just bulkPut incoming remote rows — the local
  * primary key is an unrelated auto-increment number, so each remote row has

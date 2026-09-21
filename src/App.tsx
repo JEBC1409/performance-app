@@ -5,6 +5,7 @@ import { ToastHost } from "@/ui/Toast";
 import { seedIfNeeded } from "@/db/seed";
 import { db } from "@/db/db";
 import { useReminders } from "@/hooks/useReminders";
+import { useFocusWatcher } from "@/hooks/useFocusTimer";
 import { useAuth } from "@/hooks/useAuth";
 import { Login } from "@/features/auth/Login";
 import { Hoy } from "@/features/hoy/Hoy";
@@ -12,12 +13,13 @@ import { Entreno } from "@/features/entreno/Entreno";
 import { Habitos } from "@/features/habitos/Habitos";
 import { Datos } from "@/features/datos/Datos";
 import { Horario } from "@/features/horario/Horario";
+import { Focus } from "@/features/focus/Focus";
 import { Kairos } from "@/features/kairos/Kairos";
 import { Mouredev } from "@/features/mouredev/Mouredev";
 import { Perfil } from "@/features/perfil/Perfil";
 import type { GymDay } from "@/lib/cycle";
 
-export type Tab = "hoy" | "entreno" | "habitos" | "datos" | "mas" | "horario" | "kairos" | "mouredev" | "perfil";
+export type Tab = "hoy" | "entreno" | "habitos" | "datos" | "mas" | "horario" | "focus" | "kairos" | "mouredev" | "perfil";
 
 function LoadingScreen() {
   return (
@@ -48,6 +50,7 @@ export default function App() {
   const [autoStart, setAutoStart] = useState<{ day: GymDay; date: string } | null>(null);
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   useReminders(settings);
+  useFocusWatcher();
   useLandingRedirect(!authLoading && !session);
 
   useEffect(() => {
@@ -73,6 +76,7 @@ export default function App() {
       {tab === "habitos" ? <Habitos /> : null}
       {tab === "datos" ? <Datos /> : null}
       {tab === "horario" ? <Horario /> : null}
+      {tab === "focus" ? <Focus /> : null}
       {tab === "kairos" ? <Kairos /> : null}
       {tab === "mouredev" ? <Mouredev /> : null}
       {tab === "perfil" ? <Perfil /> : null}

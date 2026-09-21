@@ -126,6 +126,14 @@ export function NavGlyph({ tab, active, activeColor = "var(--color-red)" }: { ta
           <path d="M9 5v4l3 2" stroke={stroke} strokeWidth="1.5" fill="none" strokeLinecap="square" />
         </svg>
       );
+    case "focus":
+      return (
+        <svg {...common}>
+          <circle cx="9" cy="9" r="6.5" fill="none" stroke={stroke} strokeWidth="1.5" />
+          <circle cx="9" cy="9" r="2" fill={active ? stroke : "none"} stroke={stroke} strokeWidth="1.5" />
+          <path d="M9 1v2.5M9 14.5V17M1 9h2.5M14.5 9H17" stroke={stroke} strokeWidth="1.5" strokeLinecap="square" />
+        </svg>
+      );
     case "kairos":
       return (
         <svg {...common}>

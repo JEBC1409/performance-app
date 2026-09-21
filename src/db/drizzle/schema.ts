@@ -78,6 +78,19 @@ export const habitDefs = pgTable(
   (table) => [primaryKey({ columns: [table.userId, table.key] }), ownedByUser(table)],
 ).enableRLS();
 
+export const focusSessions = pgTable(
+  "focus_sessions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: userIdColumn(),
+    date: date("date").notNull(),
+    task: text("task").notNull(),
+    minutes: integer("minutes").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [ownedByUser(table)],
+).enableRLS();
+
 export const weights = pgTable(
   "weights",
   {

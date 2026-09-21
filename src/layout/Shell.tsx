@@ -13,6 +13,7 @@ const MOBILE_TABS: { key: Tab; label: string }[] = [
 
 const MORE_TABS: { key: Tab; label: string }[] = [
   { key: "horario", label: "Horario" },
+  { key: "focus", label: "Focus" },
   { key: "kairos", label: "Oración" },
   { key: "mouredev", label: "MoureDev" },
   { key: "perfil", label: "Perfil" },
@@ -24,6 +25,7 @@ const SIDEBAR_TABS: { key: Tab; label: string }[] = [
   { key: "habitos", label: "Hábitos" },
   { key: "datos", label: "Datos" },
   { key: "horario", label: "Horario" },
+  { key: "focus", label: "Focus" },
   { key: "kairos", label: "Oración" },
   { key: "mouredev", label: "MoureDev" },
   { key: "perfil", label: "Perfil" },

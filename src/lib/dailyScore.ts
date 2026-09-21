@@ -19,13 +19,16 @@ function habitsDoneFor(day: HabitDayRecord | undefined): number {
  * gapless run to walk backward correctly. */
 export async function computeDailyScores(days: number = STREAK_WINDOW_DAYS): Promise<DayScore[]> {
   const since = addDays(todayISO(), -(days - 1));
-  const [sets, habitDays, weights, sleeps] = await Promise.all([
+  const [sets, habitDays, weights, sleeps, focus] = await Promise.all([
     db.sets.where("date").aboveOrEqual(since).toArray(),
     db.habitDays.where("date").aboveOrEqual(since).toArray(),
     db.weights.where("date").aboveOrEqual(since).toArray(),
     db.sleep.where("date").aboveOrEqual(since).toArray(),
+    db.focusSessions.where("date").aboveOrEqual(since).toArray(),
   ]);
 
+  const focusByDate = new Map<string, number>();
+  focus.forEach((f) => focusByDate.set(f.date, (focusByDate.get(f.date) ?? 0) + 1));
   const trainedDates = new Set(sets.map((s) => s.date));
   const weightDates = new Set(weights.map((w) => w.date));
   const sleepDates = new Set(sleeps.map((s) => s.date));
@@ -40,6 +43,8 @@ export async function computeDailyScores(days: number = STREAK_WINDOW_DAYS): Pro
     if (trained) points += 25;
     if (weightDates.has(date)) points += 5;
     if (sleepDates.has(date)) points += 5;
+    // Pomodoros: 5 each, capped at four a day so it can't outweigh a workout.
+    points += Math.min(focusByDate.get(date) ?? 0, 4) * 5;
     out.push({ date, points, trained, habitsDone });
   }
   return out;
@@ -102,16 +107,18 @@ export function totalPoints(scores: DayScore[]): number {
  * a rank that feels like a real long-term milestone instead of resetting
  * with the 28-day scoring window. */
 export async function totalActiveDays(): Promise<number> {
-  const [sets, habitDays, weights, sleeps] = await Promise.all([
+  const [sets, habitDays, weights, sleeps, focus] = await Promise.all([
     db.sets.toArray(),
     db.habitDays.toArray(),
     db.weights.toArray(),
     db.sleep.toArray(),
+    db.focusSessions.toArray(),
   ]);
   const active = new Set<string>();
   sets.forEach((s) => active.add(s.date));
   weights.forEach((w) => active.add(w.date));
   sleeps.forEach((s) => active.add(s.date));
+  focus.forEach((f) => active.add(f.date));
   habitDays.forEach((h) => {
     if (habitsDoneFor(h) > 0) active.add(h.date);
   });

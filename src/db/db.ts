@@ -61,6 +61,17 @@ export interface SleepRecord {
   note: string;
 }
 
+export interface FocusSessionRecord {
+  id?: number;
+  remoteId?: string;
+  date: string;
+  /** What the block was for, as typed when it started. */
+  task: string;
+  /** Focused minutes — only fully completed blocks are logged. */
+  minutes: number;
+  createdAt: number;
+}
+
 export interface SavedVerseRecord {
   id?: number;
   remoteId?: string;
@@ -105,6 +116,7 @@ export const db = new Dexie("performance-db") as Dexie & {
   sets: EntityTable<SetRecord, "id">;
   habitDays: EntityTable<HabitDayRecord, "date">;
   habitDefs: EntityTable<HabitDefRecord, "key">;
+  focusSessions: EntityTable<FocusSessionRecord, "id">;
   weights: EntityTable<WeightRecord, "id">;
   sleep: EntityTable<SleepRecord, "id">;
   savedVerses: EntityTable<SavedVerseRecord, "id">;
@@ -184,6 +196,12 @@ db.version(3)
       });
     await tx.table("habitDefs").bulkAdd(DEFAULT_HABIT_DEFS);
   });
+
+/** v4 adds focusSessions (the Focus / pomodoro log). A new table only —
+ * nothing existing changes, so no upgrade step is needed. */
+db.version(4).stores({
+  focusSessions: "++id, date, createdAt, remoteId",
+});
 
 export const DEFAULT_SETTINGS: SettingsRecord = {
   id: "app",
