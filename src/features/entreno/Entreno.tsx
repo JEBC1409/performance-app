@@ -117,8 +117,18 @@ export function Entreno({
   }
 
   async function deleteSet(id: number) {
+    const row = await db.sets.get(id);
     await db.sets.delete(id);
-    showToast("Serie eliminada");
+    showToast("Serie eliminada", {
+      action: {
+        label: "Deshacer",
+        onClick: () => {
+          if (!row) return;
+          const { id: _dropped, ...rest } = row;
+          void db.sets.add(rest);
+        },
+      },
+    });
   }
 
   async function copySummary() {

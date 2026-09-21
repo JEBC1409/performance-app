@@ -1,3 +1,4 @@
+import { Icon } from "./Icon";
 export function Stepper({
   value,
   onChange,
@@ -27,7 +28,7 @@ export function Stepper({
         className="glass-flat w-8 flex items-center justify-center text-[var(--color-ink)]"
         aria-label="Disminuir"
       >
-        −
+        <Icon name="minus" size={14} />
       </button>
       <div className="num min-w-14 flex items-center justify-center text-sm border-x border-[var(--color-line-strong)] px-2">
         {value}
@@ -39,7 +40,7 @@ export function Stepper({
         className="glass-flat w-8 flex items-center justify-center text-[var(--color-ink)]"
         aria-label="Aumentar"
       >
-        +
+        <Icon name="plus" size={14} />
       </button>
     </div>
   );

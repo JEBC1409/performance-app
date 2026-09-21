@@ -1,3 +1,4 @@
+import { confirmAction } from "@/lib/confirm";
 import { HORARIO, HORARIO_NOTE, HORARIO_GOAL, BLOCK_COLOR, BLOCK_LABEL, BLOCK_TINT, BLOCK_BORDER, BLOCK_TEXT, type BlockType, type HorarioCell } from "@/data/horario";
 import { DIAS_CORTO, jsDowToIndex } from "@/lib/date";
 import { Card, Eyebrow } from "@/ui";
@@ -19,7 +20,7 @@ export function Horario() {
   const [addingRow, setAddingRow] = useState(false);
 
   async function restore() {
-    if (!window.confirm("¿Volver al horario original? Se descartan todos tus cambios del horario.")) return;
+    if (!(await confirmAction({ title: "¿Volver al horario original?", message: "Se descartan todos tus cambios del horario.", confirmLabel: "Restaurar", danger: true }))) return;
     await resetConfig(CONFIG_HORARIO);
     showToast("Horario original restaurado");
   }

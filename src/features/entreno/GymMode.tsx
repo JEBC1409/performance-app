@@ -1,3 +1,4 @@
+import { Icon } from "@/ui/Icon";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ExerciseTarget } from "@/data/gym";
@@ -35,14 +36,14 @@ function BigStepper({ label, value, unit, onMinus, onPlus, chip }: { label: stri
       </div>
       <div className="mt-2 flex items-center justify-between gap-2">
         <button onClick={onMinus} aria-label={`Menos ${label}`} className="glass flex h-16 w-16 flex-none items-center justify-center rounded-full text-[30px] leading-none">
-          −
+          <Icon name="minus" size={26} />
         </button>
         <div className="min-w-0 text-center">
           <span className="num font-[var(--font-display)] text-[64px] font-light leading-none tracking-tight">{value}</span>
           {unit ? <span className="ml-1 text-[15px] text-[var(--color-muted)]">{unit}</span> : null}
         </div>
         <button onClick={onPlus} aria-label={`Más ${label}`} className="glass-on flex h-16 w-16 flex-none items-center justify-center rounded-full text-[30px] leading-none">
-          +
+          <Icon name="plus" size={26} />
         </button>
       </div>
     </div>
@@ -123,15 +124,15 @@ export function GymMode({
       <GymExercise key={ex.name} ex={ex} date={date} sets={sessionSets.filter((s) => s.exercise === ex.name)} timer={timer} doneCount={doneCount} onLogSet={onLogSet} />
 
       <footer className="flex items-center gap-3 px-4 pt-2" style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
-        <button onClick={() => go(-1)} disabled={idx === 0} className="glass tap-target flex-1 rounded-full py-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-muted)] disabled:opacity-30">
-          ← Anterior
+        <button onClick={() => go(-1)} disabled={idx === 0} className="glass tap-target flex flex-1 items-center justify-center gap-2 rounded-full py-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-muted)] disabled:opacity-30">
+          <Icon name="arrow-left" size={15} /> Anterior
         </button>
         <button
           onClick={() => go(1)}
           disabled={idx === exercises.length - 1}
-          className={`tap-target flex-1 rounded-full py-3 text-[12px] font-semibold uppercase tracking-[0.1em] disabled:opacity-30 ${doneCount >= ex.series ? "glass-on" : "glass text-[var(--color-muted)]"}`}
+          className={`tap-target flex flex-1 items-center justify-center gap-2 rounded-full py-3 text-[12px] font-semibold uppercase tracking-[0.1em] disabled:opacity-30 ${doneCount >= ex.series ? "glass-on" : "glass text-[var(--color-muted)]"}`}
         >
-          Siguiente →
+          Siguiente <Icon name="arrow-right" size={15} />
         </button>
       </footer>
     </div>,

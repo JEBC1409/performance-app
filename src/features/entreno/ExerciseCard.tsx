@@ -10,7 +10,7 @@ export function ExerciseCard({
   exercise: ExerciseTarget;
   done: number;
   onOpen: () => void;
-  photo: { src: string | null; caption?: string };
+  photo: { src: string | null; caption?: string; custom?: boolean };
 }) {
   const target = exercise.series;
   const complete = done >= target;
@@ -24,13 +24,14 @@ export function ExerciseCard({
             src={imgUrl}
             alt={exercise.name}
             loading="lazy"
-            className="h-full w-full object-cover opacity-85 transition-all duration-300 group-hover:scale-105 group-hover:opacity-100"
+            className={`h-full w-full object-cover object-[50%_30%] opacity-90 transition-all duration-300 group-hover:scale-105 group-hover:opacity-100 ${photo.custom ? "" : "photo-tone"}`}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center px-2 text-center text-[10.5px] uppercase tracking-wide text-[var(--color-muted-2)]">
             {exercise.name}
           </div>
         )}
+        {photo.src && !photo.custom ? <div aria-hidden className="pointer-events-none absolute inset-0 mix-blend-color bg-[rgb(var(--accent-rgb)/0.32)]" /> : null}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-transparent" />
         {photo.caption ? (
           <span className="absolute bottom-2 left-2 max-w-[85%] truncate rounded-full bg-black/70 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-ink)]">

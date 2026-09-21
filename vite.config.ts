@@ -45,6 +45,13 @@ export default defineConfig({
         theme_color: "#000000",
         orientation: "portrait-primary",
         lang: "es",
+        // Long-press the installed icon: jump straight to what you do most.
+        shortcuts: [
+          { name: "Marcar hábitos", short_name: "Hábitos", url: "/?enter&go=hoy", icons: [{ src: "icons/icon-192.png", sizes: "192x192", type: "image/png" }] },
+          { name: "Empezar Focus", short_name: "Focus", url: "/?enter&go=focus", icons: [{ src: "icons/icon-192.png", sizes: "192x192", type: "image/png" }] },
+          { name: "Entrenar", short_name: "Entreno", url: "/?enter&go=entreno", icons: [{ src: "icons/icon-192.png", sizes: "192x192", type: "image/png" }] },
+          { name: "Registrar peso", short_name: "Peso", url: "/?enter&go=peso", icons: [{ src: "icons/icon-192.png", sizes: "192x192", type: "image/png" }] },
+        ],
         icons: [
           { src: "icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
           { src: "icons/icon-192-maskable.png", sizes: "192x192", type: "image/png", purpose: "maskable" },

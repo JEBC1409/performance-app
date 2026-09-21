@@ -1,5 +1,8 @@
 import { EmptyState } from "@/ui/EmptyState";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
+import { Icon } from "@/ui/Icon";
+import { holdScreenAwake } from "@/lib/wakeLock";
 import type { ReactNode } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
@@ -159,6 +162,21 @@ function FocusView() {
   const soundOn = useSyncExternalStore(subscribeSound, isSoundOn, isSoundOn);
   const pip = useSyncExternalStore(subscribePip, getPip, getPip);
   const pipAvailable = pipSupport() !== null;
+  // Full-screen "zen" view while a block runs: just the dial and the task.
+  const [immersive, setImmersive] = useState(false);
+  const zen = immersive && timer.status !== "idle";
+  useEffect(() => {
+    if (!zen) return;
+    const release = holdScreenAwake();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setImmersive(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      release();
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [zen]);
 
   const today = todayISO();
   const sessions = useLiveQuery(() => db.focusSessions.where("date").equals(today).toArray(), [today]);
@@ -175,6 +193,20 @@ function FocusView() {
   const isBreak = timer.phase === "break";
   const paused = timer.status === "paused";
   const accent = isBreak ? "var(--color-good)" : "var(--color-red)";
+
+  function removeSession(s: { id?: number; date: string; task: string; minutes: number; createdAt: number; remoteId?: string }) {
+    if (s.id == null) return;
+    void db.focusSessions.delete(s.id);
+    showToast("Bloque eliminado", {
+      action: {
+        label: "Deshacer",
+        onClick: () => {
+          const { id: _dropped, ...rest } = s;
+          void db.focusSessions.add(rest);
+        },
+      },
+    });
+  }
 
   function begin() {
     const t = task.trim();
@@ -235,7 +267,13 @@ function FocusView() {
             />
             {stateLabel}
           </span>
-          <div className="flex items-center gap-1.5" aria-label={`Bloque ${Math.min(timer.cycle + (isBreak ? 0 : 1), BLOCKS_PER_SET)} de ${BLOCKS_PER_SET}`}>
+          <div className="flex items-center gap-3">
+            {active ? (
+              <button onClick={() => setImmersive(true)} aria-label="Pantalla completa" title="Pantalla completa" className="glass-flat hit flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-ink)]">
+                <Icon name="expand" size={16} />
+              </button>
+            ) : null}
+            <div className="flex items-center gap-1.5" aria-label={`Bloque ${Math.min(timer.cycle + (isBreak ? 0 : 1), BLOCKS_PER_SET)} de ${BLOCKS_PER_SET}`}>
             {Array.from({ length: BLOCKS_PER_SET }, (_, i) => {
               const done = i < timer.cycle;
               const current = active && !isBreak && i === timer.cycle;
@@ -250,6 +288,7 @@ function FocusView() {
                 />
               );
             })}
+          </div>
           </div>
         </div>
 
@@ -422,6 +461,53 @@ function FocusView() {
         )}
       </div>
 
+      {zen
+        ? createPortal(
+            <div className="fixed inset-0 z-[68] flex flex-col items-center justify-between bg-[var(--color-bg)] px-6" role="dialog" aria-modal aria-label="Focus en pantalla completa" style={{ paddingTop: "calc(1rem + env(safe-area-inset-top))", paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}>
+              <div className="ambient-bg" aria-hidden>
+                <div className="ambient-glow" />
+              </div>
+              <div className="flex w-full justify-end">
+                <button onClick={() => setImmersive(false)} aria-label="Salir de pantalla completa" className="glass hit flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-muted)]">
+                  <Icon name="close" size={16} />
+                </button>
+              </div>
+              <div className="w-full text-center">
+                <div className={`eyebrow ${isBreak ? "" : "eyebrow-accent"}`}>{stateLabel}</div>
+                <div className="mt-2 font-[var(--font-display)] text-[22px] leading-snug">{isBreak ? "Aléjate de la pantalla un momento" : timer.task}</div>
+              </div>
+              <div style={{ transform: "scale(1.2)" }}>
+                <Dial progress={progress} isBreak={isBreak} live={timer.status === "running"}>
+                  <div className="num font-[var(--font-display)] text-[62px] font-light leading-none tracking-tight">{fmtClock(left)}</div>
+                  <div className="mt-3 text-[10.5px] font-medium uppercase tracking-[0.22em] text-[var(--color-muted)]">{isBreak ? "respira" : `bloque de ${timer.focusMin} min`}</div>
+                </Dial>
+              </div>
+              <div className="flex items-center gap-6">
+                <button
+                  onClick={() => {
+                    stopFocus();
+                    setImmersive(false);
+                    showToast(isBreak ? "Descanso saltado" : "Bloque cancelado");
+                  }}
+                  aria-label={isBreak ? "Saltar descanso" : "Cancelar bloque"}
+                  className="glass tap-target flex h-14 w-14 items-center justify-center rounded-full text-[var(--color-muted)]"
+                >
+                  {isBreak ? <SkipIcon /> : <StopIcon />}
+                </button>
+                <button
+                  onClick={paused ? resumeFocus : pauseFocus}
+                  aria-label={paused ? "Reanudar" : "Pausar"}
+                  className={`tap-target flex h-20 w-20 items-center justify-center rounded-full text-white ${isBreak ? "glass" : "glass-on"}`}
+                  style={isBreak ? { background: "linear-gradient(165deg, rgba(90,235,150,0.5) 0%, rgba(47,174,102,0.42) 55%, rgba(20,110,60,0.5) 100%)", borderColor: "rgba(120,240,170,0.5)" } : undefined}
+                >
+                  {paused ? <PlayIcon /> : <PauseIcon />}
+                </button>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
+
       {/* today */}
       <div className="panel-surface p-4">
         <div className="flex items-end justify-between">
@@ -474,7 +560,7 @@ function FocusView() {
                   {s.minutes}m
                 </span>
                 <button
-                  onClick={() => s.id != null && db.focusSessions.delete(s.id)}
+                  onClick={() => removeSession(s)}
                   aria-label={`Eliminar ${s.task}`}
                   className="hit flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted-2)] transition-colors hover:text-[var(--color-red)]"
                 >

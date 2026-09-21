@@ -46,8 +46,10 @@ export function HabitManager() {
   }
 
   async function removeHabit(key: string, label: string) {
+    const row = await db.habitDefs.get(key);
     await db.habitDefs.delete(key);
-    showToast(`"${label}" eliminado`);
+    // Days already marked keep their record, so putting the habit back restores everything.
+    showToast(`"${label}" eliminado`, { action: { label: "Deshacer", onClick: () => void (row && db.habitDefs.put(row)) } });
   }
 
   return (

@@ -1,3 +1,5 @@
+import { Icon } from "@/ui/Icon";
+import { confirmAction } from "@/lib/confirm";
 import { useState } from "react";
 import { Button, Field, Input, Select, Sheet } from "@/ui";
 import { showToast } from "@/ui/Toast";
@@ -82,10 +84,10 @@ export function BlockSheet({ day, row, onClose }: { day: number; row: number; on
         {seg ? (
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => apply(resizeBlock(currentHorarioConfig(), day, row, 1), "La fila de abajo ya está ocupada")} className="glass rounded-full px-3.5 py-2 text-[11px] font-semibold text-[var(--color-muted)]">
-              Alargar una fila ↓
+              <span className="inline-flex items-center gap-1.5">Alargar una fila <Icon name="arrow-down" size={13} /></span>
             </button>
             <button type="button" onClick={() => apply(resizeBlock(currentHorarioConfig(), day, row, -1), "El bloque ya ocupa una sola fila")} className="glass rounded-full px-3.5 py-2 text-[11px] font-semibold text-[var(--color-muted)]">
-              Acortar una fila ↑
+              <span className="inline-flex items-center gap-1.5">Acortar una fila <Icon name="arrow-up" size={13} /></span>
             </button>
             <button
               type="button"
@@ -137,7 +139,7 @@ export function RowSheet({ row, onClose }: { row: number; onClose: () => void })
         <button
           type="button"
           onClick={async () => {
-            if (!window.confirm("¿Eliminar esta fila? Los bloques que solo estén en ella desaparecen.")) return;
+            if (!(await confirmAction({ title: "¿Eliminar esta fila?", message: "Los bloques que solo estén en ella desaparecen.", confirmLabel: "Eliminar", danger: true }))) return;
             const next = removeRow(currentHorarioConfig(), row);
             if (!next) {
               showToast("No puedes eliminar la única fila");

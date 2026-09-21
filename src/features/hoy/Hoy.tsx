@@ -1,3 +1,4 @@
+import { Icon } from "@/ui/Icon";
 import { Skeleton } from "@/ui/Skeleton";
 import { useState } from "react";
 import type { ReactNode } from "react";
@@ -154,7 +155,7 @@ export function Hoy({
             onClick={() => onNavigate("horario")}
             className="text-[11px] text-[var(--color-muted)] hover:text-[var(--color-red)] uppercase tracking-[0.12em] transition-colors"
           >
-            Ver horario →
+            Ver horario <Icon name="arrow-right" size={12} className="ml-1 inline" />
           </button>
         </div>
         <h1 className="mt-3 font-[var(--font-display)] text-[24px] leading-tight tracking-tight">{blockTitle}</h1>
@@ -187,7 +188,7 @@ export function Hoy({
           <div className="mt-1 font-[var(--font-display)] text-[14px] tracking-[0.04em]">Tu resumen de la semana</div>
           <div className="mt-0.5 text-[11px] text-[var(--color-muted)]">Entrenos, Focus, hábitos, sueño y peso contra la semana anterior.</div>
         </div>
-        <span className="flex-none text-[var(--color-red)]">→</span>
+        <Icon name="arrow-right" size={18} className="flex-none text-[var(--color-red)]" />
       </button>
     ) : null;
 
@@ -287,7 +288,7 @@ export function Hoy({
             onClick={() => onNavigate("kairos")}
             className="text-[11px] text-[var(--color-muted)] hover:text-[var(--color-gold)] uppercase tracking-[0.12em] transition-colors"
           >
-            Oración →
+            Oración <Icon name="arrow-right" size={12} className="ml-1 inline" />
           </button>
         </div>
         {verse ? (

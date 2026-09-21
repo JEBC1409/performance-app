@@ -1,3 +1,4 @@
+import { Icon } from "@/ui/Icon";
 import { toggleHabitDay } from "@/lib/habits";
 import { haptic } from "@/lib/feedback";
 import { useMemo, useState } from "react";
@@ -107,14 +108,14 @@ export function Habitos() {
               className="glass hit w-7 h-7 rounded-full flex items-center justify-center"
               aria-label="Mes anterior"
             >
-              ‹
+              <Icon name="chevron-left" size={14} />
             </button>
             <button
               onClick={() => setMonthDate(new Date(year, month + 1, 1))}
               className="glass hit w-7 h-7 rounded-full flex items-center justify-center"
               aria-label="Mes siguiente"
             >
-              ›
+              <Icon name="chevron-right" size={14} />
             </button>
           </div>
         </div>

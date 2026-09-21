@@ -1,3 +1,5 @@
+import { Icon } from "@/ui/Icon";
+import { confirmAction } from "@/lib/confirm";
 import { useState } from "react";
 import { Button, Card, Eyebrow, Field, Input, Select, Stepper } from "@/ui";
 import { showToast } from "@/ui/Toast";
@@ -53,10 +55,10 @@ function ExerciseRow({
           </div>
         </button>
         <button type="button" onClick={() => onMove(-1)} disabled={first} aria-label={`Subir ${ex.name}`} className="glass-flat hit flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-muted)] disabled:opacity-30">
-          ↑
+          <Icon name="arrow-up" size={15} />
         </button>
         <button type="button" onClick={() => onMove(1)} disabled={last} aria-label={`Bajar ${ex.name}`} className="glass-flat hit flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-muted)] disabled:opacity-30">
-          ↓
+          <Icon name="arrow-down" size={15} />
         </button>
       </div>
 
@@ -168,7 +170,7 @@ export function RoutineEditor() {
   }
 
   async function restore() {
-    if (!window.confirm("¿Volver a la rutina original? Se descartan tus cambios de ejercicios, series y pesos.")) return;
+    if (!(await confirmAction({ title: "¿Volver a la rutina original?", message: "Se descartan tus cambios de ejercicios, series y pesos.", confirmLabel: "Restaurar", danger: true }))) return;
     await resetConfig(CONFIG_ROUTINE);
     setDraft(defaultRoutine());
     setEditing(false);

@@ -1,3 +1,4 @@
+import { Icon } from "@/ui/Icon";
 import { Card, Eyebrow } from "@/ui";
 import { useUiPrefs } from "@/hooks/useUiPrefs";
 import { ACCENTS, DEFAULT_UI_PREFS, HOME_CARDS, setUiPrefs } from "@/lib/uiPrefs";
@@ -74,7 +75,7 @@ export function AppearanceCard() {
                 aria-label={`Subir ${label(k)}`}
                 className="glass-flat hit flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-muted)] disabled:opacity-30"
               >
-                ↑
+                <Icon name="arrow-up" size={15} />
               </button>
               <button
                 onClick={() => move(i, 1)}
@@ -82,7 +83,7 @@ export function AppearanceCard() {
                 aria-label={`Bajar ${label(k)}`}
                 className="glass-flat hit flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-muted)] disabled:opacity-30"
               >
-                ↓
+                <Icon name="arrow-down" size={15} />
               </button>
             </li>
           ))}

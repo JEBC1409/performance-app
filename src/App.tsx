@@ -3,6 +3,8 @@ import { Suspense, lazy, useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Shell } from "@/layout/Shell";
 import { ToastHost } from "@/ui/Toast";
+import { ConfirmHost } from "@/ui/Confirm";
+import { readDeepLink } from "@/lib/deepLink";
 import { seedIfNeeded } from "@/db/seed";
 import { db } from "@/db/db";
 import { useReminders } from "@/hooks/useReminders";
@@ -81,7 +83,16 @@ function useLandingRedirect(shouldRedirect: boolean) {
 export default function App() {
   const { session, loading: authLoading } = useAuth();
   const [ready, setReady] = useState(false);
-  const [tab, setTabRaw] = useState<Tab>("hoy");
+  const [tab, setTabRaw] = useState<Tab>(() => {
+    const linked = readDeepLink(window.location.search);
+    if (linked) {
+      // Keep "?enter" (the app gate) but drop the one-shot "go".
+      const url = new URL(window.location.href);
+      url.searchParams.delete("go");
+      window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+    }
+    return linked ?? "hoy";
+  });
   // Screens cross-fade/slide where the browser supports View Transitions.
   const setTab = (next: Tab) => {
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -158,6 +169,7 @@ export default function App() {
       <ErrorBoundary fallback={() => null}>
         <FocusMiniBar visible={tab !== "focus"} onOpen={() => setTab("focus")} />
       </ErrorBoundary>
+      <ConfirmHost />
       <ToastHost />
     </Shell>
   );

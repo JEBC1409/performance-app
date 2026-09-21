@@ -768,3 +768,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     animation: none;
   }
 }
+
+/* Stock exercise photos come from many sources; a shared desaturate + accent
+   tint (see ExerciseCard) makes them read as one set. Your own photos are left alone. */
+.photo-tone {
+  filter: saturate(0.6) contrast(1.06) brightness(0.96);
+}

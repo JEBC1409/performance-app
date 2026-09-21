@@ -1,3 +1,4 @@
+import { Icon } from "@/ui/Icon";
 import { EmptyState } from "@/ui/EmptyState";
 import { SkeletonCard, SkeletonTiles } from "@/ui/Skeleton";
 import { useState } from "react";
@@ -91,7 +92,7 @@ export function SemanaTab() {
           aria-label="Semana anterior"
           className="glass tap-target flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-ink)]"
         >
-          ‹
+          <Icon name="chevron-left" size={18} />
         </button>
         <div className="text-center">
           <div className="text-[13px] font-semibold">{weekLabel(weekStart, currentWeek)}</div>
@@ -105,7 +106,7 @@ export function SemanaTab() {
           aria-label="Semana siguiente"
           className="glass tap-target flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-ink)] disabled:opacity-30"
         >
-          ›
+          <Icon name="chevron-right" size={18} />
         </button>
       </div>
 
