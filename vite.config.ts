@@ -10,7 +10,17 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["icons/*.png"],
       workbox: {
-        globPatterns: ["**/*.{js,css,html,png,svg,woff2}", "bible/rvr1909.json"],
+        globPatterns: ["**/*.{js,css,html,png,svg,woff2}"],
+        // The 4 MB Bible isn't downloaded on install anymore (that made the first
+        // visit heavy); it is cached the first time you read or open Hoy, then
+        // works offline.
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }: { url: URL }) => url.pathname === "/bible/rvr1909.json",
+            handler: "CacheFirst",
+            options: { cacheName: "bible-v1", expiration: { maxEntries: 2 } },
+          },
+        ],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         // Without these, a new deployment's service worker installs but waits
         // for every open tab to close before taking over — so a plain reload

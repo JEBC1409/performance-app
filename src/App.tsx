@@ -1,5 +1,5 @@
 import { SkeletonCard, SkeletonTiles } from "@/ui/Skeleton";
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Shell } from "@/layout/Shell";
 import { ToastHost } from "@/ui/Toast";
@@ -11,19 +11,43 @@ import { useScheduleNotifications } from "@/hooks/useScheduleNotifications";
 import { useAuth } from "@/hooks/useAuth";
 import { Login } from "@/features/auth/Login";
 import { Hoy } from "@/features/hoy/Hoy";
-import { Entreno } from "@/features/entreno/Entreno";
-import { Habitos } from "@/features/habitos/Habitos";
-import { Datos } from "@/features/datos/Datos";
-import { Horario } from "@/features/horario/Horario";
-import { Focus } from "@/features/focus/Focus";
 import { FocusPipHost } from "@/features/focus/FocusPip";
 import { FocusMiniBar } from "@/features/focus/FocusMiniBar";
 import { flushSync } from "react-dom";
 import { ErrorBoundary } from "@/ui/ErrorBoundary";
-import { Kairos } from "@/features/kairos/Kairos";
-import { Mouredev } from "@/features/mouredev/Mouredev";
-import { Perfil } from "@/features/perfil/Perfil";
 import type { GymDay } from "@/lib/cycle";
+
+// Every screen except Hoy loads on first visit, so the first paint ships far
+// less code. They are warmed in the background once the app is idle.
+const Entreno = lazy(() => import("@/features/entreno/Entreno").then((m) => ({ default: m.Entreno })));
+const Habitos = lazy(() => import("@/features/habitos/Habitos").then((m) => ({ default: m.Habitos })));
+const Datos = lazy(() => import("@/features/datos/Datos").then((m) => ({ default: m.Datos })));
+const Horario = lazy(() => import("@/features/horario/Horario").then((m) => ({ default: m.Horario })));
+const Focus = lazy(() => import("@/features/focus/Focus").then((m) => ({ default: m.Focus })));
+const Kairos = lazy(() => import("@/features/kairos/Kairos").then((m) => ({ default: m.Kairos })));
+const Mouredev = lazy(() => import("@/features/mouredev/Mouredev").then((m) => ({ default: m.Mouredev })));
+const Perfil = lazy(() => import("@/features/perfil/Perfil").then((m) => ({ default: m.Perfil })));
+
+const warmScreens = () =>
+  Promise.all([
+    import("@/features/entreno/Entreno"),
+    import("@/features/habitos/Habitos"),
+    import("@/features/datos/Datos"),
+    import("@/features/horario/Horario"),
+    import("@/features/focus/Focus"),
+    import("@/features/kairos/Kairos"),
+    import("@/features/mouredev/Mouredev"),
+    import("@/features/perfil/Perfil"),
+  ]).catch(() => {});
+
+function ScreenFallback() {
+  return (
+    <div className="flex flex-col gap-4" role="status" aria-label="Cargando">
+      <SkeletonCard lines={2} />
+      <SkeletonTiles count={2} />
+    </div>
+  );
+}
 
 export type Tab = "hoy" | "entreno" | "habitos" | "datos" | "mas" | "horario" | "focus" | "kairos" | "mouredev" | "perfil";
 
@@ -82,6 +106,15 @@ export default function App() {
     seedIfNeeded().finally(() => setReady(true));
   }, []);
 
+  useEffect(() => {
+    if (!ready) return;
+    const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback;
+    const id = idle ? idle(() => void warmScreens()) : window.setTimeout(() => void warmScreens(), 2500);
+    return () => {
+      if (!idle) window.clearTimeout(id);
+    };
+  }, [ready]);
+
   function startEntreno(day: GymDay, date: string) {
     setAutoStart({ day, date });
     setTab("entreno");
@@ -96,6 +129,18 @@ export default function App() {
 
   return (
     <Shell active={tab} onChange={setTab}>
+      <ErrorBoundary
+        fallback={() => (
+          <div className="panel-surface p-5 text-center" role="alert">
+            <div className="eyebrow eyebrow-accent">No se pudo cargar esta pantalla</div>
+            <p className="mt-2 text-[13px] text-[var(--color-muted)]">Puede ser la conexión. Tus datos están a salvo.</p>
+            <button onClick={() => window.location.reload()} className="glass tap-target mt-4 rounded-full px-6 text-[12px] font-semibold uppercase tracking-[0.1em]">
+              Reintentar
+            </button>
+          </div>
+        )}
+      >
+      <Suspense fallback={<ScreenFallback />}>
       {tab === "hoy" ? <Hoy onStartEntreno={startEntreno} onNavigate={setTab} /> : null}
       {tab === "entreno" ? <Entreno autoStart={autoStart} onConsumeAutoStart={() => setAutoStart(null)} /> : null}
       {tab === "habitos" ? <Habitos /> : null}
@@ -105,6 +150,8 @@ export default function App() {
       {tab === "kairos" ? <Kairos /> : null}
       {tab === "mouredev" ? <Mouredev /> : null}
       {tab === "perfil" ? <Perfil /> : null}
+      </Suspense>
+      </ErrorBoundary>
       <ErrorBoundary fallback={() => null}>
         <FocusPipHost />
       </ErrorBoundary>
