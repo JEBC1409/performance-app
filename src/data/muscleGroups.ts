@@ -10,13 +10,14 @@ export const MUSCLE_GROUP_LABEL: Record<MuscleGroup, string> = {
 };
 
 export const EXERCISE_MUSCLE_GROUP: Record<string, MuscleGroup> = {
-  "Pullover en banco": "espalda",
+  "Pullover en polea": "espalda",
   "Jalón al pecho agarre ancho": "espalda",
   "Remo en máquina Hammer": "espalda",
   "Remo unilateral en Hammer": "espalda",
   "Face pulls": "hombro",
   "Curl barra Z": "brazo",
-  "Curl martillo": "brazo",
+  "Curl sentado inclinado": "brazo",
+  "Curl en máquina": "brazo",
   "Laterales con mancuerna": "hombro",
   "Aperturas mancuerna inclinado": "pecho",
   "Press inclinado mancuernas": "pecho",
@@ -36,7 +37,8 @@ export const EXERCISE_MUSCLE_GROUP: Record<string, MuscleGroup> = {
   // Retired exercise names — kept so already-logged historical sets (not
   // rewritten when the routine's names/equipment changed) still count
   // toward muscle volume.
-  "Pullover en polea": "espalda",
+  "Pullover en banco": "espalda",
+  "Curl martillo": "brazo",
   "Remo en máquina o barra": "espalda",
   "Remo unilateral mancuerna": "espalda",
   "Prensa / Hack squat": "pierna",

@@ -150,6 +150,8 @@ const RANK_ACCESSORY_EXERCISES = new Set<string>([
   "Laterales mancuerna",
   "Curl barra Z",
   "Curl martillo",
+  "Curl sentado inclinado",
+  "Curl en máquina",
   "Extensión trícep cuerda",
   "Extensiones de piernas",
   "Extensión de piernas unilateral",

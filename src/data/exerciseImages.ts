@@ -5,14 +5,17 @@
  * lookup rather than automated fuzzy matching. */
 const IMAGE_BASE = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises";
 
+/** Values are the dataset id, optionally "id#1" to use its second frame
+ * (the contracted position) instead of the first. */
 const EXERCISE_IMAGE_ID: Record<string, string> = {
-  "Pullover en banco": "Bent-Arm_Dumbbell_Pullover",
+  "Pullover en polea": "Straight-Arm_Pulldown",
   "Jalón al pecho agarre ancho": "Wide-Grip_Lat_Pulldown",
-  "Remo en máquina Hammer": "Seated_Cable_Rows",
-  "Remo unilateral en Hammer": "One-Arm_Dumbbell_Row",
+  "Remo en máquina Hammer": "Leverage_Iso_Row",
+  "Remo unilateral en Hammer": "Leverage_Iso_Row#1",
   "Face pulls": "Face_Pull",
   "Curl barra Z": "EZ-Bar_Curl",
-  "Curl martillo": "Hammer_Curls",
+  "Curl sentado inclinado": "Incline_Dumbbell_Curl",
+  "Curl en máquina": "Machine_Bicep_Curl",
   "Laterales con mancuerna": "Side_Lateral_Raise",
   "Aperturas mancuerna inclinado": "Incline_Dumbbell_Flyes",
   "Press inclinado mancuernas": "Incline_Dumbbell_Press",
@@ -32,6 +35,8 @@ const EXERCISE_IMAGE_ID: Record<string, string> = {
 };
 
 export function exerciseImageUrl(name: string): string | null {
-  const id = EXERCISE_IMAGE_ID[name];
-  return id ? `${IMAGE_BASE}/${id}/0.jpg` : null;
+  const entry = EXERCISE_IMAGE_ID[name];
+  if (!entry) return null;
+  const [id, frame = "0"] = entry.split("#");
+  return `${IMAGE_BASE}/${id}/${frame}.jpg`;
 }
