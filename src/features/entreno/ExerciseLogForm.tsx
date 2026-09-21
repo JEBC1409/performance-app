@@ -3,6 +3,8 @@ import type { ExerciseTarget } from "@/data/gym";
 import type { SetRecord } from "@/db/db";
 import type { LastSession } from "./useEntrenoData";
 import { fmtDateHuman } from "@/lib/date";
+import { parseRepRange, suggestNext } from "@/lib/progression";
+import type { SuggestionKind } from "@/lib/progression";
 
 export interface LogSetPayload {
   weight: number | null;
@@ -13,6 +15,18 @@ export interface LogSetPayload {
 }
 
 const emptyForm = { weight: "", reps: "", toFailure: false, rpe: "", note: "" };
+
+const SUGGESTION_LABEL: Record<SuggestionKind, string> = {
+  increase: "Sube peso",
+  repeat: "Mismo peso",
+  reduce: "Baja peso",
+};
+
+const SUGGESTION_COLOR: Record<SuggestionKind, string> = {
+  increase: "var(--color-good)",
+  repeat: "var(--color-red)",
+  reduce: "#e0a030",
+};
 
 export function ExerciseLogForm({
   exercise,
@@ -63,6 +77,15 @@ export function ExerciseLogForm({
     setEditingId(null);
   }
 
+  const suggestion = suggestNext(parseRepRange(exercise.repsLabel), lastSession?.sets ?? []);
+  const fmtNum = (n: number) => String(Math.round(n * 10) / 10);
+
+  function applySuggestion() {
+    if (!suggestion) return;
+    setEditingId(null);
+    setForm((f) => ({ ...f, weight: suggestion.weight != null ? fmtNum(suggestion.weight) : "", reps: String(suggestion.reps) }));
+  }
+
   const lastTop = lastSession?.sets.reduce<number | null>((max, s) => (s.weight != null && (max == null || s.weight > max) ? s.weight : max), null);
 
   return (
@@ -86,6 +109,38 @@ export function ExerciseLogForm({
         <div className="num text-[11px] text-[var(--color-muted)]">
           Última vez ({fmtDateHuman(lastSession.date)}): {lastSession.sets.map((s) => `${s.weight ?? "—"}×${s.reps ?? "—"}`).join(" · ")}
           {lastTop != null ? <span className="text-[var(--color-red)]"> · top {lastTop}kg</span> : null}
+        </div>
+      ) : null}
+
+      {suggestion && done < target ? (
+        <div className="flex items-center gap-3 rounded-2xl border border-[var(--color-line-strong)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[9.5px] font-semibold uppercase tracking-[0.14em]" style={{ color: SUGGESTION_COLOR[suggestion.kind] }}>
+                Hoy · {SUGGESTION_LABEL[suggestion.kind]}
+              </span>
+              {suggestion.delta != null ? (
+                <span className="num text-[10px] text-[var(--color-muted)]">
+                  {suggestion.delta > 0 ? "+" : ""}
+                  {fmtNum(suggestion.delta)} kg
+                </span>
+              ) : null}
+            </div>
+            <div className="num mt-0.5 text-[17px] font-semibold leading-tight">
+              {suggestion.weight != null ? `${fmtNum(suggestion.weight)} kg × ${suggestion.reps}` : `${suggestion.reps} reps`}
+            </div>
+            <div className="mt-0.5 text-[10.5px] leading-snug text-[var(--color-muted)]">{suggestion.reason}</div>
+          </div>
+          <button
+            onClick={applySuggestion}
+            className="tap-target flex-none rounded-full border border-[var(--color-red)] px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--color-red)] transition-colors hover:bg-[var(--color-red)] hover:text-white"
+          >
+            Usar
+          </button>
+        </div>
+      ) : !lastSession && parseRepRange(exercise.repsLabel) ? (
+        <div className="rounded-2xl border border-dashed border-[var(--color-line-strong)] px-3 py-2.5 text-[11px] leading-snug text-[var(--color-muted)]">
+          Primera vez: elige un peso con el que llegues al fallo dentro del rango ({exercise.repsLabel}). Desde la próxima te sugiero cuánto subir.
         </div>
       ) : null}
 
