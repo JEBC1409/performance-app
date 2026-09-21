@@ -26,7 +26,15 @@ export interface FocusTimerState {
   cycle: number;
 }
 
+/** Quick picks; any whole number of minutes between MIN and MAX also works. */
 export const FOCUS_OPTIONS = [15, 25, 45, 50];
+export const MIN_FOCUS_MIN = 1;
+export const MAX_FOCUS_MIN = 240;
+
+/** A usable block length: a whole number of minutes inside the allowed range, else null. */
+export function validFocusMin(n: number): number | null {
+  return Number.isInteger(n) && n >= MIN_FOCUS_MIN && n <= MAX_FOCUS_MIN ? n : null;
+}
 const SHORT_BREAK_MIN = 5;
 const LONG_BREAK_MIN = 15;
 export const BLOCKS_PER_SET = 4;
@@ -46,7 +54,7 @@ function sanitize(raw: unknown): FocusTimerState {
   const r = raw as Record<string, unknown>;
   const num = (v: unknown, d: number) => (typeof v === "number" && Number.isFinite(v) ? v : d);
   const status = r.status === "running" || r.status === "paused" ? r.status : "idle";
-  const focusMin = FOCUS_OPTIONS.includes(num(r.focusMin, 25)) ? num(r.focusMin, 25) : 25;
+  const focusMin = validFocusMin(num(r.focusMin, 25)) ?? 25;
   const totalSec = Math.max(0, Math.round(num(r.totalSec, 0)));
   const cycle = clamp(Math.floor(num(r.cycle, 0)), 0, BLOCKS_PER_SET);
   const task = typeof r.task === "string" ? r.task.slice(0, MAX_TASK) : "";
@@ -127,7 +135,7 @@ export function remainingSeconds(s: FocusTimerState, now: number): number {
 }
 
 export function startFocus(task: string, focusMin: number): void {
-  const min = FOCUS_OPTIONS.includes(focusMin) ? focusMin : 25;
+  const min = validFocusMin(Math.round(focusMin)) ?? 25;
   const totalSec = min * 60;
   const name = task.trim().slice(0, MAX_TASK) || "Sin nombre";
   set({ ...state, status: "running", phase: "focus", task: name, focusMin: min, totalSec, endsAt: Date.now() + totalSec * 1000, remainingSec: 0 });

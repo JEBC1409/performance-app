@@ -23,7 +23,7 @@ describe("focusTimer", () => {
       const t = await fresh(bad);
       expect(t.getFocusState().status).toBe("idle");
     }
-    const t = await fresh({ status: "paused", phase: "break", totalSec: 300, remainingSec: 9999, cycle: 99, focusMin: 7, task: 5 });
+    const t = await fresh({ status: "paused", phase: "break", totalSec: 300, remainingSec: 9999, cycle: 99, focusMin: 0.5, task: 5 });
     const s = t.getFocusState();
     expect(s.remainingSec).toBe(300);
     expect(s.cycle).toBe(t.BLOCKS_PER_SET);
@@ -93,5 +93,22 @@ describe("focusTimer", () => {
     localStorage.setItem(KEY, JSON.stringify({ status: "running", phase: "focus", task: "otra pestaña", focusMin: 25, totalSec: 1500, endsAt: Date.now() + 60_000, remainingSec: 0, cycle: 0 }));
     t.refreshFromStorage();
     expect(t.getFocusState().task).toBe("otra pestaña");
+  });
+
+  it("accepts any whole number of minutes in range, not just the presets", async () => {
+    const t = await fresh();
+    expect(t.validFocusMin(90)).toBe(90);
+    expect(t.validFocusMin(1)).toBe(1);
+    expect(t.validFocusMin(240)).toBe(240);
+    for (const bad of [0, -5, 241, 12.5, Number.NaN]) expect(t.validFocusMin(bad)).toBeNull();
+
+    t.startFocus("deep work", 90);
+    expect(t.getFocusState()).toMatchObject({ focusMin: 90, totalSec: 5400 });
+    t.startFocus("nonsense", 9999);
+    expect(t.getFocusState().focusMin).toBe(25); // out of range falls back
+
+    // and a custom length survives a reload
+    const again = await fresh({ status: "idle", phase: "focus", task: "x", focusMin: 90, totalSec: 0, endsAt: null, remainingSec: 0, cycle: 0 });
+    expect(again.getFocusState().focusMin).toBe(90);
   });
 });

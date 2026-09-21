@@ -6,7 +6,7 @@ import { Eyebrow, Button } from "@/ui";
 import { ErrorBoundary } from "@/ui/ErrorBoundary";
 import { showToast } from "@/ui/Toast";
 import { todayISO } from "@/lib/date";
-import { BLOCKS_PER_SET, FOCUS_OPTIONS, pauseFocus, remainingSeconds, resumeFocus, startFocus, stopFocus } from "@/lib/focusTimer";
+import { BLOCKS_PER_SET, FOCUS_OPTIONS, MAX_FOCUS_MIN, MIN_FOCUS_MIN, pauseFocus, remainingSeconds, resumeFocus, startFocus, stopFocus, validFocusMin } from "@/lib/focusTimer";
 import { fmtClock, useFocusTimer, useNow } from "@/hooks/useFocusTimer";
 import { getPip, pipSupport, subscribePip, togglePip } from "@/lib/focusPip";
 import { isSoundOn, setSoundOn, subscribeSound, unlockAudio } from "@/lib/focusSound";
@@ -152,6 +152,9 @@ function FocusView() {
   const now = useNow(timer.status === "running");
   const [task, setTask] = useState(timer.task);
   const [focusMin, setFocusMin] = useState(timer.focusMin);
+  // "Otro": type any length. Starts on if the last block used a non-preset one.
+  const [customOn, setCustomOn] = useState(!FOCUS_OPTIONS.includes(timer.focusMin));
+  const [customText, setCustomText] = useState(String(timer.focusMin));
   const soundOn = useSyncExternalStore(subscribeSound, isSoundOn, isSoundOn);
   const pip = useSyncExternalStore(subscribePip, getPip, getPip);
   const pipAvailable = pipSupport() !== null;
@@ -176,6 +179,10 @@ function FocusView() {
     const t = task.trim();
     if (!t) {
       showToast("Escribe qué vas a hacer");
+      return;
+    }
+    if (customOn && validFocusMin(Number(customText)) == null) {
+      showToast(`Escribe entre ${MIN_FOCUS_MIN} y ${MAX_FOCUS_MIN} minutos`);
       return;
     }
     // Both need a user gesture, and this click is the one we get: unlock the
@@ -342,26 +349,64 @@ function FocusView() {
             ) : null}
 
             <div
-              className="mt-5 grid grid-cols-4 gap-1 rounded-full border border-[var(--color-line)] bg-[rgba(0,0,0,0.35)] p-1"
+              className="mt-5 grid grid-cols-5 gap-1 rounded-full border border-[var(--color-line)] bg-[rgba(0,0,0,0.35)] p-1"
               role="group"
               aria-label="Duración del bloque"
             >
-              {FOCUS_OPTIONS.map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setFocusMin(m)}
-                  aria-pressed={focusMin === m}
-                  className={`num rounded-full py-2 text-[13px] font-semibold transition-all ${
-                    focusMin === m
-                      ? "bg-[var(--color-red)] text-white shadow-[0_6px_18px_-6px_rgba(223,37,49,0.9)]"
-                      : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
-                  }`}
-                >
-                  {m}
-                  <span className="ml-0.5 text-[9px] font-medium opacity-70">m</span>
-                </button>
-              ))}
+              {FOCUS_OPTIONS.map((m) => {
+                const on = !customOn && focusMin === m;
+                return (
+                  <button
+                    key={m}
+                    onClick={() => {
+                      setCustomOn(false);
+                      setFocusMin(m);
+                      setCustomText(String(m));
+                    }}
+                    aria-pressed={on}
+                    className={`num rounded-full py-2 text-[13px] font-semibold transition-all ${
+                      on ? "bg-[var(--color-red)] text-white shadow-[0_6px_18px_-6px_rgba(223,37,49,0.9)]" : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+                    }`}
+                  >
+                    {m}
+                    <span className="ml-0.5 text-[9px] font-medium opacity-70">m</span>
+                  </button>
+                );
+              })}
+              <button
+                onClick={() => setCustomOn(true)}
+                aria-pressed={customOn}
+                className={`rounded-full py-2 text-[12px] font-semibold transition-all ${
+                  customOn ? "bg-[var(--color-red)] text-white shadow-[0_6px_18px_-6px_rgba(223,37,49,0.9)]" : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+                }`}
+              >
+                Otro
+              </button>
             </div>
+
+            {customOn ? (
+              <label className="mt-3 flex items-center justify-center gap-3">
+                <input
+                  value={customText}
+                  onChange={(e) => {
+                    const t = e.target.value.replace(/\D/g, "").slice(0, 3);
+                    setCustomText(t);
+                    const n = validFocusMin(Number(t));
+                    if (t && n != null) setFocusMin(n);
+                  }}
+                  onBlur={() => setCustomText(String(focusMin))}
+                  inputMode="numeric"
+                  aria-label="Minutos del bloque"
+                  className="num w-24 rounded-2xl border border-[var(--color-line-strong)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5 text-center text-[18px] font-semibold outline-none focus:border-[var(--color-red)]"
+                />
+                <span className="text-[11.5px] text-[var(--color-muted)]">
+                  minutos
+                  <span className="block text-[10px] text-[var(--color-muted-2)]">
+                    de {MIN_FOCUS_MIN} a {MAX_FOCUS_MIN}
+                  </span>
+                </span>
+              </label>
+            ) : null}
 
             <Button variant="primary" className="mt-4 w-full py-3.5 text-[13px]" onClick={begin}>
               Empezar bloque
