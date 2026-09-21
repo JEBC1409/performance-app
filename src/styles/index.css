@@ -367,6 +367,21 @@ body {
   animation: soft-pulse 1.4s ease-in-out infinite;
 }
 
+@keyframes focus-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+.focus-breathe {
+  animation: focus-breathe 4.5s ease-in-out infinite;
+}
+
 @keyframes draw-line {
   from {
     stroke-dashoffset: var(--dash, 1000);
@@ -383,6 +398,7 @@ body {
   .enter,
   .sweep-line,
   .pulse,
+  .focus-breathe,
   .draw-line {
     animation: none !important;
   }
