@@ -28,7 +28,7 @@ export function Radar({ axes, size = 240 }: { axes: RadarAxis[]; size?: number }
           const [x, y] = pt(i, 1);
           return <line key={i} x1={c} y1={c} x2={x} y2={y} stroke="var(--color-line)" strokeWidth="0.6" />;
         })}
-        <polygon points={dataPoly} fill="rgba(223,37,49,0.28)" stroke="var(--color-red)" strokeWidth="1.4" />
+        <polygon points={dataPoly} fill="rgb(var(--accent-rgb)/0.28)" stroke="var(--color-red)" strokeWidth="1.4" />
         {dataPts.map(([x, y], i) => (
           <circle key={i} cx={x} cy={y} r="2.4" fill="var(--color-red)" />
         ))}

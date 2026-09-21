@@ -1,3 +1,5 @@
+import { EmptyState } from "@/ui/EmptyState";
+import { SkeletonCard, SkeletonTiles } from "@/ui/Skeleton";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -16,7 +18,7 @@ function DeltaChip({ d, suffix = "", good = "up", digits = 0 }: { d: Delta | nul
   if (!d) return <span className="text-[10.5px] text-[var(--color-muted-2)]">—</span>;
   if (d.dir === "flat") return <span className="num text-[10.5px] text-[var(--color-muted)]">= igual</span>;
   const up = d.dir === "up";
-  const color = good === "neutral" ? "var(--color-muted)" : up ? "var(--color-good)" : "#e0a030";
+  const color = good === "neutral" ? "var(--color-muted)" : up ? "var(--color-good)" : "var(--color-warn)";
   const n = Math.abs(d.diff);
   return (
     <span className="num text-[10.5px] font-semibold" style={{ color }}>
@@ -68,7 +70,13 @@ export function SemanaTab() {
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const unit = settings?.unit ?? DEFAULT_SETTINGS.unit;
 
-  if (!data) return <Card>Cargando…</Card>;
+  if (!data)
+    return (
+      <div className="flex flex-col gap-3">
+        <SkeletonCard lines={2} />
+        <SkeletonTiles count={4} />
+      </div>
+    );
 
   const cur = weekStats(data, weekStart, today);
   const prev = weekStats(data, addDays(weekStart, -7), today);
@@ -217,7 +225,7 @@ function Habits({ cur, prev }: { cur: WeekStats; prev: WeekStats }) {
           })}
         </ul>
       ) : (
-        <p className="mt-3 text-[12px] text-[var(--color-muted)]">Todavía no tienes hábitos. Créalos en Perfil.</p>
+        <EmptyState compact icon="check" title="Aún no tienes hábitos" hint="Créalos en Perfil › Hábitos y aquí verás cuántos días cumples cada uno." />
       )}
       {!hasKey ? (
         <p className="mt-3 text-[11px] leading-snug text-[var(--color-muted-2)]">

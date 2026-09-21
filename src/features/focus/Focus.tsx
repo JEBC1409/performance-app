@@ -1,3 +1,4 @@
+import { EmptyState } from "@/ui/EmptyState";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -27,8 +28,8 @@ interface DialProps {
 /** The hero dial: 60 minute-ticks that light up as time passes, a gradient
  * arc with a glowing head, and a soft breathing halo while it's running. */
 function Dial({ progress, isBreak, live, children }: DialProps) {
-  const a = isBreak ? "#2fae66" : "#df2531";
-  const b = isBreak ? "#8ff0b8" : "#ff7a83";
+  const a = isBreak ? "#2fae66" : "var(--color-red)";
+  const b = isBreak ? "#8ff0b8" : "rgb(var(--accent-light-rgb))";
   const gid = isBreak ? "focus-grad-break" : "focus-grad-focus";
   const angle = progress * 2 * Math.PI;
   const headX = C + RING_R * Math.sin(angle);
@@ -39,7 +40,7 @@ function Dial({ progress, isBreak, live, children }: DialProps) {
       <div
         aria-hidden
         className={`absolute inset-[14%] rounded-full ${live ? "focus-breathe" : ""}`}
-        style={{ background: `radial-gradient(closest-side, ${isBreak ? "rgba(47,174,102,0.24)" : "rgba(223,37,49,0.26)"}, transparent 72%)` }}
+        style={{ background: `radial-gradient(closest-side, ${isBreak ? "rgba(47,174,102,0.24)" : "rgb(var(--accent-rgb)/0.26)"}, transparent 72%)` }}
       />
       <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="absolute inset-0 h-full w-full" aria-hidden>
         <defs>
@@ -299,7 +300,7 @@ function FocusView() {
                         borderColor: "rgba(120,240,170,0.5)",
                         boxShadow: "0 1px 0 rgba(255,255,255,0.3) inset, 0 12px 30px -10px rgba(47,174,102,0.85)",
                       }
-                    : { boxShadow: "0 1px 0 rgba(255,255,255,0.3) inset, 0 14px 34px -10px rgba(223,37,49,0.9)" }
+                    : { boxShadow: "0 1px 0 rgba(255,255,255,0.3) inset, 0 14px 34px -10px rgb(var(--accent-rgb)/0.9)" }
                 }
               >
                 {paused ? <PlayIcon /> : <PauseIcon />}
@@ -333,7 +334,7 @@ function FocusView() {
                 }}
                 placeholder="Ej. Terminar el módulo de React"
                 maxLength={80}
-                className="w-full rounded-2xl border border-[var(--color-line-strong)] bg-[rgba(255,255,255,0.03)] px-4 py-3.5 text-center text-[15px] outline-none transition-colors placeholder:text-[var(--color-muted-2)] focus:border-[var(--color-red)] focus:bg-[rgba(223,37,49,0.05)]"
+                className="w-full rounded-2xl border border-[var(--color-line-strong)] bg-[rgba(255,255,255,0.03)] px-4 py-3.5 text-center text-[15px] outline-none transition-colors placeholder:text-[var(--color-muted-2)] focus:border-[var(--color-red)] focus:bg-[rgb(var(--accent-rgb)/0.05)]"
               />
             </label>
 
@@ -485,7 +486,7 @@ function FocusView() {
             ))}
           </ul>
         ) : (
-          <p className="mt-4 text-[12px] text-[var(--color-muted-2)]">Aún no has completado ningún bloque hoy.</p>
+          <EmptyState compact icon="target" title="Ningún bloque hoy" hint="Escribe en qué vas a enfocarte y empieza el primero." />
         )}
       </div>
     </div>

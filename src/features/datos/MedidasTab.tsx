@@ -1,3 +1,4 @@
+import { EmptyState } from "@/ui/EmptyState";
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
@@ -75,7 +76,7 @@ export function MedidasTab() {
 }
 
 function MeasureList({ rows, unit }: { rows: { date: string; value: number | null; delta: number | null }[]; unit: string }) {
-  if (!rows.length) return <div className="px-4 py-6 text-center text-[12px] text-[var(--color-muted)]">Sin registros aún.</div>;
+  if (!rows.length) return <EmptyState compact icon="target" title="Sin medidas todavía" hint="Registra pecho o brazo arriba para ver tu progreso." />;
   return (
     <div className="divide-y divide-[var(--color-line)]">
       {rows

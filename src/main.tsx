@@ -3,9 +3,12 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import { ErrorBoundary } from "./ui/ErrorBoundary";
 import { initCloudSync } from "./db/cloudSync";
+import { applyUiPrefs } from "./lib/uiPrefs";
 import "./styles/index.css";
 
 initCloudSync();
+// Before the first paint, so a saved accent never flashes red.
+applyUiPrefs();
 
 // clientsClaim + skipWaiting (vite.config.ts) make a new deploy's service
 // worker take over immediately instead of waiting for every tab to close —

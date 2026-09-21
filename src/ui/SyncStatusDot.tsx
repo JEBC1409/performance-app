@@ -32,7 +32,7 @@ export function SyncStatusDot() {
   else if (n) label = `${changes} por subir`;
   else label = status.lastSyncedAt ? `Sincronizado ${fmtRelativeTime(status.lastSyncedAt)}` : "Sincronizado";
   // Anything waiting (or failed) can be retried with a tap.
-  const dotColor = n > 0 && status.state !== "syncing" && status.state !== "error" ? "#e0a030" : DOT_COLOR[status.state];
+  const dotColor = n > 0 && status.state !== "syncing" && status.state !== "error" ? "var(--color-warn)" : DOT_COLOR[status.state];
   const canRetry = status.state !== "offline" && status.state !== "syncing" && (n > 0 || status.state === "error");
 
   return (

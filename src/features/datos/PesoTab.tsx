@@ -1,3 +1,4 @@
+import { EmptyState } from "@/ui/EmptyState";
 import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
@@ -110,7 +111,7 @@ export function PesoTab() {
                 </span>
               </div>
             ))}
-          {!rows?.length ? <div className="px-4 py-6 text-center text-[12px] text-[var(--color-muted)]">Sin registros aún.</div> : null}
+          {!rows?.length ? <EmptyState compact icon="scale" title="Sin registros de peso" hint="Anota tu peso arriba; pesarte a la misma hora da la mejor tendencia." /> : null}
         </div>
       </Card>
     </div>

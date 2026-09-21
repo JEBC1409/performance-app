@@ -26,7 +26,7 @@ const SUGGESTION_LABEL: Record<SuggestionKind, string> = {
 const SUGGESTION_COLOR: Record<SuggestionKind, string> = {
   increase: "var(--color-good)",
   repeat: "var(--color-red)",
-  reduce: "#e0a030",
+  reduce: "var(--color-warn)",
 };
 
 export function ExerciseLogForm({
@@ -46,6 +46,8 @@ export function ExerciseLogForm({
 }) {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
+  // Swipe a logged set to the left to delete it.
+  const [drag, setDrag] = useState<{ id: number; x0: number; dx: number } | null>(null);
 
   const done = sets.length;
   const target = exercise.series;
@@ -156,8 +158,18 @@ export function ExerciseLogForm({
           {sets.map((s) => (
             <span
               key={s.id}
-              className={`num flex items-center gap-1.5 rounded-full border pl-2.5 pr-1 py-1 text-[11px] transition-colors ${
-                editingId === s.id ? "border-[var(--color-red)] bg-[rgba(223,37,49,0.12)]" : "border-[var(--color-line-strong)]"
+              onTouchStart={(e) => setDrag({ id: s.id!, x0: e.touches[0].clientX, dx: 0 })}
+              onTouchMove={(e) => setDrag((d) => (d && d.id === s.id ? { ...d, dx: Math.min(0, e.touches[0].clientX - d.x0) } : d))}
+              onTouchEnd={() => {
+                if (drag && drag.id === s.id && drag.dx < -70) {
+                  if (editingId === s.id) cancelEdit();
+                  onDeleteSet(s.id!);
+                }
+                setDrag(null);
+              }}
+              style={drag && drag.id === s.id ? { transform: `translateX(${drag.dx}px)`, opacity: 1 + drag.dx / 160, transition: "none" } : { transition: "transform 180ms ease, opacity 180ms ease" }}
+              className={`num flex touch-pan-y items-center gap-1.5 rounded-full border pl-2.5 pr-1 py-1 text-[11px] transition-colors ${
+                editingId === s.id ? "border-[var(--color-red)] bg-[rgb(var(--accent-rgb)/0.12)]" : "border-[var(--color-line-strong)]"
               }`}
             >
               <button onClick={() => startEdit(s)} className="flex items-center gap-1">
@@ -232,7 +244,7 @@ export function ExerciseLogForm({
         ) : null}
         <button
           onClick={save}
-          className="tap-target flex-1 btn-primary text-white border border-[rgba(255,120,128,0.5)] rounded-full py-2.5 text-[12.5px] font-semibold uppercase tracking-wide shadow-[0_1px_0_rgba(255,255,255,0.35)_inset,0_-6px_10px_-6px_rgba(0,0,0,0.45)_inset,0_10px_24px_-10px_rgba(223,37,49,0.75)] hover:brightness-110 active:brightness-95 active:translate-y-px transition-all duration-150"
+          className="tap-target flex-1 btn-primary text-white border border-[rgb(var(--accent-light-rgb)/0.5)] rounded-full py-2.5 text-[12.5px] font-semibold uppercase tracking-wide shadow-[0_1px_0_rgba(255,255,255,0.35)_inset,0_-6px_10px_-6px_rgba(0,0,0,0.45)_inset,0_10px_24px_-10px_rgb(var(--accent-rgb)/0.75)] hover:brightness-110 active:brightness-95 active:translate-y-px transition-all duration-150"
         >
           {editing ? "Actualizar serie" : "Guardar serie"}
         </button>

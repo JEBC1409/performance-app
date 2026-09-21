@@ -49,7 +49,7 @@ export function Horario() {
                       <td
                         key={i}
                         rowSpan={cell.span}
-                        className={`h-px px-1.5 py-1.5 align-top ${i === todayCol ? "bg-[rgba(223,37,49,0.05)]" : ""}`}
+                        className={`h-px px-1.5 py-1.5 align-top ${i === todayCol ? "bg-[rgb(var(--accent-rgb)/0.05)]" : ""}`}
                       >
                         <BlockChip cell={cell} />
                       </td>
@@ -90,10 +90,10 @@ function BlockChip({ cell }: { cell: HorarioCell }) {
       style={
         cell.key
           ? {
-              background: "rgba(223, 37, 49, 0.3)",
+              background: "rgb(var(--accent-rgb) / 0.3)",
               border: "1.5px solid var(--color-red)",
               color: "var(--color-ink)",
-              boxShadow: "0 0 18px -4px rgba(223, 37, 49, 0.75), 0 0 0 1px rgba(223, 37, 49, 0.25) inset",
+              boxShadow: "0 0 18px -4px rgb(var(--accent-rgb) / 0.75), 0 0 0 1px rgb(var(--accent-rgb) / 0.25) inset",
             }
           : {
               background: BLOCK_TINT[cell.type],

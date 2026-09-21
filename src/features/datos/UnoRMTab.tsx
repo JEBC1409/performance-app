@@ -1,3 +1,4 @@
+import { EmptyState } from "@/ui/EmptyState";
 import { useMemo } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, type SetRecord } from "@/db/db";
@@ -42,7 +43,7 @@ export function UnoRMTab() {
           ))}
         </div>
       ) : (
-        <p className="mt-3 text-[12.5px] text-[var(--color-muted)]">Todavía no hay series con peso registradas.</p>
+        <EmptyState icon="dumbbell" title="Aún no hay series con peso" hint="Registra tu primera serie en Entreno y aquí verás tu carga semana a semana." />
       )}
     </Card>
   );

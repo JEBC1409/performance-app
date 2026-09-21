@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
 
-export function Eyebrow({ children, accent = false }: { children: ReactNode; accent?: boolean }) {
-  return <div className={`eyebrow ${accent ? "eyebrow-accent" : ""}`}>{children}</div>;
+export function Eyebrow({ children, accent = false, gold = false }: { children: ReactNode; accent?: boolean; gold?: boolean }) {
+  return <div className={`eyebrow ${gold ? "eyebrow-gold" : accent ? "eyebrow-accent" : ""}`}>{children}</div>;
 }

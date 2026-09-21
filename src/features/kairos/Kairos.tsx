@@ -1,3 +1,4 @@
+import { Skeleton } from "@/ui/Skeleton";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
@@ -103,7 +104,7 @@ export function Kairos() {
 
       <div className="flex flex-col gap-4 enter">
         <div>
-          <Eyebrow accent>Oración</Eyebrow>
+          <Eyebrow gold>Oración</Eyebrow>
           <h1 className="font-[var(--font-display)] text-xl mt-1.5">Biblia · Reina-Valera 1909</h1>
         </div>
 
@@ -124,7 +125,11 @@ export function Kairos() {
 
         {view === "leer" ? (
           loading ? (
-            <div className="text-center py-10 text-[13px] text-[var(--color-muted)]">Cargando biblia…</div>
+            <div className="flex flex-col gap-3 py-4" role="status" aria-label="Cargando biblia">
+              {Array.from({ length: 6 }, (_, i) => (
+                <Skeleton key={i} className={`h-4 ${i % 3 === 2 ? "w-3/5" : ""}`} />
+              ))}
+            </div>
           ) : (
             <>
               {bookmark && !isAtBookmark ? (
@@ -133,7 +138,7 @@ export function Kairos() {
                     setAbbrev(bookmark.abbrev);
                     setChapter(bookmark.chapter);
                   }}
-                  className="glass-accent flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-left"
+                  className="glass-gold flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-left"
                 >
                   <BookmarkGlyph filled className="flex-none text-[var(--color-red)]" />
                   <span className="text-[12px] text-[var(--color-ink)]">
@@ -162,7 +167,7 @@ export function Kairos() {
               <Card className="panel-surface-glow">
                 <div className="flex items-center justify-between mb-4 pb-3 border-b border-[var(--color-line)]">
                   <div>
-                    <Eyebrow accent>Leyendo</Eyebrow>
+                    <Eyebrow gold>Leyendo</Eyebrow>
                     <div className="text-[16px] font-bold mt-1">
                       {bookName} {chapter}
                     </div>
@@ -173,7 +178,7 @@ export function Kairos() {
                       onClick={markHere}
                       disabled={isAtBookmark}
                       className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wide ${
-                        isAtBookmark ? "glass-accent" : "glass text-[var(--color-muted)] hover:text-[var(--color-red)]"
+                        isAtBookmark ? "glass-gold" : "glass text-[var(--color-muted)] hover:text-[var(--color-gold)]"
                       }`}
                     >
                       <BookmarkGlyph filled={isAtBookmark} />

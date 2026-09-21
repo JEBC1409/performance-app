@@ -1,8 +1,13 @@
+import { Skeleton } from "@/ui/Skeleton";
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
 import { Card, Eyebrow, Stat, HabitGlyph, Button, Sheet, DateField } from "@/ui";
 import { DailyStreakCard } from "./DailyStreakCard";
+import { DayRings } from "./DayRings";
+import { useUiPrefs } from "@/hooks/useUiPrefs";
+import type { HomeCard } from "@/lib/uiPrefs";
 import { useHabitDefs } from "@/hooks/useHabitDefs";
 import { GYM_DAY_ORDER, GYM_DIAS } from "@/data/gym";
 import { todayISO, num, DIAS, jsDowToIndex } from "@/lib/date";
@@ -29,6 +34,7 @@ export function Hoy({
 }) {
   const today = todayISO();
   const slot = useCycleSlot();
+  const { homeOrder } = useUiPrefs();
   const [startPrompt, setStartPrompt] = useState(false);
   const [pickedDay, setPickedDay] = useState<GymDay>("A");
   const [pickedDate, setPickedDate] = useState(today);
@@ -97,6 +103,209 @@ export function Hoy({
     }
   }
 
+  const blockTitle = nowCell ? nowCell.text : "Bloque libre / fuera de horario";
+  const blockTime = row ? row.time : null;
+
+  /** The one thing worth doing right now, as a button. */
+  let heroAction: ReactNode = null;
+  if (blockHabit) {
+    heroAction = (
+      <button
+        onClick={() => checkHabit(blockHabit.key)}
+        aria-pressed={blockHabitDone}
+        className={`tap-target mt-4 flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[13px] font-semibold uppercase tracking-[0.1em] ${
+          blockHabitDone ? "glass text-[var(--color-good)]" : "glass-on"
+        }`}
+      >
+        {blockHabitDone ? (
+          <>
+            <span className="pop">✓</span> {blockHabit.label} hecho
+          </>
+        ) : (
+          <>Marcar {blockHabit.label}</>
+        )}
+      </button>
+    );
+  } else if (nowCell?.type === "gym") {
+    heroAction = (
+      <Button variant="primary" className="mt-4 w-full py-3.5 text-[13px]" onClick={openStartPrompt}>
+        {slot === "rest" ? "Elegir entreno" : `Iniciar ${GYM_DIAS[slot].nombre}`}
+      </Button>
+    );
+  } else if (nowCell && !nowCell.quiet && (nowCell.type === "mouredev" || nowCell.type === "clase" || nowCell.type === "ingles")) {
+    heroAction = (
+      <button onClick={() => onNavigate("focus")} className="glass tap-target mt-4 w-full rounded-full py-3.5 text-[13px] font-semibold uppercase tracking-[0.1em]">
+        Empezar un bloque de Focus
+      </button>
+    );
+  }
+
+  const hero = (
+    <div className="panel-surface panel-surface-glow enter">
+      <div className="px-4 pt-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-red)] glow-dot" />
+            <span className="eyebrow eyebrow-accent">{DIAS[jsDowToIndex(new Date().getDay())]} · Ahora</span>
+          </div>
+          <button
+            onClick={() => onNavigate("horario")}
+            className="text-[11px] text-[var(--color-muted)] hover:text-[var(--color-red)] uppercase tracking-[0.12em] transition-colors"
+          >
+            Ver horario →
+          </button>
+        </div>
+        <h1 className="mt-3 font-[var(--font-display)] text-[24px] leading-tight tracking-tight">{blockTitle}</h1>
+        {blockTime ? <div className="num mt-1 text-[12px] text-[var(--color-muted)]">{blockTime}</div> : null}
+        {heroAction}
+      </div>
+      <div className="mt-4 border-t border-[var(--color-line)] px-4 py-3 text-[11.5px] leading-tight text-[var(--color-muted)]">
+        {nextCell ? (
+          <>
+            Siguiente{nextRow?.time ? ` (${nextRow.time})` : ""}: <span className="font-semibold text-[var(--color-ink)]">{nextCell.text}</span>
+          </>
+        ) : (
+          "Nada más por hoy en el horario."
+        )}
+      </div>
+    </div>
+  );
+
+  const sundayCard =
+    new Date().getDay() === 0 ? (
+      <button
+        onClick={() => {
+          hintDatosTab("semana");
+          onNavigate("datos");
+        }}
+        className="panel-surface panel-surface-glow enter flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left"
+      >
+        <div>
+          <div className="eyebrow eyebrow-accent">Domingo</div>
+          <div className="mt-1 font-[var(--font-display)] text-[14px] tracking-[0.04em]">Tu resumen de la semana</div>
+          <div className="mt-0.5 text-[11px] text-[var(--color-muted)]">Entrenos, Focus, hábitos, sueño y peso contra la semana anterior.</div>
+        </div>
+        <span className="flex-none text-[var(--color-red)]">→</span>
+      </button>
+    ) : null;
+
+  const cards: Record<HomeCard, ReactNode> = {
+    rings: <DayRings key="rings" habitsDone={habitsCompleted} habitsTotal={habitsTotal} slot={slot} />,
+
+    session: (
+      <div key="session" className={`panel-surface enter enter-delay-1 ${slot !== "rest" ? "panel-surface-glow" : ""}`}>
+        <div className="px-4 pt-4 pb-3 border-b border-[var(--color-line)]">
+          <Eyebrow>Sesión del día</Eyebrow>
+        </div>
+        <div className="px-4 py-3">
+          {slot === "rest" ? (
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 border border-[var(--color-line-strong)] flex items-center justify-center flex-none">
+                  <span className="eyebrow text-[11px]">Z</span>
+                </div>
+                <div>
+                  <div className="font-[var(--font-display)] text-[13px] tracking-[0.06em]">Descanso</div>
+                  <div className="text-[11px] text-[var(--color-muted)] mt-0.5">Ciclo A → B → C → descanso. Hoy toca recuperar.</div>
+                </div>
+              </div>
+              <Button variant="outline" onClick={openStartPrompt}>
+                Elegir ciclo
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-[var(--color-red)] flex items-center justify-center flex-none">
+                  <span className="font-[var(--font-display)] text-[11px] text-white tracking-wide">{slot}</span>
+                </div>
+                <div>
+                  <div className="font-[var(--font-display)] text-[13px] tracking-[0.06em]">{GYM_DIAS[slot].nombre}</div>
+                  <div className="text-[11px] text-[var(--color-muted)] mt-0.5">{GYM_DIAS[slot].grupo}</div>
+                </div>
+              </div>
+              <Button variant="primary" onClick={openStartPrompt}>
+                Iniciar
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    ),
+
+    streak: <DailyStreakCard key="streak" />,
+
+    habits: (
+      <div key="habits" className="panel-surface enter enter-delay-2">
+        <div className="px-4 pt-4 pb-3 border-b border-[var(--color-line)] flex items-center justify-between">
+          <Eyebrow>Hábitos hoy</Eyebrow>
+          <span className="eyebrow">
+            <span className="text-[var(--color-red)] not-italic">{habitsCompleted}</span>/{habitsTotal}
+          </span>
+        </div>
+        <div className="px-4 py-3 grid grid-cols-2 gap-2">
+          {habitList.map((h) => {
+            const on = !!habitDay?.done.includes(h.key);
+            return (
+              <button
+                key={h.key}
+                onClick={() => checkHabit(h.key)}
+                aria-pressed={on}
+                className={`tap-target flex items-center gap-2.5 rounded-full px-3 py-2 text-left ${on ? "glass-on" : "glass"}`}
+              >
+                <span className={`flex h-7 w-7 flex-none items-center justify-center rounded-full ${on ? "bg-[rgba(255,255,255,0.22)] pop" : "bg-[rgba(255,255,255,0.06)]"}`}>
+                  <HabitGlyph icon={h.icon} active={on} activeColor="#fff" size={12} />
+                </span>
+                <span className={`text-[11px] font-semibold uppercase tracking-wide leading-tight ${on ? "text-white" : "text-[var(--color-muted)]"}`}>{h.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    ),
+
+    stats: (
+      <div key="stats" className="grid grid-cols-3 gap-2.5 enter enter-delay-3">
+        <Stat
+          label="Peso actual"
+          value={lastWeight?.weightKg != null ? `${fromKg(lastWeight.weightKg, unit)}` : "—"}
+          sub={weightDelta ? `${weightDelta > 0 ? "+" : ""}${fromKg(weightDelta, unit).toFixed(1)} ${unitLabel(unit)} desde inicio` : unitLabel(unit)}
+          accent
+        />
+        <Stat label="Horas MoureDev" value={moureHours ?? 0} sub="acumuladas" />
+        <Stat label="Hábitos" value={`${habitsCompleted}/${habitsTotal}`} sub="marcados hoy" />
+      </div>
+    ),
+
+    verse: (
+      <Card key="verse" className="enter enter-delay-4">
+        <div className="flex items-center justify-between mb-3">
+          <Eyebrow gold>Versículo del día</Eyebrow>
+          <button
+            onClick={() => onNavigate("kairos")}
+            className="text-[11px] text-[var(--color-muted)] hover:text-[var(--color-gold)] uppercase tracking-[0.12em] transition-colors"
+          >
+            Oración →
+          </button>
+        </div>
+        {verse ? (
+          <div>
+            <p className="text-[13px] leading-relaxed text-[var(--color-ink)]">{verse.text}</p>
+            <div className="text-[10.5px] text-[var(--color-muted)] mt-2.5 num">
+              {verse.bookName} {verse.chapter}:{verse.verse}
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2" role="status" aria-label="Cargando versículo">
+            <Skeleton className="h-3.5" />
+            <Skeleton className="h-3.5 w-4/5" />
+            <Skeleton className="h-2.5 w-24" />
+          </div>
+        )}
+      </Card>
+    ),
+  };
+
   return (
     <div className="flex flex-col gap-4">
       {/* ── Mascotas laterales (desktop, en el margen vacío junto al contenido) ── */}
@@ -113,226 +322,13 @@ export function Hoy({
         className="pointer-events-none fixed bottom-0 right-2 z-[-1] hidden h-[62vh] max-w-[220px] object-contain object-bottom mix-blend-screen opacity-90 sidebar:block"
       />
 
-      {/* ── Bloque actual ──────────────────────────────────── */}
-      <div className="panel-surface enter">
-        {/* Header row */}
-        <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-[var(--color-line)]">
-          <div>
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-red)] glow-dot" />
-              <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[var(--color-muted)]">
-                Dr. Discipline
-              </span>
-            </div>
-            <div className="eyebrow eyebrow-accent">
-              {DIAS[jsDowToIndex(new Date().getDay())]}
-            </div>
-            <h1 className="font-[var(--font-display)] text-[15px] tracking-[0.06em] mt-1">
-              Tu día ahora
-            </h1>
-          </div>
-          <button
-            onClick={() => onNavigate("horario")}
-            className="text-[11px] text-[var(--color-muted)] hover:text-[var(--color-red)] uppercase tracking-[0.12em] transition-colors"
-          >
-            Ver horario →
-          </button>
-        </div>
+      {hero}
+      {sundayCard}
+      {homeOrder.map((k) => cards[k])}
 
-        {/* Current block */}
-        <div className="px-4 py-3 flex items-start gap-3">
-          <div className="mt-1 w-1.5 h-1.5 bg-[var(--color-red)] glow-dot flex-none" />
-          <div className="flex-1 min-w-0">
-            <div className="eyebrow mb-1">Bloque actual</div>
-            <div className="text-[13.5px] leading-snug text-[var(--color-ink)] whitespace-pre-line">
-              {nowCell ? nowCell.text : "Bloque libre / fuera de horario"}
-            </div>
-            {blockHabit ? (
-              <button
-                onClick={() => checkHabit(blockHabit.key)}
-                aria-pressed={blockHabitDone}
-                className={`tap-target mt-3 flex w-full items-center justify-center gap-2 rounded-full py-3 text-[12.5px] font-semibold uppercase tracking-[0.1em] ${
-                  blockHabitDone ? "glass text-[var(--color-good)]" : "glass-on"
-                }`}
-              >
-                {blockHabitDone ? (
-                  <>
-                    <span className="pop">✓</span> {blockHabit.label} hecho
-                  </>
-                ) : (
-                  <>Marcar {blockHabit.label}</>
-                )}
-              </button>
-            ) : null}
-            {nextCell && (
-              <div className="mt-2 text-[11px] text-[var(--color-muted)] leading-tight">
-                Siguiente{nextRow?.time ? ` (${nextRow.time})` : ""}:{" "}
-                <span className="text-[var(--color-ink)] font-semibold">
-                  {nextCell.text}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Sesión del día ─────────────────────────────────── */}
-      <div className={`panel-surface enter enter-delay-1 ${slot !== "rest" ? "panel-surface-glow" : ""}`}>
-        <div className="px-4 pt-4 pb-3 border-b border-[var(--color-line)]">
-          <Eyebrow>Sesión del día</Eyebrow>
-        </div>
-        <div className="px-4 py-3">
-          {slot === "rest" ? (
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 border border-[var(--color-line-strong)] flex items-center justify-center flex-none">
-                  <span className="eyebrow text-[10.5px]">Z</span>
-                </div>
-                <div>
-                  <div className="font-[var(--font-display)] text-[13px] tracking-[0.06em]">
-                    Descanso
-                  </div>
-                  <div className="text-[11px] text-[var(--color-muted)] mt-0.5">
-                    Ciclo A → B → C → descanso. Hoy toca recuperar.
-                  </div>
-                </div>
-              </div>
-              <Button variant="outline" onClick={openStartPrompt}>
-                Elegir ciclo
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-[var(--color-red)] flex items-center justify-center flex-none">
-                  <span className="font-[var(--font-display)] text-[11px] text-white tracking-wide">
-                    {slot}
-                  </span>
-                </div>
-                <div>
-                  <div className="font-[var(--font-display)] text-[13px] tracking-[0.06em]">
-                    {GYM_DIAS[slot].nombre}
-                  </div>
-                  <div className="text-[11px] text-[var(--color-muted)] mt-0.5">
-                    {GYM_DIAS[slot].grupo}
-                  </div>
-                </div>
-              </div>
-              <Button variant="primary" onClick={openStartPrompt}>
-                Iniciar
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Racha diaria ────────────────────────────────────── */}
-      <DailyStreakCard />
-
-      {/* ── Resumen semanal (domingos) ─────────────────────── */}
-      {new Date().getDay() === 0 ? (
-        <button
-          onClick={() => {
-            hintDatosTab("semana");
-            onNavigate("datos");
-          }}
-          className="panel-surface panel-surface-glow enter flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left"
-        >
-          <div>
-            <div className="eyebrow eyebrow-accent">Domingo</div>
-            <div className="mt-1 font-[var(--font-display)] text-[14px] tracking-[0.04em]">Tu resumen de la semana</div>
-            <div className="mt-0.5 text-[11px] text-[var(--color-muted)]">Entrenos, Focus, hábitos, sueño y peso contra la semana anterior.</div>
-          </div>
-          <span className="flex-none text-[var(--color-red)]">→</span>
-        </button>
-      ) : null}
-
-      <button
-        onClick={copyDailySummary}
-        className="glass tap-target w-full rounded-full py-2.5 text-[11.5px] font-semibold uppercase tracking-wide"
-      >
+      <button onClick={copyDailySummary} className="glass tap-target w-full rounded-full py-2.5 text-[11.5px] font-semibold uppercase tracking-wide">
         Copiar resumen del día
       </button>
-
-      {/* ── Hábitos hoy ─────────────────────────────────────── */}
-      <div className="panel-surface enter enter-delay-2">
-        <div className="px-4 pt-4 pb-3 border-b border-[var(--color-line)] flex items-center justify-between">
-          <Eyebrow>Hábitos hoy</Eyebrow>
-          <span className="eyebrow">
-            <span className="text-[var(--color-red)] not-italic">
-              {habitsCompleted}
-            </span>
-            /{habitsTotal}
-          </span>
-        </div>
-        <div className="px-4 py-3 grid grid-cols-2 gap-2">
-          {habitList.map((h) => {
-            const on = !!habitDay?.done.includes(h.key);
-            return (
-              <button
-                key={h.key}
-                onClick={() => checkHabit(h.key)}
-                aria-pressed={on}
-                className={`tap-target flex items-center gap-2.5 rounded-full px-3 py-2 text-left ${on ? "glass-on" : "glass"}`}
-              >
-                <span className={`flex h-7 w-7 flex-none items-center justify-center rounded-full ${on ? "bg-[rgba(255,255,255,0.22)] pop" : "bg-[rgba(255,255,255,0.06)]"}`}>
-                  <HabitGlyph icon={h.icon} active={on} activeColor="#fff" size={12} />
-                </span>
-                <span className={`text-[11px] font-semibold uppercase tracking-wide leading-tight ${on ? "text-white" : "text-[var(--color-muted)]"}`}>
-                  {h.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── Stats ───────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-2.5 enter enter-delay-3">
-        <Stat
-          label="Peso actual"
-          value={lastWeight?.weightKg != null ? `${fromKg(lastWeight.weightKg, unit)}` : "—"}
-          sub={
-            weightDelta
-              ? `${weightDelta > 0 ? "+" : ""}${fromKg(weightDelta, unit).toFixed(1)} ${unitLabel(unit)} desde inicio`
-              : unitLabel(unit)
-          }
-          accent
-        />
-        <Stat label="Horas MoureDev" value={moureHours ?? 0} sub="acumuladas" />
-        <Stat
-          label="Hábitos"
-          value={`${habitsCompleted}/${habitsTotal}`}
-          sub="marcados hoy"
-        />
-      </div>
-
-      {/* ── Versículo del día ───────────────────────────────── */}
-      <Card className="enter enter-delay-4">
-        <div className="flex items-center justify-between mb-3">
-          <Eyebrow accent>Versículo del día</Eyebrow>
-          <button
-            onClick={() => onNavigate("kairos")}
-            className="text-[11px] text-[var(--color-muted)] hover:text-[var(--color-red)] uppercase tracking-[0.12em] transition-colors"
-          >
-            Oración →
-          </button>
-        </div>
-        {verse ? (
-          <div>
-            <p className="text-[13px] leading-relaxed text-[var(--color-ink)]">
-              {verse.text}
-            </p>
-            <div className="text-[10.5px] text-[var(--color-muted)] mt-2.5 num">
-              {verse.bookName} {verse.chapter}:{verse.verse}
-            </div>
-          </div>
-        ) : (
-          <div className="text-[12px] text-[var(--color-muted-2)]">
-            Cargando…
-          </div>
-        )}
-      </Card>
 
       <Sheet open={startPrompt} onClose={() => setStartPrompt(false)} title="Empezar entreno">
         <div className="flex flex-col gap-4">

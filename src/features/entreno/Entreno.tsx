@@ -8,6 +8,8 @@ import { buildDailySummary } from "@/lib/dailySummary";
 import { slotAfter, type GymDay } from "@/lib/cycle";
 import { reviewSession } from "@/lib/sessionReview";
 import { SessionReviewSheet } from "./SessionReviewSheet";
+import { GymMode } from "./GymMode";
+import { useSwipe } from "@/hooks/useSwipe";
 import { useSessionSets, useLastSession } from "./useEntrenoData";
 import { ExerciseCard } from "./ExerciseCard";
 import { ExercisePhotoEditor } from "./ExercisePhoto";
@@ -45,6 +47,7 @@ export function Entreno({
   const [sessionDate, setSessionDate] = useState<string>(autoStart?.date ?? todayISO());
   const [openExercise, setOpenExercise] = useState<ExerciseTarget | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [gymOpen, setGymOpen] = useState(false);
   const timer = useRestTimer();
   const photos = useExercisePhotos();
   const settings = useLiveQuery(() => db.settings.get("app"), []);
@@ -65,6 +68,11 @@ export function Entreno({
     }
   }, [autoStart, onConsumeAutoStart]);
 
+  const dayIdx = GYM_DAY_ORDER.indexOf(day);
+  const swipe = useSwipe({
+    onLeft: () => dayIdx < GYM_DAY_ORDER.length - 1 && setDay(GYM_DAY_ORDER[dayIdx + 1]),
+    onRight: () => dayIdx > 0 && setDay(GYM_DAY_ORDER[dayIdx - 1]),
+  });
   const target = targetSetsForDay(day);
   const done = sessionSets.length;
   const pct = target > 0 ? Math.min(1, done / target) : 0;
@@ -90,6 +98,7 @@ export function Entreno({
     if (sessionSets.length + 1 >= target && !readFlag(autoKey)) {
       setFlag(autoKey);
       setOpenExercise(null);
+      setGymOpen(false);
       setReviewOpen(true);
     }
   }
@@ -121,7 +130,7 @@ export function Entreno({
   }
 
   return (
-    <div className="flex flex-col gap-4 enter">
+    <div className="flex flex-col gap-4 enter" {...swipe}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <Eyebrow>Entreno</Eyebrow>
@@ -141,6 +150,10 @@ export function Entreno({
         value={day}
         onChange={setDay}
       />
+
+      <Button variant="primary" className="w-full py-3.5 text-[13px]" onClick={() => setGymOpen(true)}>
+        Modo gimnasio
+      </Button>
 
       <div>
         <div className="flex items-center justify-between text-[11px] text-[var(--color-muted)] mb-1.5 num">
@@ -182,6 +195,10 @@ export function Entreno({
       </Card>
 
       <RestTimer timer={timer} />
+
+      {gymOpen ? (
+        <GymMode day={day} date={sessionDate} exercises={GYM_DIAS[day].ex} sessionSets={sessionSets} timer={timer} onLogSet={logSet} onClose={() => setGymOpen(false)} />
+      ) : null}
 
       <SessionReviewSheet
         open={reviewOpen}

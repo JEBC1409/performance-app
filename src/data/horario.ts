@@ -32,11 +32,11 @@ function c(text: string, type: BlockType, extra: Partial<HorarioCell> = {}): Hor
 }
 
 export const BLOCK_COLOR: Record<BlockType, string> = {
-  clase: "#df2531",
+  clase: "var(--color-red)",
   gym: "#ffffff",
   mouredev: "#9aa0a6",
-  ingles: "#df2531",
-  dios: "#e2b96f",
+  ingles: "var(--color-red)",
+  dios: "var(--color-gold)",
   libre: "rgba(255,255,255,0.18)",
   otro: "transparent",
 };
@@ -53,20 +53,20 @@ export const BLOCK_LABEL: Record<BlockType, string> = {
 
 /** Soft fill + border tints per block type, for the colored cell chips. */
 export const BLOCK_TINT: Record<BlockType, string> = {
-  clase: "rgba(223, 37, 49, 0.16)",
+  clase: "rgb(var(--accent-rgb) / 0.16)",
   gym: "rgba(255, 255, 255, 0.1)",
   mouredev: "rgba(255, 255, 255, 0.06)",
-  ingles: "rgba(223, 37, 49, 0.16)",
+  ingles: "rgb(var(--accent-rgb) / 0.16)",
   dios: "rgba(226, 185, 111, 0.13)",
   libre: "rgba(255, 255, 255, 0.04)",
   otro: "transparent",
 };
 
 export const BLOCK_BORDER: Record<BlockType, string> = {
-  clase: "rgba(223, 37, 49, 0.55)",
+  clase: "rgb(var(--accent-rgb) / 0.55)",
   gym: "rgba(255, 255, 255, 0.4)",
   mouredev: "rgba(255, 255, 255, 0.22)",
-  ingles: "rgba(223, 37, 49, 0.55)",
+  ingles: "rgb(var(--accent-rgb) / 0.55)",
   dios: "rgba(226, 185, 111, 0.5)",
   libre: "rgba(255, 255, 255, 0.14)",
   otro: "transparent",

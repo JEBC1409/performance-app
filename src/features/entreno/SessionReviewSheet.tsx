@@ -21,7 +21,7 @@ function badgeFor(e: ExerciseReview): Badge {
   if (v === "same") return { text: "= Igual", color: "var(--color-muted)" };
   if (v === "down") {
     const text = e.deltaWeight != null ? `▼ ${fmtNum(e.deltaWeight)} kg` : `▼ ${e.deltaReps} ${Math.abs(e.deltaReps ?? 0) === 1 ? "rep" : "reps"}`;
-    return { text, color: "#e0a030" };
+    return { text, color: "var(--color-warn)" };
   }
   if (v === "start") return { text: "Punto de partida", color: "var(--color-muted)" };
   return { text: "Primera vez", color: "var(--color-muted)" };
@@ -42,7 +42,7 @@ function ExerciseRow({ e }: { e: ExerciseReview }) {
         <div className="flex items-center gap-1.5">
           <span className="truncate text-[13px] font-semibold">{e.name}</span>
           {e.pr ? (
-            <span className="pr-badge flex-none rounded-full border border-[#e2b96f] px-1.5 py-px text-[10.5px] font-bold tracking-wider text-[#e2b96f]">PR</span>
+            <span className="pr-badge flex-none rounded-full border border-[var(--color-gold)] px-1.5 py-px text-[10.5px] font-bold tracking-wider text-[var(--color-gold)]">PR</span>
           ) : null}
         </div>
         <div className="num mt-0.5 text-[11px] text-[var(--color-muted)]">
@@ -121,7 +121,7 @@ function Body({ review: r, next, onGoDay, onClose }: { review: SessionReview; ne
           <span className="num font-[var(--font-display)] text-[26px] font-light leading-none">{fmtVol(r.volume)}</span>
           <span className="text-[11px] text-[var(--color-muted)]">kg totales</span>
           {pct != null ? (
-            <span className="num ml-auto text-[12px] font-semibold" style={{ color: pct >= 0 ? "var(--color-good)" : "#e0a030" }}>
+            <span className="num ml-auto text-[12px] font-semibold" style={{ color: pct >= 0 ? "var(--color-good)" : "var(--color-warn)" }}>
               {pct >= 0 ? "▲" : "▼"} {Math.abs(Math.round(pct))}%
             </span>
           ) : null}
@@ -142,7 +142,7 @@ function Body({ review: r, next, onGoDay, onClose }: { review: SessionReview; ne
         </ul>
       </div>
 
-      <div className="rounded-2xl border border-[var(--color-red-soft)] bg-[rgba(223,37,49,0.07)] px-4 py-3">
+      <div className="rounded-2xl border border-[var(--color-red-soft)] bg-[rgb(var(--accent-rgb)/0.07)] px-4 py-3">
         <div className="eyebrow eyebrow-accent">Sigue</div>
         {next.slot === "rest" ? (
           <>

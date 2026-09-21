@@ -1,3 +1,4 @@
+import { SkeletonCard, SkeletonTiles } from "@/ui/Skeleton";
 import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Shell } from "@/layout/Shell";
@@ -16,6 +17,8 @@ import { Datos } from "@/features/datos/Datos";
 import { Horario } from "@/features/horario/Horario";
 import { Focus } from "@/features/focus/Focus";
 import { FocusPipHost } from "@/features/focus/FocusPip";
+import { FocusMiniBar } from "@/features/focus/FocusMiniBar";
+import { flushSync } from "react-dom";
 import { ErrorBoundary } from "@/ui/ErrorBoundary";
 import { Kairos } from "@/features/kairos/Kairos";
 import { Mouredev } from "@/features/mouredev/Mouredev";
@@ -26,8 +29,13 @@ export type Tab = "hoy" | "entreno" | "habitos" | "datos" | "mas" | "horario" | 
 
 function LoadingScreen() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
-      <div className="eyebrow pulse">Cargando PERFORMANCE…</div>
+    <div className="min-h-screen bg-[var(--color-bg)] px-4 py-6" role="status" aria-label="Cargando PERFORMANCE">
+      <div className="mx-auto flex max-w-[600px] flex-col gap-4">
+        <div className="eyebrow pulse">PERFORMANCE</div>
+        <SkeletonCard lines={2} />
+        <SkeletonCard lines={3} />
+        <SkeletonTiles count={2} />
+      </div>
     </div>
   );
 }
@@ -49,7 +57,14 @@ function useLandingRedirect(shouldRedirect: boolean) {
 export default function App() {
   const { session, loading: authLoading } = useAuth();
   const [ready, setReady] = useState(false);
-  const [tab, setTab] = useState<Tab>("hoy");
+  const [tab, setTabRaw] = useState<Tab>("hoy");
+  // Screens cross-fade/slide where the browser supports View Transitions.
+  const setTab = (next: Tab) => {
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const start = (document as Document & { startViewTransition?: (cb: () => void) => unknown }).startViewTransition;
+    if (typeof start === "function" && !reduce && next !== tab) start.call(document, () => flushSync(() => setTabRaw(next)));
+    else setTabRaw(next);
+  };
   const [autoStart, setAutoStart] = useState<{ day: GymDay; date: string } | null>(null);
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   useReminders(settings);
@@ -86,6 +101,9 @@ export default function App() {
       {tab === "perfil" ? <Perfil /> : null}
       <ErrorBoundary fallback={() => null}>
         <FocusPipHost />
+      </ErrorBoundary>
+      <ErrorBoundary fallback={() => null}>
+        <FocusMiniBar visible={tab !== "focus"} onOpen={() => setTab("focus")} />
       </ErrorBoundary>
       <ToastHost />
     </Shell>

@@ -42,7 +42,7 @@ function MiniTimer({ timer, now }: { timer: FocusTimerState; now: number }) {
         justifyContent: "space-between",
         color: "#fff",
         fontFamily: FONT,
-        background: `radial-gradient(120% 90% at 50% 40%, ${isBreak ? "rgba(47,174,102,0.2)" : "rgba(223,37,49,0.22)"}, #050506 70%)`,
+        background: `radial-gradient(120% 90% at 50% 40%, ${isBreak ? "rgba(47,174,102,0.2)" : "rgb(var(--accent-rgb)/0.22)"}, #050506 70%)`,
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
@@ -78,7 +78,7 @@ function MiniTimer({ timer, now }: { timer: FocusTimerState; now: number }) {
               border: "none",
               color: "#fff",
               background: isBreak ? "linear-gradient(145deg,#3ddc84,#1f8a4c)" : "linear-gradient(145deg,#ff4a55,#b81c27)",
-              boxShadow: `0 8px 20px -6px ${isBreak ? "rgba(47,174,102,0.8)" : "rgba(223,37,49,0.8)"}`,
+              boxShadow: `0 8px 20px -6px ${isBreak ? "rgba(47,174,102,0.8)" : "rgb(var(--accent-rgb)/0.8)"}`,
             })}
           >
             {paused ? (

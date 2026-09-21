@@ -13,6 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { currentStreak } from "@/lib/streak";
 import { useHabitDefs } from "@/hooks/useHabitDefs";
 import { HabitManager } from "./HabitManager";
+import { AppearanceCard } from "./AppearanceCard";
 
 const HEAVY_DUTY_RULES = [
   "Pre-fatigá el músculo objetivo con una serie de aislamiento antes del compuesto principal.",
@@ -212,6 +213,8 @@ export function Perfil() {
       </Card>
 
       <HabitManager />
+
+      <AppearanceCard />
 
       <Card>
         <div className="flex items-center justify-between">

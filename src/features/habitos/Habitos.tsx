@@ -149,7 +149,7 @@ export function Habitos() {
                       if (on) total++;
                       const isToday = isCurrentMonth && d === new Date().getDate();
                       return (
-                        <td key={d} className={`p-0 text-center ${isToday ? "shadow-[inset_0_0_0_1px_#df2531]" : ""}`}>
+                        <td key={d} className={`p-0 text-center ${isToday ? "shadow-[inset_0_0_0_1px_var(--color-red)]" : ""}`}>
                           <button
                             onClick={() => toggle(date, h.key)}
                             className={`hit w-6 h-6 ${on ? "bg-[var(--color-red-soft)]" : ""}`}
