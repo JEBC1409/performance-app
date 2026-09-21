@@ -9,6 +9,7 @@ import { slotAfter, type GymDay } from "@/lib/cycle";
 import { reviewSession } from "@/lib/sessionReview";
 import { SessionReviewSheet } from "./SessionReviewSheet";
 import { GymMode } from "./GymMode";
+import { useConfigVersion } from "@/hooks/useConfigVersion";
 import { useSwipe } from "@/hooks/useSwipe";
 import { useSessionSets, useLastSession } from "./useEntrenoData";
 import { ExerciseCard } from "./ExerciseCard";
@@ -43,6 +44,7 @@ export function Entreno({
   autoStart: { day: GymDay; date: string } | null;
   onConsumeAutoStart: () => void;
 }) {
+  useConfigVersion(); // routine edits re-render this screen
   const [day, setDay] = useState<GymDay>(autoStart?.day ?? "A");
   const [sessionDate, setSessionDate] = useState<string>(autoStart?.date ?? todayISO());
   const [openExercise, setOpenExercise] = useState<ExerciseTarget | null>(null);

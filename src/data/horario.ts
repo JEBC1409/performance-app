@@ -85,7 +85,7 @@ export const BLOCK_TEXT: Record<BlockType, string> = {
 /** Row labels, top to bottom. A row starts at its first time and lasts until
  * the next row starts (the last one runs to midnight), which is how the
  * "current block" on Hoy is resolved. */
-export const HORARIO_TIMES = [
+const DEFAULT_TIMES = [
   "5:00",
   "5:15-5:40",
   "6:00-7:30",
@@ -104,6 +104,8 @@ export const HORARIO_TIMES = [
   "21:15-21:45",
   "22:00",
 ];
+
+export const HORARIO_TIMES: string[] = [...DEFAULT_TIMES];
 
 /** Row indexes by start time, so day columns read like the schedule. */
 const R = {
@@ -129,8 +131,8 @@ const R = {
 /** A block covering rows [from..to] (inclusive) of one day's column. */
 type Seg = [from: number, to: number, cell: HorarioCell];
 
-function column(segs: Seg[]): HorarioCell[] {
-  const out: HorarioCell[] = new Array(HORARIO_TIMES.length).fill(null).map(() => c("—", "otro"));
+function column(segs: Seg[], rows: number): HorarioCell[] {
+  const out: HorarioCell[] = new Array(rows).fill(null).map(() => c("—", "otro"));
   for (const [from, to, cell] of segs) {
     for (let r = from; r <= to; r++) {
       out[r] = r === from ? { ...cell, ...(to > from ? { span: to - from + 1 } : {}) } : { ...cell, cont: true };
@@ -173,17 +175,17 @@ function evening(sixPm: HorarioCell): Seg[] {
 const DISENO = c("Diseño de Sistemas ★", "clase");
 const PENDIENTES = c("Pendientes U / Libre", "libre");
 
-const COLUMNS: HorarioCell[][] = [
+const DEFAULT_SEGS: Seg[][] = [
   // Lunes
-  column([...morning(c("Admin Sistemas ★", "clase")), ...evening(DISENO)]),
+  [...morning(c("Admin Sistemas ★", "clase")), ...evening(DISENO)],
   // Martes
-  column([...morning(c("Pruebas y Calidad ★", "clase")), ...evening(PENDIENTES)]),
+  [...morning(c("Pruebas y Calidad ★", "clase")), ...evening(PENDIENTES)],
   // Miércoles
-  column([...morning(c("Libre / U", "libre")), ...evening(DISENO)]),
+  [...morning(c("Libre / U", "libre")), ...evening(DISENO)],
   // Jueves
-  column([...morning(c("Libre / U", "libre")), ...evening(PENDIENTES)]),
+  [...morning(c("Libre / U", "libre")), ...evening(PENDIENTES)],
   // Viernes: new morning, afternoon as before, book block at night, sleep at 22:00
-  column([
+  [
     ...morning(c("Admin Sistemas ★", "clase")),
     [R.t1400, R.t1400, c("MoureDev bloque largo", "mouredev")],
     [R.t1635, R.t1730, c("LIBRE", "libre")],
@@ -191,9 +193,9 @@ const COLUMNS: HorarioCell[][] = [
     [R.t2030, R.t2030, c("LIBRE", "libre")],
     [R.t2115, R.t2115, BOOK],
     [R.t2200, R.t2200, c("Dormir 22:00", "otro")],
-  ]),
+  ],
   // Sábado: as before, plus Bible right after waking; sleep at 22:00
-  column([
+  [
     [R.t0500, R.t0500, c("Despertar + aseo", "otro")],
     [R.t0515, R.t0515, c("Biblia", "dios")],
     [R.t0600, R.t0730, c("Pruebas y Calidad ★", "clase")],
@@ -204,9 +206,9 @@ const COLUMNS: HorarioCell[][] = [
     [R.t1635, R.t1730, c("MoureDev repaso", "mouredev")],
     [R.t1800, R.t1930, c("LIBRE", "libre")],
     [R.t2030, R.t2200, c("Dormir 22:00", "otro")],
-  ]),
+  ],
   // Domingo: as before, plus Bible right after waking (7:00); sleep at 22:00
-  column([
+  [
     [R.t0600, R.t0600, c("Despertar 7:00", "otro")],
     [R.t0730, R.t0730, c("Biblia", "dios")],
     [R.t0830, R.t0850, c("GYM 8:00-9:30", "gym")],
@@ -216,10 +218,98 @@ const COLUMNS: HorarioCell[][] = [
     [R.t1635, R.t1730, c("LIBRE", "libre")],
     [R.t1800, R.t1930, c("LIBRE", "libre")],
     [R.t2030, R.t2200, c("Planear + dormir 22:00", "otro")],
-  ]),
+  ],
 ];
 
-export const HORARIO: HorarioRow[] = HORARIO_TIMES.map((time, r) => ({ time, cells: COLUMNS.map((col) => col[r]) }));
+const DEFAULT_COLUMNS = DEFAULT_SEGS.map((segs) => column(segs, DEFAULT_TIMES.length));
+export const HORARIO: HorarioRow[] = HORARIO_TIMES.map((time, r) => ({ time, cells: DEFAULT_COLUMNS.map((col) => col[r]) }));
+// ── Editable schedule ───────────────────────────────────────────────────
+// The schedule lives as "segments" per weekday (rows from..to hold one block).
+// Storing segments — not the expanded grid — means a block that spans rows can
+// never get out of sync with its continuation rows; the grid is rebuilt from them.
+
+/** A block as stored/edited: no span/cont bookkeeping. */
+export type BlockCell = Pick<HorarioCell, "text" | "type" | "key" | "soft" | "quiet">;
+export interface HorarioSeg {
+  from: number;
+  to: number;
+  cell: BlockCell;
+}
+export interface HorarioConfig {
+  times: string[];
+  /** Mon..Sun */
+  days: HorarioSeg[][];
+}
+
+const BLOCK_TYPES: BlockType[] = ["clase", "gym", "mouredev", "ingles", "dios", "libre", "otro"];
+const TIME_LABEL = /^\d{1,2}:\d{2}(-\d{1,2}:\d{2})?$/;
+
+function stripCell(cell: HorarioCell): BlockCell {
+  const { text, type, key, soft, quiet } = cell;
+  return { text, type, ...(key ? { key } : {}), ...(soft ? { soft } : {}), ...(quiet ? { quiet } : {}) };
+}
+
+export function defaultHorario(): HorarioConfig {
+  return {
+    times: [...DEFAULT_TIMES],
+    days: DEFAULT_SEGS.map((segs) => segs.map(([from, to, cell]) => ({ from, to, cell: stripCell(cell) }))),
+  };
+}
+
+/** Rebuild one weekday's rows from its segments (gaps become empty "—" rows). */
+export function columnFromSegs(segs: HorarioSeg[], rows: number): HorarioCell[] {
+  return column(segs.map((sg) => [sg.from, sg.to, { ...sg.cell } as HorarioCell] as Seg), rows);
+}
+
+/** Validates a stored/synced schedule; null when it can't be trusted. */
+export function sanitizeHorario(raw: unknown): HorarioConfig | null {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw as { times?: unknown; days?: unknown };
+  if (!Array.isArray(r.times) || r.times.length < 1 || r.times.length > 48) return null;
+  if (!r.times.every((t) => typeof t === "string" && TIME_LABEL.test(t))) return null;
+  if (!Array.isArray(r.days) || r.days.length !== 7) return null;
+  const rows = r.times.length;
+  const days: HorarioSeg[][] = [];
+  for (const d of r.days) {
+    if (!Array.isArray(d)) return null;
+    const segs: HorarioSeg[] = [];
+    let lastTo = -1;
+    for (const sg of [...d].sort((a, b) => (a?.from ?? 0) - (b?.from ?? 0))) {
+      if (!sg || typeof sg !== "object") return null;
+      const { from, to, cell } = sg as { from: unknown; to: unknown; cell: Partial<BlockCell> | undefined };
+      if (!Number.isInteger(from) || !Number.isInteger(to) || (from as number) < 0 || (to as number) < (from as number) || (to as number) >= rows) return null;
+      if ((from as number) <= lastTo) return null; // overlapping blocks
+      if (!cell || typeof cell.text !== "string" || !cell.text.trim() || cell.text.length > 80 || !BLOCK_TYPES.includes(cell.type as BlockType)) return null;
+      lastTo = to as number;
+      segs.push({ from: from as number, to: to as number, cell: { text: cell.text.trim(), type: cell.type as BlockType, ...(cell.key ? { key: true } : {}), ...(cell.soft ? { soft: true } : {}), ...(cell.quiet ? { quiet: true } : {}) } });
+    }
+    days.push(segs);
+  }
+  return { times: r.times as string[], days };
+}
+
+/** Start of a row label ("5:15-5:40" → 315 min), for keeping rows in order. */
+export function labelStartMin(label: string): number {
+  const [h, m] = label.split("-")[0].split(":").map(Number);
+  return h * 60 + m;
+}
+
+/** Puts a config into the live HORARIO / HORARIO_TIMES (mutated in place, so
+ * every importer sees the change). */
+export function applyHorario(cfg: HorarioConfig): void {
+  currentCfg = cfg;
+  const columns = cfg.days.map((segs) => columnFromSegs(segs, cfg.times.length));
+  HORARIO_TIMES.splice(0, HORARIO_TIMES.length, ...cfg.times);
+  HORARIO.splice(0, HORARIO.length, ...cfg.times.map((time, r) => ({ time, cells: columns.map((col) => col[r]) })));
+}
+
+/** What's running right now, as a config (a copy you can edit). */
+export function currentHorarioConfig(): HorarioConfig {
+  return currentCfg ?? defaultHorario();
+}
+let currentCfg: HorarioConfig | null = null;
+
+
 
 export interface SueñoRow {
   dias: string;

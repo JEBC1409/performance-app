@@ -61,9 +61,15 @@ export default function App() {
   // Screens cross-fade/slide where the browser supports View Transitions.
   const setTab = (next: Tab) => {
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    const start = (document as Document & { startViewTransition?: (cb: () => void) => unknown }).startViewTransition;
-    if (typeof start === "function" && !reduce && next !== tab) start.call(document, () => flushSync(() => setTabRaw(next)));
-    else setTabRaw(next);
+    type VT = { ready?: Promise<unknown>; finished?: Promise<unknown>; updateCallbackDone?: Promise<unknown> };
+    const start = (document as Document & { startViewTransition?: (cb: () => void) => VT }).startViewTransition;
+    if (typeof start === "function" && !reduce && next !== tab && document.visibilityState === "visible") {
+      const vt = start.call(document, () => flushSync(() => setTabRaw(next)));
+      // A transition can be skipped (tab hidden, another one started): that is fine, not an error.
+      vt.ready?.catch(() => {});
+      vt.finished?.catch(() => {});
+      vt.updateCallbackDone?.catch(() => {});
+    } else setTabRaw(next);
   };
   const [autoStart, setAutoStart] = useState<{ day: GymDay; date: string } | null>(null);
   const settings = useLiveQuery(() => db.settings.get("app"), []);

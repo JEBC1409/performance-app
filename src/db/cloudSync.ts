@@ -1,7 +1,7 @@
 import type { Table } from "dexie";
 import { supabase } from "@/lib/supabase";
 import { syncStarted, syncFinished, syncAborted } from "./syncStatus";
-import { enqueue, flushOutbox, pendingKeys, refreshQueued } from "./outbox";
+import { enqueue, flushOutbox, isMissingTable, pendingKeys, refreshQueued } from "./outbox";
 import type { Executor } from "./outbox";
 import {
   db,
@@ -9,6 +9,8 @@ import {
   type HabitDayRecord,
   type HabitDefRecord,
   type FocusSessionRecord,
+  type AppConfigRecord,
+  type ExercisePhotoRecord,
   type WeightRecord,
   type SleepRecord,
   type SavedVerseRecord,
@@ -202,6 +204,22 @@ function fromRemoteSettings(row: Record<string, unknown>, local?: SettingsRecord
   };
 }
 
+function toRemoteAppConfig(row: AppConfigRecord, userId: string) {
+  return { user_id: userId, key: row.key, value: row.value ?? null, updated_at: new Date(row.updatedAt || Date.now()).toISOString() };
+}
+function fromRemoteAppConfig(row: Record<string, unknown>): AppConfigRecord | null {
+  if (typeof row.key !== "string") return null;
+  const at = typeof row.updated_at === "string" ? Date.parse(row.updated_at) : NaN;
+  return { key: row.key, value: row.value, updatedAt: Number.isFinite(at) ? at : Date.now() };
+}
+function toRemoteExercisePhoto(row: ExercisePhotoRecord, userId: string) {
+  return { user_id: userId, name: row.name, data_url: row.dataUrl, caption: row.caption ?? null };
+}
+function fromRemoteExercisePhoto(row: Record<string, unknown>): ExercisePhotoRecord | null {
+  if (typeof row.name !== "string" || typeof row.data_url !== "string") return null;
+  return { name: row.name, dataUrl: row.data_url, caption: typeof row.caption === "string" ? row.caption : undefined };
+}
+
 // ---------- outbox: queued, retried cloud writes ----------
 
 /** Performs one queued write. Supabase reports network failures as an
@@ -276,7 +294,10 @@ const sleepSync: TableSync = { remoteTable: "sleep", localTable: db.sleep, toRem
 const savedVersesSync: TableSync = { remoteTable: "saved_verses", localTable: db.savedVerses, toRemote: toRemoteSavedVerse, fromRemote: fromRemoteSavedVerse, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true, keyOf: (r) => String(r.remoteId) };
 const moureWeeksSync: TableSync = { remoteTable: "moure_weeks", localTable: db.moureWeeks, toRemote: toRemoteMoureWeek, fromRemote: fromRemoteMoureWeek, remoteMatch: (week) => ({ week }), idKeyed: false, keyOf: (r) => String(r.week) };
 
-const COLLECTION_TABLES: TableSync[] = [setsSync, habitDaysSync, habitDefsSync, focusSessionsSync, weightsSync, sleepSync, savedVersesSync, moureWeeksSync];
+const appConfigSync: TableSync = { remoteTable: "app_config", localTable: db.appConfig, toRemote: toRemoteAppConfig, fromRemote: fromRemoteAppConfig, remoteMatch: (key) => ({ key }), idKeyed: false, keyOf: (r) => String(r.key) };
+const exercisePhotosSync: TableSync = { remoteTable: "exercise_photos", localTable: db.exercisePhotos, toRemote: toRemoteExercisePhoto, fromRemote: fromRemoteExercisePhoto, remoteMatch: (name) => ({ name }), idKeyed: false, keyOf: (r) => String(r.name) };
+
+const COLLECTION_TABLES: TableSync[] = [setsSync, habitDaysSync, habitDefsSync, focusSessionsSync, weightsSync, sleepSync, savedVersesSync, moureWeeksSync, appConfigSync, exercisePhotosSync];
 
 /** Id-keyed tables can't just bulkPut incoming remote rows — the local
  * primary key is an unrelated auto-increment number, so each remote row has
@@ -382,7 +403,9 @@ async function doFullSync(userId: string): Promise<void> {
   const results = await Promise.allSettled([...COLLECTION_TABLES.map((cfg) => syncCollection(cfg, userId)), syncSettings(userId)]);
   const failures = results.filter((r): r is PromiseRejectedResult => r.status === "rejected");
   for (const f of failures) console.error("Cloud sync: a table failed to sync", f.reason);
-  const failure = failures[0] ? (failures[0].reason instanceof Error ? failures[0].reason.message : "Error de sincronización") : flushError;
+  // A table whose migration hasn't been applied yet is logged, not surfaced as a sync error.
+  const surfaced = failures.filter((f) => !isMissingTable(f.reason instanceof Error ? f.reason.message : String(f.reason?.message ?? f.reason)));
+  const failure = surfaced[0] ? (surfaced[0].reason instanceof Error ? surfaced[0].reason.message : String(surfaced[0].reason?.message ?? "Error de sincronización")) : flushError;
   await refreshQueued();
   syncFinished(failure);
 }

@@ -2,19 +2,45 @@ import { HORARIO, HORARIO_NOTE, HORARIO_GOAL, BLOCK_COLOR, BLOCK_LABEL, BLOCK_TI
 import { DIAS_CORTO, jsDowToIndex } from "@/lib/date";
 import { Card, Eyebrow } from "@/ui";
 import { ScheduleNotifyCard } from "./ScheduleNotifyCard";
+import { useConfigVersion } from "@/hooks/useConfigVersion";
+import { useState } from "react";
+import { showToast } from "@/ui/Toast";
+import { CONFIG_HORARIO, resetConfig } from "@/lib/appConfig";
+import { AddRowSheet, BlockSheet, RowSheet } from "./HorarioSheets";
 
 const LEGEND: BlockType[] = ["clase", "gym", "mouredev", "ingles", "dios", "libre"];
 
 export function Horario() {
+  useConfigVersion(); // schedule edits re-render this screen
   const todayCol = jsDowToIndex(new Date().getDay());
+  const [editing, setEditing] = useState(false);
+  const [block, setBlock] = useState<{ day: number; row: number } | null>(null);
+  const [rowEdit, setRowEdit] = useState<number | null>(null);
+  const [addingRow, setAddingRow] = useState(false);
+
+  async function restore() {
+    if (!window.confirm("¿Volver al horario original? Se descartan todos tus cambios del horario.")) return;
+    await resetConfig(CONFIG_HORARIO);
+    showToast("Horario original restaurado");
+  }
 
   return (
     <div className="flex flex-col gap-4 enter">
-      <div>
-        <Eyebrow accent>Horario</Eyebrow>
-        <h1 className="font-[var(--font-display)] text-2xl mt-1.5">Semana</h1>
-        <div className="text-[12.5px] text-[var(--color-muted)] mt-1.5">{HORARIO_NOTE}</div>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <Eyebrow accent>Horario</Eyebrow>
+          <h1 className="font-[var(--font-display)] text-2xl mt-1.5">Semana</h1>
+          <div className="text-[12.5px] text-[var(--color-muted)] mt-1.5">{HORARIO_NOTE}</div>
+        </div>
+        <button
+          onClick={() => setEditing((e) => !e)}
+          aria-pressed={editing}
+          className={`mt-1 flex-none rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] ${editing ? "glass-on" : "glass text-[var(--color-muted)]"}`}
+        >
+          {editing ? "Listo" : "Editar"}
+        </button>
       </div>
+      {editing ? <p className="-mt-2 text-[12px] leading-snug text-[var(--color-muted)]">Toca un bloque para cambiarlo, una celda vacía para llenarla, o una hora para editarla. Se guarda solo.</p> : null}
 
       <Card padded={false} className="panel-surface-glow">
         <div className="overflow-x-auto">
@@ -39,10 +65,16 @@ export function Horario() {
               </tr>
             </thead>
             <tbody>
-              {HORARIO.map((row) => (
+              {HORARIO.map((row, r) => (
                 <tr key={row.time} className="border-t border-[var(--color-line)]">
                   <td className="sticky left-0 bg-[var(--color-surface)] num px-4 py-2.5 text-[11.5px] font-medium text-[var(--color-muted)] whitespace-nowrap">
-                    {row.time}
+                    {editing ? (
+                      <button onClick={() => setRowEdit(r)} className="glass-flat hit -mx-1.5 rounded-lg px-1.5 py-0.5 underline decoration-dotted underline-offset-4" aria-label={`Editar la hora ${row.time}`}>
+                        {row.time}
+                      </button>
+                    ) : (
+                      row.time
+                    )}
                   </td>
                   {row.cells.map((cell, i) =>
                     cell.cont ? null : (
@@ -51,7 +83,13 @@ export function Horario() {
                         rowSpan={cell.span}
                         className={`h-px px-1.5 py-1.5 align-top ${i === todayCol ? "bg-[rgb(var(--accent-rgb)/0.05)]" : ""}`}
                       >
-                        <BlockChip cell={cell} />
+                        {editing ? (
+                          <button onClick={() => setBlock({ day: i, row: r })} className="block h-full w-full text-left" aria-label={`Editar ${cell.text}, ${row.time}`}>
+                            <BlockChip cell={cell} editing />
+                          </button>
+                        ) : (
+                          <BlockChip cell={cell} />
+                        )}
                       </td>
                     ),
                   )}
@@ -75,12 +113,34 @@ export function Horario() {
       </div>
       <p className="-mt-1 text-[11px] leading-snug text-[var(--color-muted-2)]">{HORARIO_GOAL}</p>
 
+      {editing ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={() => setAddingRow(true)} className="glass-accent tap-target rounded-full px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.1em]">
+            + Añadir fila
+          </button>
+          <button onClick={restore} className="ml-auto text-[11px] text-[var(--color-muted)] underline-offset-2 hover:text-[var(--color-red)] hover:underline">
+            Volver al horario original
+          </button>
+        </div>
+      ) : null}
+
       <ScheduleNotifyCard />
+
+      {block ? <BlockSheet key={`${block.day}-${block.row}`} day={block.day} row={block.row} onClose={() => setBlock(null)} /> : null}
+      {rowEdit != null ? <RowSheet key={rowEdit} row={rowEdit} onClose={() => setRowEdit(null)} /> : null}
+      {addingRow ? <AddRowSheet onClose={() => setAddingRow(false)} /> : null}
     </div>
   );
 }
 
-function BlockChip({ cell }: { cell: HorarioCell }) {
+function BlockChip({ cell, editing = false }: { cell: HorarioCell; editing?: boolean }) {
+  if (cell.text === "—" && cell.type === "otro") {
+    return editing ? (
+      <div className="flex min-h-[34px] items-center justify-center rounded-xl border border-dashed border-[var(--color-line-strong)] text-[16px] text-[var(--color-muted-2)]">+</div>
+    ) : (
+      <div className="px-1.5 py-1.5 text-[12px] leading-snug text-[var(--color-muted)]">{cell.text}</div>
+    );
+  }
   if (cell.type === "otro") {
     return <div className="px-1.5 py-1.5 text-[12px] leading-snug text-[var(--color-muted)]">{cell.text}</div>;
   }
@@ -107,3 +167,4 @@ function BlockChip({ cell }: { cell: HorarioCell }) {
     </div>
   );
 }
+

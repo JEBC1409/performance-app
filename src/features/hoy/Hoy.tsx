@@ -7,6 +7,7 @@ import { Card, Eyebrow, Stat, HabitGlyph, Button, Sheet, DateField } from "@/ui"
 import { DailyStreakCard } from "./DailyStreakCard";
 import { DayRings } from "./DayRings";
 import { useUiPrefs } from "@/hooks/useUiPrefs";
+import { useConfigVersion } from "@/hooks/useConfigVersion";
 import type { HomeCard } from "@/lib/uiPrefs";
 import { useHabitDefs } from "@/hooks/useHabitDefs";
 import { GYM_DAY_ORDER, GYM_DIAS } from "@/data/gym";
@@ -35,6 +36,7 @@ export function Hoy({
   const today = todayISO();
   const slot = useCycleSlot();
   const { homeOrder } = useUiPrefs();
+  useConfigVersion(); // routine / schedule edits re-render this screen
   const [startPrompt, setStartPrompt] = useState(false);
   const [pickedDay, setPickedDay] = useState<GymDay>("A");
   const [pickedDate, setPickedDate] = useState(today);

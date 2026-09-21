@@ -93,6 +93,15 @@ export interface OutboxRecord {
   lastError?: string;
 }
 
+/** App-level configuration the user can edit in the app (their routine, their
+ * weekly schedule, look-and-feel prefs). A small key → JSON value store so new
+ * kinds of config don't each need a table; synced to the cloud as a whole. */
+export interface AppConfigRecord {
+  key: string;
+  value: unknown;
+  updatedAt: number;
+}
+
 export interface FocusSessionRecord {
   id?: number;
   remoteId?: string;
@@ -151,6 +160,7 @@ export const db = new Dexie("performance-db") as Dexie & {
   focusSessions: EntityTable<FocusSessionRecord, "id">;
   exercisePhotos: EntityTable<ExercisePhotoRecord, "name">;
   outbox: EntityTable<OutboxRecord, "id">;
+  appConfig: EntityTable<AppConfigRecord, "key">;
   weights: EntityTable<WeightRecord, "id">;
   sleep: EntityTable<SleepRecord, "id">;
   savedVerses: EntityTable<SavedVerseRecord, "id">;
@@ -245,6 +255,11 @@ db.version(5).stores({
 /** v6 adds the outbox (pending cloud writes). New table only. */
 db.version(6).stores({
   outbox: "++id, [table+key], table, userId",
+});
+
+/** v7 adds appConfig (editable routine / schedule / prefs). New table only. */
+db.version(7).stores({
+  appConfig: "key",
 });
 
 export const DEFAULT_SETTINGS: SettingsRecord = {

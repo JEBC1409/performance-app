@@ -4,11 +4,13 @@ import App from "./App";
 import { ErrorBoundary } from "./ui/ErrorBoundary";
 import { initCloudSync } from "./db/cloudSync";
 import { applyUiPrefs } from "./lib/uiPrefs";
+import { initAppConfig } from "./lib/appConfig";
 import "./styles/index.css";
 
 initCloudSync();
 // Before the first paint, so a saved accent never flashes red.
 applyUiPrefs();
+initAppConfig();
 
 // clientsClaim + skipWaiting (vite.config.ts) make a new deploy's service
 // worker take over immediately instead of waiting for every tab to close —

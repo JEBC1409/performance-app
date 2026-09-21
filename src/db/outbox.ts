@@ -27,6 +27,14 @@ export function isNetworkError(message: string): boolean {
   return NETWORK_ERROR.test(message);
 }
 
+const MISSING_TABLE = /does not exist|schema cache|PGRST20[45]|42P01|could not find the table/i;
+
+/** The cloud table hasn't been created yet (its SQL migration wasn't applied):
+ * not an error worth alarming about — the change simply waits in the queue. */
+export function isMissingTable(message: string): boolean {
+  return MISSING_TABLE.test(message);
+}
+
 function isOnline(): boolean {
   return typeof navigator === "undefined" || navigator.onLine;
 }
@@ -105,7 +113,7 @@ async function doFlush(userId: string, exec: Executor): Promise<FlushResult> {
         break;
       } else {
         result.failed++;
-        result.lastError = res.error.message;
+        if (!isMissingTable(res.error.message)) result.lastError = res.error.message;
         await db.outbox.update(e.id!, { attempts: e.attempts + 1, lastError: res.error.message });
       }
     }

@@ -10,6 +10,7 @@ export async function exportBackup(): Promise<void> {
     habitDefs: await db.habitDefs.toArray(),
     focusSessions: await db.focusSessions.toArray(),
     exercisePhotos: await db.exercisePhotos.toArray(),
+    appConfig: await db.appConfig.toArray(),
     weights: await db.weights.toArray(),
     sleep: await db.sleep.toArray(),
     savedVerses: await db.savedVerses.toArray(),
@@ -31,7 +32,7 @@ export async function importBackup(file: File): Promise<void> {
   const text = await file.text();
   const data = JSON.parse(text);
   if (!data || typeof data !== "object") throw new Error("Archivo no reconocido");
-  await db.transaction("rw", [db.sets, db.habitDays, db.habitDefs, db.focusSessions, db.exercisePhotos, db.weights, db.sleep, db.savedVerses, db.moureWeeks, db.settings], async () => {
+  await db.transaction("rw", [db.sets, db.habitDays, db.habitDefs, db.focusSessions, db.exercisePhotos, db.appConfig, db.weights, db.sleep, db.savedVerses, db.moureWeeks, db.settings], async () => {
     if (Array.isArray(data.sets)) {
       await db.sets.clear();
       await db.sets.bulkAdd(data.sets.map(({ id: _id, ...rest }: Record<string, unknown>) => rest));
@@ -43,6 +44,7 @@ export async function importBackup(file: File): Promise<void> {
       await db.focusSessions.bulkAdd(data.focusSessions.map(({ id: _id, ...rest }: Record<string, unknown>) => rest));
     }
     if (Array.isArray(data.exercisePhotos)) await db.exercisePhotos.bulkPut(data.exercisePhotos);
+    if (Array.isArray(data.appConfig)) await db.appConfig.bulkPut(data.appConfig);
     if (Array.isArray(data.weights)) {
       await db.weights.clear();
       await db.weights.bulkAdd(data.weights.map(({ id: _id, ...rest }: Record<string, unknown>) => rest));

@@ -14,6 +14,7 @@ import { currentStreak } from "@/lib/streak";
 import { useHabitDefs } from "@/hooks/useHabitDefs";
 import { HabitManager } from "./HabitManager";
 import { AppearanceCard } from "./AppearanceCard";
+import { RoutineEditor } from "./RoutineEditor";
 
 const HEAVY_DUTY_RULES = [
   "Pre-fatigá el músculo objetivo con una serie de aislamiento antes del compuesto principal.",
@@ -213,6 +214,8 @@ export function Perfil() {
       </Card>
 
       <HabitManager />
+
+      <RoutineEditor />
 
       <AppearanceCard />
 

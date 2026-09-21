@@ -48,6 +48,15 @@ export const EXERCISE_MUSCLE_GROUP: Record<string, MuscleGroup> = {
 
 export const MUSCLE_GROUP_ORDER: MuscleGroup[] = ["espalda", "pecho", "hombro", "brazo", "pierna", "core"];
 
+/** Groups chosen in the routine editor (they win over the built-in map, so an
+ * exercise you add or reclassify counts toward the right muscle). */
+const CUSTOM_GROUP: Record<string, MuscleGroup> = {};
+
+export function registerExerciseGroups(map: Record<string, MuscleGroup>): void {
+  for (const k of Object.keys(CUSTOM_GROUP)) delete CUSTOM_GROUP[k];
+  Object.assign(CUSTOM_GROUP, map);
+}
+
 export function groupForExercise(name: string): MuscleGroup | null {
-  return EXERCISE_MUSCLE_GROUP[name] ?? null;
+  return CUSTOM_GROUP[name] ?? EXERCISE_MUSCLE_GROUP[name] ?? null;
 }

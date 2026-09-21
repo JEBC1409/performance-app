@@ -1,5 +1,5 @@
 import type { SetRecord } from "@/db/db";
-import { GYM_DIAS, START_WEIGHTS_AS_OF } from "@/data/gym";
+import { GYM_DIAS, startDate } from "@/data/gym";
 import type { GymDay } from "./cycle";
 import { epley1RM } from "./epley";
 
@@ -90,7 +90,7 @@ export function reviewSession(day: GymDay, date: string, sessionSets: SetRecord[
     const hasStart = ex.startKg != null || ex.startReps != null;
 
     let prev: ExerciseReview["prev"] = null;
-    if (hasStart && (lastDate == null || lastDate < START_WEIGHTS_AS_OF)) {
+    if (hasStart && (lastDate == null || lastDate < startDate(ex))) {
       // Before the declared starting weights, they are the reference.
       prev = { weight: ex.startKg ?? null, reps: ex.startReps ?? null, date: null };
     } else if (lastDate) {

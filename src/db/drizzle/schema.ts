@@ -10,6 +10,7 @@ import {
   date,
   timestamp,
   primaryKey,
+  jsonb,
   type PgColumn,
 } from "drizzle-orm/pg-core";
 import { authUsers } from "drizzle-orm/supabase";
@@ -171,4 +172,29 @@ export const settings = pgTable(
     readingChapter: integer("reading_chapter"),
   },
   (table) => [ownedByUser(table)],
+).enableRLS();
+
+/** User-editable app configuration (routine, schedule, look-and-feel), one
+ * JSON document per key. */
+export const appConfig = pgTable(
+  "app_config",
+  {
+    userId: userIdColumn(),
+    key: text("key").notNull(),
+    value: jsonb("value").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.key] }), ownedByUser(table)],
+).enableRLS();
+
+/** Photos the user picked for exercises (data URLs, downscaled on the client). */
+export const exercisePhotos = pgTable(
+  "exercise_photos",
+  {
+    userId: userIdColumn(),
+    name: text("name").notNull(),
+    dataUrl: text("data_url").notNull(),
+    caption: text("caption"),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.name] }), ownedByUser(table)],
 ).enableRLS();

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ExerciseTarget } from "@/data/gym";
-import { START_WEIGHTS_AS_OF } from "@/data/gym";
+import { startDate } from "@/data/gym";
 import type { SetRecord } from "@/db/db";
 import { useSwipe } from "@/hooks/useSwipe";
 import { haptic } from "@/lib/feedback";
@@ -159,7 +159,7 @@ function GymExercise({
   const range = parseRepRange(ex.repsLabel);
   const hasStart = ex.startKg != null || ex.startReps != null;
   const suggestion = useMemo(
-    () => (hasStart && (!last || last.date < START_WEIGHTS_AS_OF) ? suggestFromStart(range, ex.startKg, ex.startReps) : last ? suggestNext(range, last.sets) : null),
+    () => (hasStart && (!last || last.date < startDate(ex)) ? suggestFromStart(range, ex.startKg, ex.startReps) : last ? suggestNext(range, last.sets) : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [ex.name, last?.date],
   );

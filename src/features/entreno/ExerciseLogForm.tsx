@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { START_WEIGHTS_AS_OF } from "@/data/gym";
+import { startDate } from "@/data/gym";
 import type { ExerciseTarget } from "@/data/gym";
 import type { SetRecord } from "@/db/db";
 import type { LastSession } from "./useEntrenoData";
@@ -84,7 +84,7 @@ export function ExerciseLogForm({
   // Until a session is logged after the starting weights were set, those
   // weights (what you're at today) drive the suggestion, not older history.
   const hasStart = exercise.startKg != null || exercise.startReps != null;
-  const fromStart = hasStart && (!lastSession || lastSession.date < START_WEIGHTS_AS_OF);
+  const fromStart = hasStart && (!lastSession || lastSession.date < startDate(exercise));
   const suggestion = fromStart || !lastSession ? suggestFromStart(range, exercise.startKg, exercise.startReps) : suggestNext(range, lastSession.sets);
   const fmtNum = (n: number) => String(Math.round(n * 10) / 10);
 
