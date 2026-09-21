@@ -1,12 +1,15 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
 import { Eyebrow, Button } from "@/ui";
+import { ErrorBoundary } from "@/ui/ErrorBoundary";
 import { showToast } from "@/ui/Toast";
 import { todayISO } from "@/lib/date";
 import { BLOCKS_PER_SET, FOCUS_OPTIONS, pauseFocus, remainingSeconds, resumeFocus, startFocus, stopFocus } from "@/lib/focusTimer";
 import { fmtClock, useFocusTimer, useNow } from "@/hooks/useFocusTimer";
+import { getPip, pipSupport, subscribePip, togglePip } from "@/lib/focusPip";
+import { isSoundOn, setSoundOn, subscribeSound, unlockAudio } from "@/lib/focusSound";
 
 const SIZE = 300;
 const C = SIZE / 2;
@@ -122,12 +125,36 @@ function SkipIcon() {
   );
 }
 
-export function Focus() {
+function PipIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <rect x="1.5" y="3" width="15" height="12" rx="2.2" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="9" y="8.5" width="6" height="4.5" rx="1.2" fill="currentColor" />
+    </svg>
+  );
+}
+function SoundIcon({ on }: { on: boolean }) {
+  return (
+    <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <path d="M2.5 7v4h3l4 3.2V3.8L5.5 7h-3Z" fill="currentColor" />
+      {on ? (
+        <path d="M12 6.2a4 4 0 0 1 0 5.6M14.2 4a7 7 0 0 1 0 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      ) : (
+        <path d="M12.5 6.5l4 5M16.5 6.5l-4 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      )}
+    </svg>
+  );
+}
+
+function FocusView() {
   const timer = useFocusTimer();
   const active = timer.status !== "idle";
   const now = useNow(timer.status === "running");
   const [task, setTask] = useState(timer.task);
   const [focusMin, setFocusMin] = useState(timer.focusMin);
+  const soundOn = useSyncExternalStore(subscribeSound, isSoundOn, isSoundOn);
+  const pip = useSyncExternalStore(subscribePip, getPip, getPip);
+  const pipAvailable = pipSupport() !== null;
 
   const today = todayISO();
   const sessions = useLiveQuery(() => db.focusSessions.where("date").equals(today).toArray(), [today]);
@@ -151,16 +178,40 @@ export function Focus() {
       showToast("Escribe qué vas a hacer");
       return;
     }
+    // Both need a user gesture, and this click is the one we get: unlock the
+    // chime and ask once for permission to notify when a block ends.
+    unlockAudio();
+    if (typeof Notification !== "undefined" && Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
+    }
     startFocus(t, focusMin);
+  }
+
+  async function floatTimer() {
+    const res = await togglePip();
+    if (res === "unsupported") showToast("Tu navegador no permite ventana flotante");
+    else if (res === "failed") showToast("No se pudo abrir la ventana flotante");
   }
 
   const stateLabel = !active ? "Listo para enfocar" : isBreak ? "Descanso" : paused ? "En pausa" : "Enfocado";
 
   return (
     <div className="flex flex-col gap-5 enter">
-      <div>
-        <Eyebrow accent>Focus</Eyebrow>
-        <h1 className="font-[var(--font-display)] text-[26px] leading-tight mt-1.5 tracking-tight">Una tarea. Un bloque.</h1>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <Eyebrow accent>Focus</Eyebrow>
+          <h1 className="font-[var(--font-display)] text-[26px] leading-tight mt-1.5 tracking-tight">Una tarea. Un bloque.</h1>
+        </div>
+        <button
+          onClick={() => setSoundOn(!soundOn)}
+          aria-pressed={soundOn}
+          aria-label={soundOn ? "Silenciar sonido" : "Activar sonido"}
+          className={`tap-target mt-1 flex h-10 w-10 flex-none items-center justify-center rounded-full border transition-colors ${
+            soundOn ? "border-[var(--color-red)] text-[var(--color-red)] bg-[rgba(223,37,49,0.08)]" : "border-[var(--color-line-strong)] text-[var(--color-muted-2)]"
+          }`}
+        >
+          <SoundIcon on={soundOn} />
+        </button>
       </div>
 
       <div className={`panel-surface ${active ? "panel-surface-glow" : ""} px-4 pt-5 pb-5 sm:px-6`}>
@@ -227,7 +278,11 @@ export function Focus() {
                 {isBreak ? <SkipIcon /> : <StopIcon />}
               </button>
               <button
-                onClick={paused ? resumeFocus : pauseFocus}
+                onClick={() => {
+                  unlockAudio();
+                  if (paused) resumeFocus();
+                  else pauseFocus();
+                }}
                 aria-label={paused ? "Reanudar" : "Pausar"}
                 className="tap-target flex h-[68px] w-[68px] items-center justify-center rounded-full text-white transition-all active:scale-95"
                 style={{
@@ -237,7 +292,23 @@ export function Focus() {
               >
                 {paused ? <PlayIcon /> : <PauseIcon />}
               </button>
-              <span className="h-12 w-12" aria-hidden />
+              {pipAvailable ? (
+                <button
+                  onClick={floatTimer}
+                  aria-pressed={pip.kind !== null}
+                  aria-label={pip.kind ? "Cerrar ventana flotante" : "Abrir ventana flotante"}
+                  title="Ventana flotante"
+                  className={`tap-target flex h-12 w-12 items-center justify-center rounded-full border transition-all active:scale-95 ${
+                    pip.kind
+                      ? "border-[var(--color-red)] bg-[rgba(223,37,49,0.12)] text-[var(--color-red)]"
+                      : "border-[var(--color-line-strong)] bg-[rgba(255,255,255,0.03)] text-[var(--color-muted)] hover:border-[var(--color-red)] hover:text-[var(--color-red)]"
+                  }`}
+                >
+                  <PipIcon />
+                </button>
+              ) : (
+                <span className="h-12 w-12" aria-hidden />
+              )}
             </div>
           </>
         ) : (
@@ -370,5 +441,32 @@ export function Focus() {
         )}
       </div>
     </div>
+  );
+}
+
+/** Focus is contained: if something in it ever throws, the rest of the app
+ * keeps working and this offers a clean restart instead of a blank screen. */
+export function Focus() {
+  return (
+    <ErrorBoundary
+      fallback={(reset) => (
+        <div className="panel-surface p-5 text-center">
+          <div className="eyebrow eyebrow-accent">Focus tuvo un problema</div>
+          <p className="mt-2 text-[13px] text-[var(--color-muted)]">El resto de la app sigue bien. Reinicia el temporizador para continuar.</p>
+          <Button
+            variant="primary"
+            className="mt-4"
+            onClick={() => {
+              stopFocus();
+              reset();
+            }}
+          >
+            Reiniciar Focus
+          </Button>
+        </div>
+      )}
+    >
+      <FocusView />
+    </ErrorBoundary>
   );
 }

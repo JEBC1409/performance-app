@@ -14,6 +14,8 @@ import { Habitos } from "@/features/habitos/Habitos";
 import { Datos } from "@/features/datos/Datos";
 import { Horario } from "@/features/horario/Horario";
 import { Focus } from "@/features/focus/Focus";
+import { FocusPipHost } from "@/features/focus/FocusPip";
+import { ErrorBoundary } from "@/ui/ErrorBoundary";
 import { Kairos } from "@/features/kairos/Kairos";
 import { Mouredev } from "@/features/mouredev/Mouredev";
 import { Perfil } from "@/features/perfil/Perfil";
@@ -80,6 +82,9 @@ export default function App() {
       {tab === "kairos" ? <Kairos /> : null}
       {tab === "mouredev" ? <Mouredev /> : null}
       {tab === "perfil" ? <Perfil /> : null}
+      <ErrorBoundary fallback={() => null}>
+        <FocusPipHost />
+      </ErrorBoundary>
       <ToastHost />
     </Shell>
   );

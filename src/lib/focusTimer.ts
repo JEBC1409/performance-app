@@ -31,30 +31,84 @@ const SHORT_BREAK_MIN = 5;
 const LONG_BREAK_MIN = 15;
 export const BLOCKS_PER_SET = 4;
 const STORAGE_KEY = "performance_focus_timer_v1";
+const MAX_TASK = 80;
 
 const IDLE: FocusTimerState = { status: "idle", phase: "focus", task: "", focusMin: 25, totalSec: 0, endsAt: null, remainingSec: 0, cycle: 0 };
 
-function load(): FocusTimerState {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return { ...IDLE, ...(JSON.parse(raw) as Partial<FocusTimerState>) };
-  } catch {
-    /* corrupted or unavailable storage — start clean */
-  }
-  return IDLE;
+function clamp(n: number, lo: number, hi: number): number {
+  return Math.min(hi, Math.max(lo, n));
 }
 
-let state: FocusTimerState = load();
+/** Persisted state is untrusted (older builds, hand edits, another tab):
+ * coerce every field so a bad value can never crash or wedge the timer. */
+function sanitize(raw: unknown): FocusTimerState {
+  if (!raw || typeof raw !== "object") return IDLE;
+  const r = raw as Record<string, unknown>;
+  const num = (v: unknown, d: number) => (typeof v === "number" && Number.isFinite(v) ? v : d);
+  const status = r.status === "running" || r.status === "paused" ? r.status : "idle";
+  const focusMin = FOCUS_OPTIONS.includes(num(r.focusMin, 25)) ? num(r.focusMin, 25) : 25;
+  const totalSec = Math.max(0, Math.round(num(r.totalSec, 0)));
+  const cycle = clamp(Math.floor(num(r.cycle, 0)), 0, BLOCKS_PER_SET);
+  const task = typeof r.task === "string" ? r.task.slice(0, MAX_TASK) : "";
+  const phase: FocusPhase = r.phase === "break" ? "break" : "focus";
+  const endsAt = typeof r.endsAt === "number" && Number.isFinite(r.endsAt) ? r.endsAt : null;
+  const base = { ...IDLE, focusMin, task, cycle };
+  if (status === "running") {
+    if (endsAt === null || totalSec <= 0) return base;
+    return { ...base, status, phase, totalSec, endsAt };
+  }
+  if (status === "paused") {
+    if (totalSec <= 0) return base;
+    return { ...base, status, phase, totalSec, remainingSec: clamp(Math.round(num(r.remainingSec, 0)), 0, totalSec) };
+  }
+  return base;
+}
+
+function readStored(): string | null {
+  try {
+    return localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function parse(raw: string | null): FocusTimerState {
+  if (!raw) return IDLE;
+  try {
+    return sanitize(JSON.parse(raw));
+  } catch {
+    return IDLE;
+  }
+}
+
+let lastRaw: string | null = readStored();
+let state: FocusTimerState = parse(lastRaw);
 const listeners = new Set<() => void>();
 
 function set(next: FocusTimerState) {
   state = next;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    lastRaw = JSON.stringify(next);
+    localStorage.setItem(STORAGE_KEY, lastRaw);
   } catch {
     /* private mode etc. — the timer still works for this session */
   }
   listeners.forEach((l) => l());
+}
+
+/** Pick up a change made by another tab of the app (same localStorage). */
+export function refreshFromStorage(): void {
+  const raw = readStored();
+  if (raw === lastRaw) return;
+  lastRaw = raw;
+  state = parse(raw);
+  listeners.forEach((l) => l());
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", (e) => {
+    if (e.key === STORAGE_KEY || e.key === null) refreshFromStorage();
+  });
 }
 
 export function getFocusState(): FocusTimerState {
@@ -73,8 +127,10 @@ export function remainingSeconds(s: FocusTimerState, now: number): number {
 }
 
 export function startFocus(task: string, focusMin: number): void {
-  const totalSec = focusMin * 60;
-  set({ ...state, status: "running", phase: "focus", task: task.trim(), focusMin, totalSec, endsAt: Date.now() + totalSec * 1000, remainingSec: 0 });
+  const min = FOCUS_OPTIONS.includes(focusMin) ? focusMin : 25;
+  const totalSec = min * 60;
+  const name = task.trim().slice(0, MAX_TASK) || "Sin nombre";
+  set({ ...state, status: "running", phase: "focus", task: name, focusMin: min, totalSec, endsAt: Date.now() + totalSec * 1000, remainingSec: 0 });
 }
 
 export function pauseFocus(): void {
@@ -93,23 +149,45 @@ export function stopFocus(): void {
   set({ ...state, status: "idle", phase: "focus", totalSec: 0, endsAt: null, remainingSec: 0 });
 }
 
-function startBreak(cycle: number): void {
-  const long = cycle >= BLOCKS_PER_SET;
-  const totalSec = (long ? LONG_BREAK_MIN : SHORT_BREAK_MIN) * 60;
-  set({ ...state, status: "running", phase: "break", totalSec, endsAt: Date.now() + totalSec * 1000, remainingSec: 0, cycle });
+function breakSeconds(cycle: number): number {
+  return (cycle >= BLOCKS_PER_SET ? LONG_BREAK_MIN : SHORT_BREAK_MIN) * 60;
 }
 
-/** Called by the app-level watcher when the running phase's time is up. A
- * finished focus block is logged, then a break starts on its own; a
- * finished break returns to idle with the task kept for the next block. */
-export function completePhase(): { finished: FocusPhase; task: string } {
+export interface PhaseResult {
+  finished: FocusPhase;
+  task: string;
+  /** Ended long ago (app was closed): report it quietly, no alarm. */
+  late: boolean;
+}
+
+const LATE_MS = 60_000;
+
+/** Called by the app-level watcher. If the running phase is due, finishes
+ * it: a completed focus block is logged and a break starts on its own; a
+ * finished break returns to idle with the task kept for the next block.
+ * Returns null when nothing was due (including when another tab already
+ * handled it, so a block is never logged twice). */
+export function completeIfDue(now: number = Date.now()): PhaseResult | null {
+  refreshFromStorage();
+  if (state.status !== "running" || state.endsAt === null || state.endsAt > now) return null;
+
   const finished = state.phase;
   const task = state.task;
+  const endedAt = state.endsAt;
+  const late = now - endedAt > LATE_MS;
+
   if (finished === "focus") {
-    void db.focusSessions.add({ date: todayISO(), task, minutes: state.focusMin, createdAt: Date.now() });
-    startBreak(state.cycle + 1);
+    db.focusSessions.add({ date: todayISO(), task, minutes: state.focusMin, createdAt: endedAt }).catch((err) => console.error("focus session not saved", err));
+    const cycle = state.cycle + 1;
+    const breakSec = breakSeconds(cycle);
+    if (now - endedAt >= breakSec * 1000) {
+      // The break would already be over too — don't start a stale one.
+      set({ ...state, status: "idle", phase: "focus", totalSec: 0, endsAt: null, remainingSec: 0, cycle: cycle >= BLOCKS_PER_SET ? 0 : cycle });
+    } else {
+      set({ ...state, status: "running", phase: "break", totalSec: breakSec, endsAt: endedAt + breakSec * 1000, remainingSec: 0, cycle });
+    }
   } else {
     set({ ...state, status: "idle", phase: "focus", totalSec: 0, endsAt: null, remainingSec: 0, cycle: state.cycle >= BLOCKS_PER_SET ? 0 : state.cycle });
   }
-  return { finished, task };
+  return { finished, task, late };
 }

@@ -3,6 +3,9 @@ import type { ErrorInfo, ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
+  /** Local fallback for a contained section; without it a crash shows the
+   * full-screen "Algo se rompió". Receives a function that retries. */
+  fallback?: (reset: () => void) => ReactNode;
 }
 
 interface State {
@@ -20,7 +23,10 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error("PERFORMANCE crashed:", error, info.componentStack);
   }
 
+  reset = () => this.setState({ error: null });
+
   render() {
+    if (this.state.error && this.props.fallback) return this.props.fallback(this.reset);
     if (this.state.error) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)] px-6">

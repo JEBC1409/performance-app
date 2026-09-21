@@ -1,6 +1,8 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { showToast } from "@/ui/Toast";
-import { completePhase, getFocusState, remainingSeconds, subscribeFocus } from "@/lib/focusTimer";
+import { completeIfDue, getFocusState, remainingSeconds, subscribeFocus } from "@/lib/focusTimer";
+import { initAudioUnlock, playChime } from "@/lib/focusSound";
+import { subscribeTick } from "@/lib/ticker";
 
 export function useFocusTimer() {
   return useSyncExternalStore(subscribeFocus, getFocusState, getFocusState);
@@ -12,8 +14,7 @@ export function useNow(active: boolean): number {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!active) return;
-    const id = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(id);
+    return subscribeTick(() => setNow(Date.now()));
   }, [active]);
   return now;
 }
@@ -25,40 +26,61 @@ export function fmtClock(sec: number): string {
   return `${pad(Math.floor(sec / 60))}:${pad(sec % 60)}`;
 }
 
+function notify(msg: string) {
+  if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+  try {
+    new Notification("Focus", { body: msg, tag: "performance-focus", requireInteraction: false });
+  } catch {
+    /* some mobile browsers throw on the constructor */
+  }
+}
+
 /** Mounted once at the app root (not inside the Focus screen), so a phase
  * finishing is noticed — and a block logged — even while you're on another
- * tab. Also keeps the browser tab title showing the countdown. */
+ * tab or the window is hidden. Rings the chime, and keeps the browser tab
+ * title showing the countdown. */
 export function useFocusWatcher(): void {
+  const status = useFocusTimer().status;
+  const baseTitle = useRef(typeof document !== "undefined" ? document.title : "");
+
+  useEffect(() => initAudioUnlock(), []);
+
   useEffect(() => {
-    const baseTitle = document.title;
+    const base = baseTitle.current;
+    if (status === "idle") {
+      document.title = base;
+      return;
+    }
     function tick() {
       const s = getFocusState();
-      if (s.status !== "running") {
-        document.title = baseTitle;
+      if (s.status === "idle") {
+        document.title = base;
+        return;
+      }
+      const label = s.phase === "focus" ? s.task : "Descanso";
+      if (s.status === "paused") {
+        document.title = `⏸ ${fmtClock(s.remainingSec)} · ${label}`;
         return;
       }
       const left = remainingSeconds(s, Date.now());
       if (left > 0) {
-        document.title = `${fmtClock(left)} · ${s.phase === "focus" ? s.task : "Descanso"}`;
+        document.title = `${fmtClock(left)} · ${label}`;
         return;
       }
-      const { finished, task } = completePhase();
-      const msg = finished === "focus" ? `Bloque terminado: ${task}. A descansar.` : "Descanso terminado. ¿Otro bloque?";
+      const done = completeIfDue();
+      if (!done) return;
+      const msg = done.finished === "focus" ? `Bloque terminado: ${done.task}. A descansar.` : "Descanso terminado. ¿Otro bloque?";
       showToast(msg);
+      if (done.late) return;
+      void playChime(done.finished);
       if (navigator.vibrate) navigator.vibrate([200, 80, 200]);
-      if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-        try {
-          new Notification("Focus", { body: msg, tag: "performance-focus" });
-        } catch {
-          /* some mobile browsers throw on the constructor */
-        }
-      }
+      notify(msg);
     }
     tick();
-    const id = window.setInterval(tick, 1000);
+    const unsub = subscribeTick(tick);
     return () => {
-      window.clearInterval(id);
-      document.title = baseTitle;
+      unsub();
+      document.title = base;
     };
-  }, []);
+  }, [status]);
 }
