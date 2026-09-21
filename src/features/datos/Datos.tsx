@@ -6,10 +6,13 @@ import { SuenoTab } from "./SuenoTab";
 import { VolumenTab } from "./VolumenTab";
 import { MoureDevTab } from "./MoureDevTab";
 import { MedidasTab } from "./MedidasTab";
+import { SemanaTab } from "./SemanaTab";
+import { DATOS_TAB_HINT } from "./tabHint";
 
-type SubTab = "peso" | "1rm" | "sueno" | "volumen" | "mouredev" | "medidas";
+type SubTab = "semana" | "peso" | "1rm" | "sueno" | "volumen" | "mouredev" | "medidas";
 
 const SUB_TABS: { key: SubTab; label: string }[] = [
+  { key: "semana", label: "Semana" },
   { key: "peso", label: "Peso" },
   { key: "1rm", label: "Carga" },
   { key: "sueno", label: "Sueño" },
@@ -18,8 +21,19 @@ const SUB_TABS: { key: SubTab; label: string }[] = [
   { key: "medidas", label: "Medidas" },
 ];
 
+function initialTab(): SubTab {
+  try {
+    const hint = localStorage.getItem(DATOS_TAB_HINT);
+    localStorage.removeItem(DATOS_TAB_HINT);
+    if (hint && SUB_TABS.some((t) => t.key === hint)) return hint as SubTab;
+  } catch {
+    /* no storage: fall through */
+  }
+  return "peso";
+}
+
 export function Datos() {
-  const [tab, setTab] = useState<SubTab>("peso");
+  const [tab, setTab] = useState<SubTab>(initialTab);
 
   return (
     <div className="flex flex-col gap-4 enter">
@@ -42,6 +56,7 @@ export function Datos() {
         ))}
       </div>
 
+      {tab === "semana" ? <SemanaTab /> : null}
       {tab === "peso" ? <PesoTab /> : null}
       {tab === "1rm" ? <UnoRMTab /> : null}
       {tab === "sueno" ? <SuenoTab /> : null}

@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
 import { GYM_DAY_ORDER, GYM_DIAS, CARDIO_NOTA, targetSetsForDay } from "@/data/gym";
-import { Tabs, Eyebrow, Card, Sheet, DateField } from "@/ui";
+import { Tabs, Eyebrow, Card, Sheet, DateField, Button } from "@/ui";
 import { showToast } from "@/ui/Toast";
 import { todayISO, fmtDateHuman } from "@/lib/date";
 import { buildDailySummary } from "@/lib/dailySummary";
-import type { GymDay } from "@/lib/cycle";
+import { slotAfter, type GymDay } from "@/lib/cycle";
+import { reviewSession } from "@/lib/sessionReview";
+import { SessionReviewSheet } from "./SessionReviewSheet";
 import { useSessionSets, useLastSession } from "./useEntrenoData";
 import { ExerciseCard } from "./ExerciseCard";
 import { ExercisePhotoEditor } from "./ExercisePhoto";
@@ -15,6 +17,22 @@ import { RestTimer } from "./RestTimer";
 import { useRestTimer } from "./useRestTimer";
 import { useLiveQuery } from "dexie-react-hooks";
 import type { ExerciseTarget } from "@/data/gym";
+
+function readFlag(key: string): boolean {
+  try {
+    return localStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function setFlag(key: string): void {
+  try {
+    localStorage.setItem(key, "1");
+  } catch {
+    /* it just may reopen once more */
+  }
+}
 
 export function Entreno({
   autoStart,
@@ -26,12 +44,18 @@ export function Entreno({
   const [day, setDay] = useState<GymDay>(autoStart?.day ?? "A");
   const [sessionDate, setSessionDate] = useState<string>(autoStart?.date ?? todayISO());
   const [openExercise, setOpenExercise] = useState<ExerciseTarget | null>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
   const timer = useRestTimer();
   const photos = useExercisePhotos();
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const restSec = settings?.defaultRestSec ?? DEFAULT_SETTINGS.defaultRestSec;
   const today = todayISO();
   const sessionSets = useSessionSets(day, sessionDate);
+  const allSets = useLiveQuery(() => db.sets.toArray(), []);
+  const review = useMemo(
+    () => (reviewOpen && allSets && sessionSets.length ? reviewSession(day, sessionDate, sessionSets, allSets) : null),
+    [reviewOpen, allSets, sessionSets, day, sessionDate],
+  );
 
   useEffect(() => {
     if (autoStart) {
@@ -61,6 +85,13 @@ export function Entreno({
     });
     showToast("Serie guardada");
     timer.start(restSec);
+    // Finishing the last series opens the session review, once per session.
+    const autoKey = `performance_review_auto_${sessionDate}_${day}`;
+    if (sessionSets.length + 1 >= target && !readFlag(autoKey)) {
+      setFlag(autoKey);
+      setOpenExercise(null);
+      setReviewOpen(true);
+    }
   }
 
   async function updateSet(id: number, payload: LogSetPayload) {
@@ -131,6 +162,12 @@ export function Entreno({
       </div>
 
       {done > 0 ? (
+        <Button variant="primary" className="w-full py-3" onClick={() => setReviewOpen(true)}>
+          Cierre de sesión
+        </Button>
+      ) : null}
+
+      {done > 0 ? (
         <button
           onClick={copySummary}
           className="tap-target w-full rounded-full border border-[var(--color-line-strong)] py-2.5 text-[11.5px] font-semibold uppercase tracking-wide hover:border-[var(--color-red)]"
@@ -145,6 +182,14 @@ export function Entreno({
       </Card>
 
       <RestTimer timer={timer} />
+
+      <SessionReviewSheet
+        open={reviewOpen}
+        onClose={() => setReviewOpen(false)}
+        review={review}
+        next={{ slot: slotAfter(day), then: slotAfter(slotAfter(day)) }}
+        onGoDay={setDay}
+      />
 
       <Sheet open={!!openExercise} onClose={() => setOpenExercise(null)} title="Registrar serie">
         {openExercise ? (

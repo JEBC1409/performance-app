@@ -7,6 +7,7 @@ import { useHabitDefs } from "@/hooks/useHabitDefs";
 import { GYM_DAY_ORDER, GYM_DIAS } from "@/data/gym";
 import { todayISO, num, DIAS, jsDowToIndex } from "@/lib/date";
 import { currentBlockInfo } from "@/lib/scheduleBlock";
+import { hintDatosTab } from "@/features/datos/tabHint";
 import { HORARIO } from "@/data/horario";
 import { useCycleSlot } from "@/hooks/useCycle";
 import { useBible } from "@/hooks/useBible";
@@ -193,6 +194,24 @@ export function Hoy({
 
       {/* ── Racha diaria ────────────────────────────────────── */}
       <DailyStreakCard />
+
+      {/* ── Resumen semanal (domingos) ─────────────────────── */}
+      {new Date().getDay() === 0 ? (
+        <button
+          onClick={() => {
+            hintDatosTab("semana");
+            onNavigate("datos");
+          }}
+          className="panel-surface panel-surface-glow enter flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left"
+        >
+          <div>
+            <div className="eyebrow eyebrow-accent">Domingo</div>
+            <div className="mt-1 font-[var(--font-display)] text-[14px] tracking-[0.04em]">Tu resumen de la semana</div>
+            <div className="mt-0.5 text-[11px] text-[var(--color-muted)]">Entrenos, Focus, hábitos, sueño y peso contra la semana anterior.</div>
+          </div>
+          <span className="flex-none text-[var(--color-red)]">→</span>
+        </button>
+      ) : null}
 
       <button
         onClick={copyDailySummary}

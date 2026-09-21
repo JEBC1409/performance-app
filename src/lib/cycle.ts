@@ -7,3 +7,8 @@ const ORDER: CycleSlot[] = ["A", "B", "C", "rest"];
 export function nextCycleSlot(sessionsLogged: number): CycleSlot {
   return ORDER[sessionsLogged % 4];
 }
+
+/** The slot after `slot` in the A → B → C → descanso cycle. */
+export function slotAfter(slot: CycleSlot): CycleSlot {
+  return ORDER[(ORDER.indexOf(slot) + 1) % ORDER.length];
+}
