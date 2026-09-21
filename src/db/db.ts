@@ -61,6 +61,17 @@ export interface SleepRecord {
   note: string;
 }
 
+/** A photo the user chose for an exercise (e.g. their favourite bodybuilder
+ * doing it), shown instead of the stock one. Kept on this device. */
+export interface ExercisePhotoRecord {
+  /** The exercise's name in the routine. */
+  name: string;
+  /** Downscaled JPEG data URL. */
+  dataUrl: string;
+  /** Who/what it shows ("Dorian Yates"), shown over the photo. */
+  caption?: string;
+}
+
 export interface FocusSessionRecord {
   id?: number;
   remoteId?: string;
@@ -117,6 +128,7 @@ export const db = new Dexie("performance-db") as Dexie & {
   habitDays: EntityTable<HabitDayRecord, "date">;
   habitDefs: EntityTable<HabitDefRecord, "key">;
   focusSessions: EntityTable<FocusSessionRecord, "id">;
+  exercisePhotos: EntityTable<ExercisePhotoRecord, "name">;
   weights: EntityTable<WeightRecord, "id">;
   sleep: EntityTable<SleepRecord, "id">;
   savedVerses: EntityTable<SavedVerseRecord, "id">;
@@ -201,6 +213,11 @@ db.version(3)
  * nothing existing changes, so no upgrade step is needed. */
 db.version(4).stores({
   focusSessions: "++id, date, createdAt, remoteId",
+});
+
+/** v5 adds exercisePhotos (user-chosen exercise photos). New table only. */
+db.version(5).stores({
+  exercisePhotos: "name",
 });
 
 export const DEFAULT_SETTINGS: SettingsRecord = {

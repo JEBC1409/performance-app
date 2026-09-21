@@ -8,6 +8,7 @@ import { buildDailySummary } from "@/lib/dailySummary";
 import type { GymDay } from "@/lib/cycle";
 import { useSessionSets, useLastSession } from "./useEntrenoData";
 import { ExerciseCard } from "./ExerciseCard";
+import { ExercisePhotoEditor, resolvePhoto, useExercisePhotos } from "./ExercisePhoto";
 import { ExerciseLogForm, type LogSetPayload } from "./ExerciseLogForm";
 import { RestTimer } from "./RestTimer";
 import { useRestTimer } from "./useRestTimer";
@@ -25,6 +26,7 @@ export function Entreno({
   const [sessionDate, setSessionDate] = useState<string>(autoStart?.date ?? todayISO());
   const [openExercise, setOpenExercise] = useState<ExerciseTarget | null>(null);
   const timer = useRestTimer();
+  const photos = useExercisePhotos();
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const restSec = settings?.defaultRestSec ?? DEFAULT_SETTINGS.defaultRestSec;
   const today = todayISO();
@@ -123,7 +125,7 @@ export function Entreno({
       <div className="grid grid-cols-2 sidebar:grid-cols-3 gap-3">
         {GYM_DIAS[day].ex.map((ex) => {
           const doneCount = sessionSets.filter((s) => s.exercise === ex.name).length;
-          return <ExerciseCard key={ex.name} exercise={ex} done={doneCount} onOpen={() => setOpenExercise(ex)} />;
+          return <ExerciseCard key={ex.name} exercise={ex} done={doneCount} onOpen={() => setOpenExercise(ex)} photo={resolvePhoto(ex.name, photos.get(ex.name))} />;
         })}
       </div>
 
@@ -180,6 +182,9 @@ function ExerciseDetail({
   const lastSession = useLastSession(exercise.name, date);
   const sets = allSessionSets.filter((s) => s.exercise === exercise.name && s.day === day).sort((a, b) => a.setIndex - b.setIndex);
   return (
-    <ExerciseLogForm exercise={exercise} sets={sets} lastSession={lastSession} onLogSet={onLogSet} onUpdateSet={onUpdateSet} onDeleteSet={onDeleteSet} />
+    <>
+      <ExercisePhotoEditor name={exercise.name} />
+      <ExerciseLogForm exercise={exercise} sets={sets} lastSession={lastSession} onLogSet={onLogSet} onUpdateSet={onUpdateSet} onDeleteSet={onDeleteSet} />
+    </>
   );
 }

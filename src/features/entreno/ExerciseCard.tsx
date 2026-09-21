@@ -1,19 +1,20 @@
 import type { ExerciseTarget } from "@/data/gym";
-import { exerciseImageUrl } from "@/data/exerciseImages";
 import { Chip } from "@/ui";
 
 export function ExerciseCard({
   exercise,
   done,
   onOpen,
+  photo,
 }: {
   exercise: ExerciseTarget;
   done: number;
   onOpen: () => void;
+  photo: { src: string | null; caption?: string };
 }) {
   const target = exercise.series;
   const complete = done >= target;
-  const imgUrl = exerciseImageUrl(exercise.name);
+  const imgUrl = photo.src;
 
   return (
     <button onClick={onOpen} className="panel-surface group flex flex-col text-left">
@@ -31,6 +32,11 @@ export function ExerciseCard({
           </div>
         )}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-transparent" />
+        {photo.caption ? (
+          <span className="absolute bottom-2 left-2 max-w-[85%] truncate rounded-full bg-black/70 px-2 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide text-[var(--color-ink)]">
+            {photo.caption}
+          </span>
+        ) : null}
         {exercise.preFatiga ? (
           <span className="absolute left-2 top-2">
             <Chip tone="accent">Pre-fatiga</Chip>
