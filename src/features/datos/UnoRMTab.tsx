@@ -3,7 +3,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db, type SetRecord } from "@/db/db";
 import { Card, Eyebrow, BarChart, type BarPoint } from "@/ui";
 import { startOfWeek, fmtDateHuman } from "@/lib/date";
-import { GYM_DIAS, GYM_DAY_ORDER, START_WEIGHTS_AS_OF } from "@/data/gym";
+import { GYM_DIAS, GYM_DAY_ORDER, START_WEIGHTS_AS_OF, allExerciseNames } from "@/data/gym";
 
 /** The working weights you told the app you're at (see gym.ts), by exercise —
  * shown as the starting point of each chart so every routine exercise has a
@@ -28,7 +28,9 @@ export function UnoRMTab() {
     return map;
   }, [sets]);
 
-  const exercises = useMemo(() => Array.from(new Set([...byExercise.keys(), ...STARTS.keys()])).sort((a, b) => a.localeCompare(b, "es")), [byExercise]);
+  // Only what's in the current routine: exercises you've dropped (their old
+  // sets stay in your history and volume, they just don't clutter this view).
+  const exercises = useMemo(() => allExerciseNames().filter((name) => STARTS.has(name) || byExercise.has(name)).sort((a, b) => a.localeCompare(b, "es")), [byExercise]);
 
   return (
     <Card>
