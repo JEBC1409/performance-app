@@ -180,12 +180,13 @@ function toRemoteSettings(row: SettingsRecord, userId: string) {
  * all, and reading that absence as "no bookmark set" would put(), wiping
  * whatever the user had actually marked locally on the very next sync. */
 function fromRemoteSettings(row: Record<string, unknown>, local?: SettingsRecord): SettingsRecord {
-  const readingProgress =
-    "reading_abbrev" in row
-      ? row.reading_abbrev
-        ? { abbrev: row.reading_abbrev as string, chapter: row.reading_chapter as number }
-        : null
-      : (local?.readingProgress ?? null);
+  // The bookmark is only ever set on a device (there's no "clear"), so an
+  // empty cloud value means "not uploaded yet" — e.g. it was set before the
+  // reading columns existed and the push failed — never "deleted". Keep the
+  // local one rather than let a pull erase it.
+  const readingProgress = row.reading_abbrev
+    ? { abbrev: row.reading_abbrev as string, chapter: row.reading_chapter as number }
+    : (local?.readingProgress ?? null);
   return {
     id: "app",
     unit: row.unit as SettingsRecord["unit"],
@@ -333,10 +334,17 @@ async function syncSettings(userId: string) {
       if (upErr) throw upErr;
     }
   } else if (!(await pendingKeys("settings", userId)).has("app")) {
+    let merged: SettingsRecord | null = null;
     await withHooksSuppressed(async () => {
       const local = await db.settings.get("app");
-      await db.settings.put(fromRemoteSettings(data, local));
+      merged = fromRemoteSettings(data, local);
+      await db.settings.put(merged);
     });
+    // A bookmark only this device has: send it up so other devices get it too.
+    const m = merged as SettingsRecord | null;
+    if (m?.readingProgress && !data.reading_abbrev) {
+      queue({ table: "settings", key: "app", op: "upsert", userId, payload: toRemoteSettings(m, userId) });
+    }
   }
 }
 
