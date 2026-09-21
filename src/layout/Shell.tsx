@@ -120,7 +120,7 @@ export function Shell({
 
       {/* ── Mobile bottom nav ─────────────────────────────── */}
       <nav
-        className="sidebar:hidden fixed bottom-0 left-0 right-0 z-30 bg-[var(--color-bg)]/95 backdrop-blur-sm border-t border-[var(--color-line)]"
+        className="sidebar:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-[rgba(255,255,255,0.1)] bg-[rgba(6,6,8,0.62)] backdrop-blur-xl backdrop-saturate-150"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="flex">

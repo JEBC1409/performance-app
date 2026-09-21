@@ -72,7 +72,7 @@ export function BookPicker({ value, onChange, books }: { value: string; onChange
         type="button"
         onClick={toggle}
         aria-expanded={open}
-        className={`flex w-full items-center justify-between rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-3 py-2.5 text-[13px] text-[var(--color-ink)] transition-colors hover:border-[var(--color-muted)] ${open ? "border-[var(--color-red)]" : ""}`}
+        className={`glass flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-[13px] text-[var(--color-ink)] ${open ? "!border-[var(--color-red)]" : ""}`}
       >
         <span className="truncate">{current?.name ?? value}</span>
         <ChevronGlyph />

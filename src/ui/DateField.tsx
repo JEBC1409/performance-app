@@ -128,7 +128,7 @@ export function DateField({
         onClick={toggle}
         aria-expanded={open}
         aria-label="Elegir fecha"
-        className={`flex w-full items-center justify-between border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] transition-colors hover:border-[var(--color-muted)] ${SIZE[size]} ${open ? "border-[var(--color-red)]" : ""} ${className}`}
+        className={`glass flex w-full items-center justify-between ${SIZE[size]} ${open ? "!border-[var(--color-red)]" : ""} ${className}`}
       >
         <span className="num text-[var(--color-ink)] capitalize truncate">
           {size === "sm" ? fmtDateHuman(value) : fmtDateFull(value)}

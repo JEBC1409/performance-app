@@ -82,7 +82,7 @@ export function HabitManager() {
               type="button"
               onClick={() => removeHabit(h.key, h.label)}
               aria-label={`Eliminar ${h.label}`}
-              className="flex h-6 w-6 flex-none items-center justify-center rounded-full border border-[var(--color-line-strong)] text-[var(--color-muted)] hover:border-[var(--color-red)] hover:text-[var(--color-red)]"
+              className="glass flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-red)]"
             >
               <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden>
                 <path d="M1 1l8 8M9 1l-8 8" stroke="currentColor" strokeWidth="1.4" />
@@ -102,8 +102,8 @@ export function HabitManager() {
               onClick={() => setNewIcon(icon)}
               aria-label={icon}
               aria-pressed={newIcon === icon}
-              className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${
-                newIcon === icon ? "border-[var(--color-red)] bg-[rgba(223,37,49,0.12)]" : "border-[var(--color-line-strong)]"
+              className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                newIcon === icon ? "glass-on" : "glass"
               }`}
             >
               <HabitGlyph icon={icon} active={newIcon === icon} size={12} />

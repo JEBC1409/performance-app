@@ -107,16 +107,16 @@ export function Kairos() {
           <h1 className="font-[var(--font-display)] text-xl mt-1.5">Biblia · Reina-Valera 1909</h1>
         </div>
 
-        <div className="flex gap-1 p-1 rounded-full border border-[var(--color-line)]">
+        <div className="glass-track flex gap-1 p-1 rounded-full">
           <button
             onClick={() => setView("leer")}
-            className={`tap-target flex-1 rounded-full py-2 text-[12px] font-semibold uppercase tracking-wide ${view === "leer" ? "bg-[var(--color-red)] text-black" : "text-[var(--color-muted)]"}`}
+            className={`tap-target flex-1 rounded-full py-2 text-[12px] font-semibold uppercase tracking-wide ${view === "leer" ? "glass-on" : "glass-flat text-[var(--color-muted)]"}`}
           >
             Leer
           </button>
           <button
             onClick={() => setView("guardados")}
-            className={`tap-target flex-1 rounded-full py-2 text-[12px] font-semibold uppercase tracking-wide ${view === "guardados" ? "bg-[var(--color-red)] text-black" : "text-[var(--color-muted)]"}`}
+            className={`tap-target flex-1 rounded-full py-2 text-[12px] font-semibold uppercase tracking-wide ${view === "guardados" ? "glass-on" : "glass-flat text-[var(--color-muted)]"}`}
           >
             Guardados ({saved?.length ?? 0})
           </button>
@@ -133,7 +133,7 @@ export function Kairos() {
                     setAbbrev(bookmark.abbrev);
                     setChapter(bookmark.chapter);
                   }}
-                  className="flex items-center gap-2 rounded-xl border border-[var(--color-red-soft)] bg-[rgba(223,37,49,0.08)] px-3.5 py-2.5 text-left transition-colors hover:bg-[rgba(223,37,49,0.14)]"
+                  className="glass-accent flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-left"
                 >
                   <BookmarkGlyph filled className="flex-none text-[var(--color-red)]" />
                   <span className="text-[12px] text-[var(--color-ink)]">
@@ -172,10 +172,8 @@ export function Kairos() {
                     <button
                       onClick={markHere}
                       disabled={isAtBookmark}
-                      className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-wide transition-colors ${
-                        isAtBookmark
-                          ? "border-[var(--color-red-soft)] text-[var(--color-red)]"
-                          : "border-[var(--color-line-strong)] text-[var(--color-muted)] hover:border-[var(--color-red)] hover:text-[var(--color-red)]"
+                      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-wide ${
+                        isAtBookmark ? "glass-accent" : "glass text-[var(--color-muted)] hover:text-[var(--color-red)]"
                       }`}
                     >
                       <BookmarkGlyph filled={isAtBookmark} />

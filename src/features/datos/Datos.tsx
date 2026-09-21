@@ -47,8 +47,8 @@ export function Datos() {
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`tap-target flex-none rounded-full px-3.5 py-2 text-[11px] font-semibold uppercase tracking-wide border ${
-              tab === t.key ? "bg-[var(--color-red)] text-black border-[var(--color-red)]" : "border-[var(--color-line-strong)] text-[var(--color-muted)]"
+            className={`tap-target flex-none rounded-full px-3.5 py-2 text-[11px] font-semibold uppercase tracking-wide ${
+              tab === t.key ? "glass-on" : "glass text-[var(--color-muted)]"
             }`}
           >
             {t.label}

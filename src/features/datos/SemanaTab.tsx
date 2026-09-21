@@ -81,7 +81,7 @@ export function SemanaTab() {
         <button
           onClick={() => setWeekStart(addDays(weekStart, -7))}
           aria-label="Semana anterior"
-          className="tap-target flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-line-strong)] text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+          className="glass tap-target flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-ink)]"
         >
           ‹
         </button>
@@ -95,7 +95,7 @@ export function SemanaTab() {
           onClick={() => setWeekStart(addDays(weekStart, 7))}
           disabled={isCurrent}
           aria-label="Semana siguiente"
-          className="tap-target flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-line-strong)] text-[var(--color-muted)] hover:text-[var(--color-ink)] disabled:opacity-30"
+          className="glass tap-target flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-ink)] disabled:opacity-30"
         >
           ›
         </button>

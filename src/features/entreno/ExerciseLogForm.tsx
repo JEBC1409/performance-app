@@ -140,7 +140,7 @@ export function ExerciseLogForm({
           </div>
           <button
             onClick={applySuggestion}
-            className="tap-target flex-none rounded-full border border-[var(--color-red)] px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--color-red)] transition-colors hover:bg-[var(--color-red)] hover:text-white"
+            className="glass-accent tap-target flex-none rounded-full px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.1em]"
           >
             Usar
           </button>
@@ -207,8 +207,8 @@ export function ExerciseLogForm({
         />
         <button
           onClick={() => setForm((f) => ({ ...f, toFailure: !f.toFailure }))}
-          className={`rounded-full border px-3 py-2 text-[11px] font-semibold uppercase tracking-wide ${
-            form.toFailure ? "border-[var(--color-red)] bg-[var(--color-red)] text-black" : "border-[var(--color-line-strong)] text-[var(--color-muted)]"
+          className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-wide ${
+            form.toFailure ? "glass-on" : "glass text-[var(--color-muted)]"
           }`}
         >
           Al fallo
@@ -224,7 +224,7 @@ export function ExerciseLogForm({
         {editing ? (
           <button
             onClick={cancelEdit}
-            className="tap-target rounded-full border border-[var(--color-line-strong)] px-4 text-[12.5px] font-semibold uppercase tracking-wide text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+            className="glass tap-target rounded-full px-4 text-[12.5px] font-semibold uppercase tracking-wide text-[var(--color-muted)] hover:text-[var(--color-ink)]"
           >
             Cancelar
           </button>

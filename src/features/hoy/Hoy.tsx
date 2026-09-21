@@ -215,7 +215,7 @@ export function Hoy({
 
       <button
         onClick={copyDailySummary}
-        className="tap-target w-full rounded-full border border-[var(--color-line-strong)] py-2.5 text-[11.5px] font-semibold uppercase tracking-wide hover:border-[var(--color-red)]"
+        className="glass tap-target w-full rounded-full py-2.5 text-[11.5px] font-semibold uppercase tracking-wide"
       >
         Copiar resumen del día
       </button>
@@ -309,10 +309,8 @@ export function Hoy({
                 <button
                   key={d}
                   onClick={() => setPickedDay(d)}
-                  className={`flex-1 rounded-xl border px-3 py-3 text-center transition-colors ${
-                    pickedDay === d
-                      ? "border-[var(--color-red)] bg-[rgba(223,37,49,0.12)]"
-                      : "border-[var(--color-line-strong)] text-[var(--color-muted)]"
+                  className={`flex-1 rounded-xl px-3 py-3 text-center ${
+                    pickedDay === d ? "glass-on" : "glass text-[var(--color-muted)]"
                   }`}
                 >
                   <div className="font-[var(--font-display)] text-[13px]">Día {d}</div>

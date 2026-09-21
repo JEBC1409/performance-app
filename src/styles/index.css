@@ -101,9 +101,11 @@ body {
   gap: 4px;
   padding: 5px;
   border-radius: 999px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-line-strong);
-  box-shadow: 0 16px 32px -18px rgba(0, 0, 0, 0.75);
+  background: rgba(11, 11, 13, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset, 0 16px 32px -18px rgba(0, 0, 0, 0.75);
 }
 .nav-logo-badge {
   flex: none;
@@ -130,10 +132,13 @@ body {
   transition: background-color 150ms ease;
 }
 .nav-pill-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.07);
 }
 .nav-pill-item-active {
-  background: rgba(223, 37, 49, 0.16);
+  background: linear-gradient(165deg, rgba(255, 95, 105, 0.22), rgba(223, 37, 49, 0.12));
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.14) inset, 0 6px 18px -10px rgba(223, 37, 49, 0.8);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 .nav-pill-icon {
   flex: none;
@@ -147,7 +152,8 @@ body {
   transition: background-color 150ms ease;
 }
 .nav-pill-item-active .nav-pill-icon {
-  background: var(--color-red);
+  background: linear-gradient(165deg, rgba(255, 95, 105, 0.7), rgba(223, 37, 49, 0.55));
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 0 14px -2px rgba(223, 37, 49, 0.7);
 }
 .nav-pill-label {
   font-size: 10px;
@@ -313,6 +319,107 @@ body {
 }
 .btn-glass:hover {
   transform: translateY(-1px);
+}
+
+/* ── Glass controls ─────────────────────────────────────────────────────
+   One shared translucent look for every button: a frosted blur of whatever
+   is behind it, a faint light-to-clear gradient, a 1px edge with a bright
+   top rim, and a soft lift on hover. Shape (pill, circle, rounded rect),
+   size and text color still come from each button's own classes.
+     .glass         neutral glass — the default for any button
+     .glass-on      selected / active: red-tinted glass with a glow
+     .glass-accent  outlined red glass for secondary calls to action
+     .glass-flat    invisible until hovered (inactive segments, links)
+     .glass-track   the recessed tray a row of segments sits in */
+.glass,
+.glass-on,
+.glass-accent {
+  position: relative;
+  isolation: isolate;
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  transition: background 200ms ease, border-color 200ms ease, box-shadow 200ms ease, color 200ms ease, transform 150ms ease;
+}
+.glass::before,
+.glass-on::before,
+.glass-accent::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 46%);
+}
+.glass {
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.025) 65%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1) inset, 0 8px 20px -14px rgba(0, 0, 0, 0.8);
+}
+.glass:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.26);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 65%);
+  transform: translateY(-1px);
+}
+.glass-on {
+  border: 1px solid rgba(255, 125, 132, 0.5);
+  color: #fff;
+  background: linear-gradient(165deg, rgba(255, 100, 110, 0.66) 0%, rgba(223, 37, 49, 0.54) 55%, rgba(150, 18, 28, 0.62) 100%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.32) inset, 0 10px 26px -12px rgba(223, 37, 49, 0.85);
+}
+.glass-on:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.36) inset, 0 12px 30px -10px rgba(223, 37, 49, 0.95);
+}
+.glass-accent {
+  border: 1px solid rgba(223, 37, 49, 0.45);
+  color: var(--color-red);
+  background: linear-gradient(165deg, rgba(223, 37, 49, 0.2) 0%, rgba(223, 37, 49, 0.05) 70%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+}
+.glass-accent:hover:not(:disabled) {
+  color: #fff;
+  border-color: rgba(255, 125, 132, 0.6);
+  background: linear-gradient(165deg, rgba(255, 95, 105, 0.42) 0%, rgba(223, 37, 49, 0.3) 70%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.24) inset, 0 10px 24px -12px rgba(223, 37, 49, 0.85);
+  transform: translateY(-1px);
+}
+.glass:active:not(:disabled),
+.glass-on:active:not(:disabled),
+.glass-accent:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+}
+.glass-flat {
+  border: 1px solid transparent;
+  transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+.glass-flat:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.glass-track {
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) inset, 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.glass:disabled,
+.glass-on:disabled,
+.glass-accent:disabled {
+  opacity: 0.5;
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass,
+  .glass-on,
+  .glass-accent {
+    transition: none;
+  }
+  .glass:hover:not(:disabled),
+  .glass-on:hover:not(:disabled),
+  .glass-accent:hover:not(:disabled) {
+    transform: none;
+  }
 }
 
 @keyframes enter-fade {

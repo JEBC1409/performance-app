@@ -65,8 +65,8 @@ export function MuscleBodyDiagram({
           <button
             key={v}
             onClick={() => setView(v)}
-            className={`rounded-full px-3 py-1 text-[9.5px] font-semibold uppercase tracking-wide transition-colors ${
-              view === v ? "bg-[var(--color-red)] text-white" : "text-[var(--color-muted)]"
+            className={`rounded-full px-3 py-1 text-[9.5px] font-semibold uppercase tracking-wide ${
+              view === v ? "glass-on" : "glass-flat text-[var(--color-muted)]"
             }`}
           >
             {v === "anterior" ? "Frente" : "Espalda"}

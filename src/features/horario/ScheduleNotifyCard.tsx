@@ -18,14 +18,14 @@ const SCOPES: { value: Scope; label: string }[] = [
 
 function Segmented<T extends string | number>({ value, options, onChange, label }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; label: string }) {
   return (
-    <div role="group" aria-label={label} className="grid gap-1 rounded-full border border-[var(--color-line)] bg-[rgba(0,0,0,0.35)] p-1" style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)` }}>
+    <div role="group" aria-label={label} className="glass-track grid gap-1 rounded-full p-1" style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)` }}>
       {options.map((o) => (
         <button
           key={String(o.value)}
           onClick={() => onChange(o.value)}
           aria-pressed={value === o.value}
-          className={`rounded-full px-2 py-2 text-[11.5px] font-semibold transition-all ${
-            value === o.value ? "bg-[var(--color-red)] text-white shadow-[0_6px_18px_-6px_rgba(223,37,49,0.9)]" : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+          className={`rounded-full px-2 py-2 text-[11.5px] font-semibold ${
+            value === o.value ? "glass-on" : "glass-flat text-[var(--color-muted)] hover:text-[var(--color-ink)]"
           }`}
         >
           {o.label}
@@ -80,9 +80,7 @@ export function ScheduleNotifyCard() {
           aria-checked={prefs.enabled}
           aria-label="Avisos del horario"
           disabled={permission === "unsupported"}
-          className={`relative mt-0.5 h-7 w-12 flex-none rounded-full border transition-colors disabled:opacity-40 ${
-            prefs.enabled ? "border-[var(--color-red)] bg-[var(--color-red)]" : "border-[var(--color-line-strong)] bg-[rgba(255,255,255,0.05)]"
-          }`}
+          className={`mt-0.5 h-7 w-12 flex-none rounded-full ${prefs.enabled ? "glass-on" : "glass"}`}
         >
           <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${prefs.enabled ? "left-[26px]" : "left-0.5"}`} />
         </button>

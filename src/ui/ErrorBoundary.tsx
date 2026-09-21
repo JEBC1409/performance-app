@@ -38,7 +38,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="text-[11px] text-[var(--color-muted-2)] mt-2 num">{this.state.error.message}</p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-4 w-full bg-[var(--color-red)] text-black py-2.5 text-[12.5px] font-semibold uppercase tracking-wide"
+              className="btn-primary mt-4 w-full rounded-full border border-[rgba(255,120,128,0.5)] py-2.5 text-[12.5px] font-semibold uppercase tracking-wide text-white"
             >
               Recargar
             </button>

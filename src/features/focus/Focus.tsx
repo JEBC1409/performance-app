@@ -213,8 +213,8 @@ function FocusView() {
           onClick={() => setSoundOn(!soundOn)}
           aria-pressed={soundOn}
           aria-label={soundOn ? "Silenciar sonido" : "Activar sonido"}
-          className={`tap-target mt-1 flex h-10 w-10 flex-none items-center justify-center rounded-full border transition-colors ${
-            soundOn ? "border-[var(--color-red)] text-[var(--color-red)] bg-[rgba(223,37,49,0.08)]" : "border-[var(--color-line-strong)] text-[var(--color-muted-2)]"
+          className={`tap-target mt-1 flex h-10 w-10 flex-none items-center justify-center rounded-full ${
+            soundOn ? "glass-accent" : "glass text-[var(--color-muted-2)]"
           }`}
         >
           <SoundIcon on={soundOn} />
@@ -280,7 +280,7 @@ function FocusView() {
                   showToast(isBreak ? "Descanso saltado" : "Bloque cancelado");
                 }}
                 aria-label={isBreak ? "Saltar descanso" : "Cancelar bloque"}
-                className="tap-target flex h-12 w-12 items-center justify-center rounded-full border border-[var(--color-line-strong)] bg-[rgba(255,255,255,0.03)] text-[var(--color-muted)] transition-all hover:border-[var(--color-red)] hover:text-[var(--color-red)] active:scale-95"
+                className="glass tap-target flex h-12 w-12 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-red)]"
               >
                 {isBreak ? <SkipIcon /> : <StopIcon />}
               </button>
@@ -291,11 +291,16 @@ function FocusView() {
                   else pauseFocus();
                 }}
                 aria-label={paused ? "Reanudar" : "Pausar"}
-                className="tap-target flex h-[68px] w-[68px] items-center justify-center rounded-full text-white transition-all active:scale-95"
-                style={{
-                  background: isBreak ? "linear-gradient(145deg,#3ddc84,#1f8a4c)" : "linear-gradient(145deg,#ff4a55,#b81c27)",
-                  boxShadow: `0 1px 0 rgba(255,255,255,0.35) inset, 0 12px 30px -8px ${isBreak ? "rgba(47,174,102,0.85)" : "rgba(223,37,49,0.85)"}`,
-                }}
+                className={`tap-target flex h-[68px] w-[68px] items-center justify-center rounded-full text-white ${isBreak ? "glass" : "glass-on"}`}
+                style={
+                  isBreak
+                    ? {
+                        background: "linear-gradient(165deg, rgba(90,235,150,0.5) 0%, rgba(47,174,102,0.42) 55%, rgba(20,110,60,0.5) 100%)",
+                        borderColor: "rgba(120,240,170,0.5)",
+                        boxShadow: "0 1px 0 rgba(255,255,255,0.3) inset, 0 12px 30px -10px rgba(47,174,102,0.85)",
+                      }
+                    : { boxShadow: "0 1px 0 rgba(255,255,255,0.3) inset, 0 14px 34px -10px rgba(223,37,49,0.9)" }
+                }
               >
                 {paused ? <PlayIcon /> : <PauseIcon />}
               </button>
@@ -305,10 +310,8 @@ function FocusView() {
                   aria-pressed={pip.kind !== null}
                   aria-label={pip.kind ? "Cerrar ventana flotante" : "Abrir ventana flotante"}
                   title="Ventana flotante"
-                  className={`tap-target flex h-12 w-12 items-center justify-center rounded-full border transition-all active:scale-95 ${
-                    pip.kind
-                      ? "border-[var(--color-red)] bg-[rgba(223,37,49,0.12)] text-[var(--color-red)]"
-                      : "border-[var(--color-line-strong)] bg-[rgba(255,255,255,0.03)] text-[var(--color-muted)] hover:border-[var(--color-red)] hover:text-[var(--color-red)]"
+                  className={`tap-target flex h-12 w-12 items-center justify-center rounded-full ${
+                    pip.kind ? "glass-accent" : "glass text-[var(--color-muted)] hover:text-[var(--color-red)]"
                   }`}
                 >
                   <PipIcon />
@@ -340,7 +343,7 @@ function FocusView() {
                   <button
                     key={r}
                     onClick={() => setTask(r)}
-                    className="max-w-full truncate rounded-full border border-[var(--color-line)] bg-[rgba(255,255,255,0.03)] px-3 py-1 text-[11px] text-[var(--color-muted)] transition-colors hover:border-[var(--color-red)] hover:text-[var(--color-ink)]"
+                    className="glass max-w-full truncate rounded-full px-3 py-1 text-[11px] text-[var(--color-muted)] hover:text-[var(--color-ink)]"
                   >
                     {r}
                   </button>
@@ -349,7 +352,7 @@ function FocusView() {
             ) : null}
 
             <div
-              className="mt-5 grid grid-cols-5 gap-1 rounded-full border border-[var(--color-line)] bg-[rgba(0,0,0,0.35)] p-1"
+              className="glass-track mt-5 grid grid-cols-5 gap-1 rounded-full p-1"
               role="group"
               aria-label="Duración del bloque"
             >
@@ -364,8 +367,8 @@ function FocusView() {
                       setCustomText(String(m));
                     }}
                     aria-pressed={on}
-                    className={`num rounded-full py-2 text-[13px] font-semibold transition-all ${
-                      on ? "bg-[var(--color-red)] text-white shadow-[0_6px_18px_-6px_rgba(223,37,49,0.9)]" : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+                    className={`num rounded-full py-2 text-[13px] font-semibold ${
+                      on ? "glass-on" : "glass-flat text-[var(--color-muted)] hover:text-[var(--color-ink)]"
                     }`}
                   >
                     {m}
@@ -376,8 +379,8 @@ function FocusView() {
               <button
                 onClick={() => setCustomOn(true)}
                 aria-pressed={customOn}
-                className={`rounded-full py-2 text-[12px] font-semibold transition-all ${
-                  customOn ? "bg-[var(--color-red)] text-white shadow-[0_6px_18px_-6px_rgba(223,37,49,0.9)]" : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+                className={`rounded-full py-2 text-[12px] font-semibold ${
+                  customOn ? "glass-on" : "glass-flat text-[var(--color-muted)] hover:text-[var(--color-ink)]"
                 }`}
               >
                 Otro

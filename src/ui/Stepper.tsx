@@ -24,7 +24,7 @@ export function Stepper({
       <button
         type="button"
         onClick={() => onChange(clamp(value - step))}
-        className="w-8 flex items-center justify-center text-[var(--color-ink)] hover:bg-[var(--color-surface-2)]"
+        className="glass-flat w-8 flex items-center justify-center text-[var(--color-ink)]"
         aria-label="Disminuir"
       >
         −
@@ -36,7 +36,7 @@ export function Stepper({
       <button
         type="button"
         onClick={() => onChange(clamp(value + step))}
-        className="w-8 flex items-center justify-center text-[var(--color-ink)] hover:bg-[var(--color-surface-2)]"
+        className="glass-flat w-8 flex items-center justify-center text-[var(--color-ink)]"
         aria-label="Aumentar"
       >
         +

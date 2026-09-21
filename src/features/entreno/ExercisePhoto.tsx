@@ -49,14 +49,14 @@ export function ExercisePhotoEditor({ name }: { name: string }) {
         <button
           onClick={() => fileRef.current?.click()}
           disabled={busy}
-          className="tap-target flex-1 rounded-full border border-[var(--color-line-strong)] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--color-ink)] transition-colors hover:border-[var(--color-red)] hover:text-[var(--color-red)] disabled:opacity-50"
+          className="glass tap-target flex-1 rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--color-ink)] hover:text-[var(--color-red)] disabled:opacity-50"
         >
           {custom ? "Cambiar foto" : "Poner mi foto"}
         </button>
         {custom ? (
           <button
             onClick={() => db.exercisePhotos.delete(name)}
-            className="tap-target rounded-full border border-[var(--color-line-strong)] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--color-muted)] transition-colors hover:text-[var(--color-red)]"
+            className="glass tap-target rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-[var(--color-muted)] hover:text-[var(--color-red)]"
           >
             Quitar
           </button>

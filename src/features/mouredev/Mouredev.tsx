@@ -152,8 +152,8 @@ export function Mouredev() {
                     <td className="text-center px-2 py-1.5">
                       <button
                         onClick={() => toggleDone(w.week, w.done)}
-                        className={`h-5 w-5 rounded-full border transition-colors ${
-                          w.done ? "bg-[var(--color-good)] border-[var(--color-good)] text-black" : "border-[var(--color-line-strong)]"
+                        className={`h-5 w-5 rounded-full ${
+                          w.done ? "glass !border-[var(--color-good)] !bg-[rgba(47,174,102,0.55)] text-white" : "glass"
                         }`}
                       >
                         {w.done ? "✓" : ""}

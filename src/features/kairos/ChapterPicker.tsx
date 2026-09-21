@@ -68,7 +68,7 @@ export function ChapterPicker({ value, count, onChange }: { value: number; count
         type="button"
         onClick={toggle}
         aria-expanded={open}
-        className={`flex w-full items-center justify-between rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-3 py-2.5 text-[13px] text-[var(--color-ink)] transition-colors hover:border-[var(--color-muted)] ${open ? "border-[var(--color-red)]" : ""}`}
+        className={`glass flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-[13px] text-[var(--color-ink)] ${open ? "!border-[var(--color-red)]" : ""}`}
       >
         <span className="num">Capítulo {value}</span>
         <ChevronGlyph />
@@ -93,7 +93,7 @@ export function ChapterPicker({ value, count, onChange }: { value: number; count
                         setOpen(false);
                       }}
                       className={`num flex h-7 items-center justify-center rounded-lg text-[11.5px] transition-colors ${
-                        isSelected ? "bg-[var(--color-red)] text-white font-semibold" : "text-[var(--color-ink)] hover:bg-[rgba(255,255,255,0.08)]"
+                        isSelected ? "glass-on font-semibold" : "glass-flat text-[var(--color-ink)]"
                       }`}
                     >
                       {n}

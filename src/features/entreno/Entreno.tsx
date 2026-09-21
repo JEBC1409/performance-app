@@ -170,7 +170,7 @@ export function Entreno({
       {done > 0 ? (
         <button
           onClick={copySummary}
-          className="tap-target w-full rounded-full border border-[var(--color-line-strong)] py-2.5 text-[11.5px] font-semibold uppercase tracking-wide hover:border-[var(--color-red)]"
+          className="glass tap-target w-full rounded-full py-2.5 text-[11.5px] font-semibold uppercase tracking-wide"
         >
           Copiar resumen ({fmtDateHuman(sessionDate)})
         </button>
