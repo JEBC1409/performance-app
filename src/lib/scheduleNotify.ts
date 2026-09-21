@@ -21,12 +21,12 @@ export type Scope = "all" | "main";
 export interface NotifyPrefs {
   enabled: boolean;
   lead: Lead;
-  /** "main": only uni, gym, MoureDev and English. "all": every block with something to do. */
+  /** "main": only uni, gym, MoureDev, English and Bible/reading. "all": every block with something to do. */
   scope: Scope;
 }
 
 const DEFAULT_PREFS: NotifyPrefs = { enabled: false, lead: 0, scope: "all" };
-const MAIN_TYPES: BlockType[] = ["clase", "gym", "mouredev", "ingles"];
+const MAIN_TYPES: BlockType[] = ["clase", "gym", "mouredev", "ingles", "dios"];
 
 function parsePrefs(raw: string | null): NotifyPrefs {
   if (!raw) return DEFAULT_PREFS;

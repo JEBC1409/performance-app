@@ -1,4 +1,4 @@
-export type BlockType = "clase" | "gym" | "mouredev" | "ingles" | "libre" | "otro";
+export type BlockType = "clase" | "gym" | "mouredev" | "ingles" | "dios" | "libre" | "otro";
 
 export interface HorarioCell {
   text: string;
@@ -36,6 +36,7 @@ export const BLOCK_COLOR: Record<BlockType, string> = {
   gym: "#ffffff",
   mouredev: "#9aa0a6",
   ingles: "#df2531",
+  dios: "#e2b96f",
   libre: "rgba(255,255,255,0.18)",
   otro: "transparent",
 };
@@ -45,6 +46,7 @@ export const BLOCK_LABEL: Record<BlockType, string> = {
   gym: "Gym",
   mouredev: "MoureDev",
   ingles: "Inglés",
+  dios: "Dios / Lectura",
   libre: "Libre",
   otro: "—",
 };
@@ -55,6 +57,7 @@ export const BLOCK_TINT: Record<BlockType, string> = {
   gym: "rgba(255, 255, 255, 0.1)",
   mouredev: "rgba(255, 255, 255, 0.06)",
   ingles: "rgba(223, 37, 49, 0.16)",
+  dios: "rgba(226, 185, 111, 0.13)",
   libre: "rgba(255, 255, 255, 0.04)",
   otro: "transparent",
 };
@@ -64,6 +67,7 @@ export const BLOCK_BORDER: Record<BlockType, string> = {
   gym: "rgba(255, 255, 255, 0.4)",
   mouredev: "rgba(255, 255, 255, 0.22)",
   ingles: "rgba(223, 37, 49, 0.55)",
+  dios: "rgba(226, 185, 111, 0.5)",
   libre: "rgba(255, 255, 255, 0.14)",
   otro: "transparent",
 };
@@ -73,6 +77,7 @@ export const BLOCK_TEXT: Record<BlockType, string> = {
   gym: "var(--color-ink)",
   mouredev: "var(--color-muted)",
   ingles: "var(--color-red)",
+  dios: "#f0cf8e",
   libre: "var(--color-muted)",
   otro: "var(--color-muted)",
 };
@@ -81,23 +86,45 @@ export const BLOCK_TEXT: Record<BlockType, string> = {
  * the next row starts (the last one runs to midnight), which is how the
  * "current block" on Hoy is resolved. */
 export const HORARIO_TIMES = [
-  "5:00", // 0
-  "6:00-7:30", // 1
-  "7:30-8:20", // 2
-  "8:30", // 3
-  "8:50-9:50", // 4
-  "10:00-12:20", // 5
-  "12:30", // 6
-  "13:00", // 7
-  "14:00-16:00", // 8
-  "16:35-17:30", // 9
-  "17:30-18:00", // 10
-  "18:00-19:30", // 11
-  "19:30-20:20", // 12
-  "20:30-21:15", // 13
-  "21:15-21:45", // 14
-  "22:00", // 15
+  "5:00",
+  "5:15-5:40",
+  "6:00-7:30",
+  "7:30-8:20",
+  "8:30",
+  "8:50-9:50",
+  "10:00-12:20",
+  "12:30",
+  "13:00",
+  "14:00-16:00",
+  "16:35-17:30",
+  "17:30-18:00",
+  "18:00-19:30",
+  "19:30-20:20",
+  "20:30-21:15",
+  "21:15-21:45",
+  "22:00",
 ];
+
+/** Row indexes by start time, so day columns read like the schedule. */
+const R = {
+  t0500: 0,
+  t0515: 1,
+  t0600: 2,
+  t0730: 3,
+  t0830: 4,
+  t0850: 5,
+  t1000: 6,
+  t1230: 7,
+  t1300: 8,
+  t1400: 9,
+  t1635: 10,
+  t1730: 11,
+  t1800: 12,
+  t1930: 13,
+  t2030: 14,
+  t2115: 15,
+  t2200: 16,
+} as const;
 
 /** A block covering rows [from..to] (inclusive) of one day's column. */
 type Seg = [from: number, to: number, cell: HorarioCell];
@@ -115,28 +142,31 @@ function column(segs: Seg[]): HorarioCell[] {
 /** Mon-Fri morning is identical every day; only the 6:00-7:30 uni class varies. */
 function morning(uni: HorarioCell): Seg[] {
   return [
-    [0, 0, c("Levantarse, bañarse, comer algo", "otro")],
-    [1, 1, uni],
-    [2, 2, c("Desayuno", "otro")],
-    [3, 3, c("Preparar MoureDev + maleta del gym", "otro")],
-    [4, 4, c("MoureDev · obligatorio", "mouredev", { key: true })],
-    [5, 5, c("Gym", "gym")],
-    [6, 6, c("Almuerzo (meal prep)", "otro")],
-    [7, 7, c("Bañarse y salir", "otro")],
+    [R.t0500, R.t0500, c("Levantarse, bañarse, comer algo", "otro")],
+    [R.t0515, R.t0515, c("Lectura de la Biblia", "dios")],
+    [R.t0600, R.t0600, uni],
+    [R.t0730, R.t0730, c("Desayuno", "otro")],
+    [R.t0830, R.t0830, c("Preparar MoureDev + maleta del gym", "otro")],
+    [R.t0850, R.t0850, c("MoureDev · obligatorio", "mouredev", { key: true })],
+    [R.t1000, R.t1000, c("Gym", "gym")],
+    [R.t1230, R.t1230, c("Almuerzo (meal prep)", "otro")],
+    [R.t1300, R.t1300, c("Bañarse y salir", "otro")],
   ];
 }
+
+const BOOK = c("Leer libro + escribir tarea de MoureDev de mañana", "dios");
 
 /** Mon-Thu afternoon/evening; only the 18:00-19:30 slot varies. */
 function evening(sixPm: HorarioCell): Seg[] {
   return [
-    [8, 8, c("INGLÉS Blendex", "ingles")],
-    [9, 9, c("Arreglar la casa", "otro")],
-    [10, 10, c("Pendientes de la U", "clase")],
-    [11, 11, sixPm],
-    [12, 12, c("Hacer comida y cenar", "otro")],
-    [13, 13, c("MoureDev opcional (repaso suave)", "mouredev", { soft: true })],
-    [14, 14, c("Libre + escribir la tarea de MoureDev de mañana", "libre")],
-    [15, 15, c("Dormir 22:00", "otro")],
+    [R.t1400, R.t1400, c("INGLÉS Blendex", "ingles")],
+    [R.t1635, R.t1635, c("Arreglar la casa", "otro")],
+    [R.t1730, R.t1730, c("Pendientes de la U", "clase")],
+    [R.t1800, R.t1800, sixPm],
+    [R.t1930, R.t1930, c("Hacer comida y cenar", "otro")],
+    [R.t2030, R.t2030, c("MoureDev opcional (repaso suave)", "mouredev", { soft: true })],
+    [R.t2115, R.t2115, BOOK],
+    [R.t2200, R.t2200, c("Dormir 22:00", "otro")],
   ];
 }
 
@@ -152,36 +182,40 @@ const COLUMNS: HorarioCell[][] = [
   column([...morning(c("Libre / U", "libre")), ...evening(DISENO)]),
   // Jueves
   column([...morning(c("Libre / U", "libre")), ...evening(PENDIENTES)]),
-  // Viernes: new morning, afternoon as before, sleep at 22:00
+  // Viernes: new morning, afternoon as before, book block at night, sleep at 22:00
   column([
     ...morning(c("Admin Sistemas ★", "clase")),
-    [8, 8, c("MoureDev bloque largo", "mouredev")],
-    [9, 10, c("LIBRE", "libre")],
-    [11, 12, c("LIBRE noche", "libre")],
-    [13, 15, c("Dormir 22:00", "otro")],
+    [R.t1400, R.t1400, c("MoureDev bloque largo", "mouredev")],
+    [R.t1635, R.t1730, c("LIBRE", "libre")],
+    [R.t1800, R.t1930, c("LIBRE noche", "libre")],
+    [R.t2030, R.t2030, c("LIBRE", "libre")],
+    [R.t2115, R.t2115, BOOK],
+    [R.t2200, R.t2200, c("Dormir 22:00", "otro")],
   ]),
-  // Sábado: unchanged apart from sleeping at 22:00
+  // Sábado: as before, plus Bible right after waking; sleep at 22:00
   column([
-    [0, 0, c("Despertar + aseo", "otro")],
-    [1, 2, c("Pruebas y Calidad ★", "clase")],
-    [3, 4, c("Aplic. Serv. Web ★", "clase")],
-    [5, 5, c("LIBRE", "libre")],
-    [6, 7, c("Almuerzo + GYM", "gym")],
-    [8, 8, c("Meal prep tuppers", "otro")],
-    [9, 10, c("MoureDev repaso", "mouredev")],
-    [11, 12, c("LIBRE", "libre")],
-    [13, 15, c("Dormir 22:00", "otro")],
+    [R.t0500, R.t0500, c("Despertar + aseo", "otro")],
+    [R.t0515, R.t0515, c("Biblia", "dios")],
+    [R.t0600, R.t0730, c("Pruebas y Calidad ★", "clase")],
+    [R.t0830, R.t0850, c("Aplic. Serv. Web ★", "clase")],
+    [R.t1000, R.t1000, c("LIBRE", "libre")],
+    [R.t1230, R.t1300, c("Almuerzo + GYM", "gym")],
+    [R.t1400, R.t1400, c("Meal prep tuppers", "otro")],
+    [R.t1635, R.t1730, c("MoureDev repaso", "mouredev")],
+    [R.t1800, R.t1930, c("LIBRE", "libre")],
+    [R.t2030, R.t2200, c("Dormir 22:00", "otro")],
   ]),
-  // Domingo: unchanged apart from sleeping at 22:00
+  // Domingo: as before, plus Bible right after waking (7:00); sleep at 22:00
   column([
-    [1, 2, c("Despertar 7:00", "otro")],
-    [3, 4, c("GYM 8:00-9:30", "gym")],
-    [5, 5, c("Uni + planear MoureDev", "mouredev")],
-    [6, 7, c("Almuerzo + Meal prep", "otro")],
-    [8, 8, c("LIBRE", "libre")],
-    [9, 10, c("LIBRE", "libre")],
-    [11, 12, c("LIBRE", "libre")],
-    [13, 15, c("Planear + dormir 22:00", "otro")],
+    [R.t0600, R.t0600, c("Despertar 7:00", "otro")],
+    [R.t0730, R.t0730, c("Biblia", "dios")],
+    [R.t0830, R.t0850, c("GYM 8:00-9:30", "gym")],
+    [R.t1000, R.t1000, c("Uni + planear MoureDev", "mouredev")],
+    [R.t1230, R.t1300, c("Almuerzo + Meal prep", "otro")],
+    [R.t1400, R.t1400, c("LIBRE", "libre")],
+    [R.t1635, R.t1730, c("LIBRE", "libre")],
+    [R.t1800, R.t1930, c("LIBRE", "libre")],
+    [R.t2030, R.t2200, c("Planear + dormir 22:00", "otro")],
   ]),
 ];
 

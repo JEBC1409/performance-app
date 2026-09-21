@@ -3,7 +3,7 @@ import { DIAS_CORTO, jsDowToIndex } from "@/lib/date";
 import { Card, Eyebrow } from "@/ui";
 import { ScheduleNotifyCard } from "./ScheduleNotifyCard";
 
-const LEGEND: BlockType[] = ["clase", "gym", "mouredev", "ingles", "libre"];
+const LEGEND: BlockType[] = ["clase", "gym", "mouredev", "ingles", "dios", "libre"];
 
 export function Horario() {
   const todayCol = jsDowToIndex(new Date().getDay());
