@@ -48,6 +48,22 @@ describe("Hoy", () => {
   });
 });
 
+describe("Hoy · start a workout", () => {
+  it("remembers the day you picked as today's turn in the cycle", async () => {
+    const onStart = vi.fn();
+    render(<Hoy onStartEntreno={onStart} onNavigate={() => {}} />);
+
+    fireEvent.click(await screen.findByRole("button", { name: /Iniciar/i }));
+    const dialog = await screen.findByRole("dialog", { name: /Empezar entreno/i });
+    fireEvent.click(within(dialog).getByRole("button", { name: /Día B/i }));
+    fireEvent.click(within(dialog).getByRole("button", { name: /Comenzar/i }));
+
+    expect(onStart).toHaveBeenCalledWith("B", todayISO());
+    // no sessions logged yet, and the cycle now sits on B (index 1)
+    await waitFor(async () => expect((await db.appConfig.get("cycle_offset"))?.value).toBe(1));
+  });
+});
+
 describe("Sheet (modal behaviour)", () => {
   function Harness() {
     const [open, setOpen] = useState(false);

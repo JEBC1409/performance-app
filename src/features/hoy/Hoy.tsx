@@ -18,7 +18,7 @@ import { hintDatosTab } from "@/features/datos/tabHint";
 import { habitForBlock, toggleHabitDay } from "@/lib/habits";
 import { celebrate, haptic } from "@/lib/feedback";
 import { HORARIO } from "@/data/horario";
-import { useCycleSlot } from "@/hooks/useCycle";
+import { setCycleSlot, useCycleSlot } from "@/hooks/useCycle";
 import { useBible } from "@/hooks/useBible";
 import { verseOfDay } from "@/data/bible/loader";
 import { fromKg, unitLabel } from "@/lib/units";
@@ -361,6 +361,9 @@ export function Hoy({
             className="w-full py-3"
             onClick={() => {
               setStartPrompt(false);
+              // Choosing today's day means "this is where I am in the cycle": remember it,
+              // so leaving and coming back still says B (backfilled past dates don't move it).
+              if (pickedDate === today && pickedDay !== slot) void setCycleSlot(pickedDay);
               onStartEntreno(pickedDay, pickedDate);
             }}
           >
