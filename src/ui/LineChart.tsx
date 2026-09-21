@@ -102,7 +102,7 @@ export function LineChart({
               y1={yClamped(trend.intercept)}
               x2={x(points.length - 1)}
               y2={yClamped(trend.intercept + trend.slope * (points.length - 1))}
-              stroke="rgba(255,255,255,0.55)"
+              stroke="rgb(var(--fg-rgb)/0.55)"
               strokeWidth="1.2"
               strokeDasharray="1.5,4"
               strokeLinecap="round"
@@ -154,7 +154,7 @@ export function LineChart({
       </div>
       {trend ? (
         <div className="mt-1.5 flex items-center gap-1.5 text-[10.5px] text-[var(--color-muted)]">
-          <span className="inline-block w-5 border-t border-dotted border-[rgba(255,255,255,0.6)]" />
+          <span className="inline-block w-5 border-t border-dotted border-[rgb(var(--fg-rgb)/0.6)]" />
           tendencia
           <span className="num text-[var(--color-muted-2)]">
             ({trend.slope >= 0 ? "+" : ""}

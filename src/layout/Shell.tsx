@@ -3,22 +3,7 @@ import type { ReactNode } from "react";
 import { NavGlyph, AmbientBackground, JourneyTicker, SyncStatusDot } from "@/ui";
 import type { Tab } from "@/App";
 import { OfflineBanner } from "@/ui/OfflineBanner";
-
-const MOBILE_TABS: { key: Tab; label: string }[] = [
-  { key: "hoy", label: "Hoy" },
-  { key: "entreno", label: "Entreno" },
-  { key: "habitos", label: "Hábitos" },
-  { key: "datos", label: "Datos" },
-  { key: "mas", label: "Más" },
-];
-
-const MORE_TABS: { key: Tab; label: string }[] = [
-  { key: "horario", label: "Horario" },
-  { key: "focus", label: "Focus" },
-  { key: "kairos", label: "Oración" },
-  { key: "mouredev", label: "MoureDev" },
-  { key: "perfil", label: "Perfil" },
-];
+import { useUiPrefs } from "@/hooks/useUiPrefs";
 
 const SIDEBAR_TABS: { key: Tab; label: string }[] = [
   { key: "hoy", label: "Hoy" },
@@ -42,6 +27,11 @@ export function Shell({
   children: ReactNode;
 }) {
   const [moreOpen, setMoreOpen] = useState(false);
+  // The bottom bar shows the four screens you picked (Perfil › Apariencia); the rest live under "Más".
+  const { navTabs } = useUiPrefs();
+  const label = (k: string) => SIDEBAR_TABS.find((t) => t.key === k)?.label ?? k;
+  const MOBILE_TABS: { key: Tab; label: string }[] = [...navTabs.map((k) => ({ key: k as Tab, label: label(k) })), { key: "mas", label: "Más" }];
+  const MORE_TABS = SIDEBAR_TABS.filter((t) => !navTabs.includes(t.key as never));
   const dateLabel = new Date().toLocaleDateString("es-CO", {
     weekday: "long",
     day: "numeric",
@@ -120,7 +110,7 @@ export function Shell({
 
       {/* ── Mobile bottom nav ─────────────────────────────── */}
       <nav
-        className="sidebar:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-[rgba(255,255,255,0.1)] bg-[rgba(6,6,8,0.62)] backdrop-blur-xl backdrop-saturate-150"
+        className="sidebar:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-[rgb(var(--fg-rgb)/0.1)] bg-[rgb(var(--bg-rgb)/0.72)] backdrop-blur-xl backdrop-saturate-150"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="flex">

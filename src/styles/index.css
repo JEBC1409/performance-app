@@ -4,14 +4,14 @@
   --color-bg: #000000;
   --color-surface: #0b0b0d;
   --color-surface-2: #111114;
-  --color-line: rgba(255, 255, 255, 0.07);
-  --color-line-strong: rgba(255, 255, 255, 0.12);
+  --color-line: rgb(var(--fg-rgb) / 0.07);
+  --color-line-strong: rgb(var(--fg-rgb) / 0.12);
   --color-red: #df2531;
   --color-red-soft: rgb(var(--accent-rgb) / 0.45);
   --color-red-softer: rgb(var(--accent-rgb) / 0.65);
   --color-ink: #ffffff;
-  --color-muted: rgba(255, 255, 255, 0.64);
-  --color-muted-2: rgba(255, 255, 255, 0.5);
+  --color-muted: rgb(var(--fg-rgb) / 0.64);
+  --color-muted-2: rgb(var(--fg-rgb) / 0.5);
   --color-good: #2fae66;
   --color-good-soft: rgba(47, 174, 102, 0.4);
 
@@ -29,6 +29,15 @@
    are separate on purpose: green means done, amber means careful, gold means
    spiritual (Bible, prayer). */
 :root {
+  /* Theme channels: the UI never hard-codes white or black — text, borders
+     and glass tints are all rgb(var(--fg-rgb) / α) over rgb(var(--bg-rgb)), so
+     the light theme is just these swapping. */
+  --fg-rgb: 255 255 255;
+  --bg-rgb: 0 0 0;
+  --surface-rgb: 11 11 13;
+  /* Opaque "raised" surface used when transparency is reduced. */
+  --raised-rgb: 23 23 27;
+  color-scheme: dark;
   --accent-rgb: 223 37 49;
   --accent-light-rgb: 255 95 105;
   --accent-dark-rgb: 140 15 25;
@@ -57,8 +66,8 @@
 /* "Sobrio": the same app with far less glow — neutral edges, a quiet
    background — for people who find the red halo loud. */
 :root[data-calm="true"] .panel-surface {
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.05) inset;
+  border-color: rgb(var(--fg-rgb) / 0.1);
+  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.8), 0 1px 0 rgb(var(--fg-rgb) / 0.05) inset;
 }
 :root[data-calm="true"] .panel-surface-glow {
   border-color: rgb(var(--accent-rgb) / 0.3);
@@ -114,9 +123,20 @@ body {
 .eyebrow {
   font-family: var(--font-display);
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
   font-size: 10.5px;
+  font-weight: 500;
   color: var(--color-muted);
+}
+
+/* A card's own heading: readable sentence-case type, so small caps labels can
+   stay for true metadata (units, states) instead of every heading shouting. */
+.card-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  color: var(--color-ink);
 }
 
 .eyebrow-accent {
@@ -128,10 +148,10 @@ body {
 
 .panel-surface {
   position: relative;
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.05), rgba(10, 10, 12, 0.72) 55%, rgba(0, 0, 0, 0.78) 100%);
+  background: linear-gradient(155deg, rgb(var(--fg-rgb) / 0.05), rgb(var(--surface-rgb) / 0.72) 55%, rgb(var(--bg-rgb) / 0.78) 100%);
   border: 1px solid rgb(var(--accent-rgb) / 0.24);
   border-radius: 18px;
-  box-shadow: 0 22px 50px -22px rgba(0, 0, 0, 0.8), 0 0 46px -12px rgb(var(--accent-rgb) / 0.4), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  box-shadow: 0 22px 50px -22px rgba(0, 0, 0, 0.8), 0 0 46px -12px rgb(var(--accent-rgb) / 0.4), 0 1px 0 rgb(var(--fg-rgb) / 0.04) inset;
   overflow: hidden;
 }
 
@@ -152,11 +172,11 @@ body {
   gap: 4px;
   padding: 5px;
   border-radius: 999px;
-  background: rgba(11, 11, 13, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgb(var(--surface-rgb) / 0.55);
+  border: 1px solid rgb(var(--fg-rgb) / 0.12);
   -webkit-backdrop-filter: blur(18px) saturate(150%);
   backdrop-filter: blur(18px) saturate(150%);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset, 0 16px 32px -18px rgba(0, 0, 0, 0.75);
+  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.08) inset, 0 16px 32px -18px rgba(0, 0, 0, 0.75);
 }
 .nav-logo-badge {
   flex: none;
@@ -183,11 +203,11 @@ body {
   transition: background-color 150ms ease;
 }
 .nav-pill-item:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgb(var(--fg-rgb) / 0.07);
 }
 .nav-pill-item-active {
   background: linear-gradient(165deg, rgb(var(--accent-light-rgb) / 0.22), rgb(var(--accent-rgb) / 0.12));
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.14) inset, 0 6px 18px -10px rgb(var(--accent-rgb) / 0.8);
+  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.14) inset, 0 6px 18px -10px rgb(var(--accent-rgb) / 0.8);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
@@ -204,7 +224,7 @@ body {
 }
 .nav-pill-item-active .nav-pill-icon {
   background: linear-gradient(165deg, rgb(var(--accent-light-rgb) / 0.7), rgb(var(--accent-rgb) / 0.55));
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 0 14px -2px rgb(var(--accent-rgb) / 0.7);
+  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.3) inset, 0 0 14px -2px rgb(var(--accent-rgb) / 0.7);
 }
 .nav-pill-label {
   font-size: 11px;
@@ -240,14 +260,14 @@ body {
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
-  background: #000;
+  background: var(--color-bg);
 }
 .ambient-grid {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
+    linear-gradient(rgb(var(--fg-rgb) / 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--fg-rgb) / 0.09) 1px, transparent 1px);
   background-size: 46px 46px;
   mask-image:
     radial-gradient(52% 46% at 14% 12%, black, transparent 70%),
@@ -303,7 +323,7 @@ body {
   background: linear-gradient(180deg, rgba(20, 20, 23, 0.96), rgba(6, 6, 7, 0.98) 55%);
   border: 1px solid var(--color-line-strong);
   border-radius: 22px;
-  box-shadow: 0 24px 56px -30px rgba(0, 0, 0, 0.8), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  box-shadow: 0 24px 56px -30px rgba(0, 0, 0, 0.8), 0 1px 0 rgb(var(--fg-rgb) / 0.04) inset;
   overflow: hidden;
 }
 .login-card::before {
@@ -336,7 +356,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 40%);
+  background: linear-gradient(160deg, rgb(var(--fg-rgb) / 0.4) 0%, rgb(var(--fg-rgb) / 0) 40%);
   pointer-events: none;
 }
 .btn-primary::after {
@@ -346,7 +366,7 @@ body {
   bottom: 0;
   left: -60%;
   width: 35%;
-  background: linear-gradient(75deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  background: linear-gradient(75deg, transparent, rgb(var(--fg-rgb) / 0.55), transparent);
   transform: skewX(-20deg);
   transition: left 650ms cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
@@ -363,7 +383,7 @@ body {
 .btn-glass {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.02) 60%);
+  background: linear-gradient(165deg, rgb(var(--fg-rgb) / 0.09) 0%, rgb(var(--fg-rgb) / 0.02) 60%);
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   transition: box-shadow 200ms ease, border-color 200ms ease, transform 150ms ease;
@@ -400,39 +420,39 @@ body {
   z-index: -1;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(170deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 46%);
+  background: linear-gradient(170deg, rgb(var(--fg-rgb) / 0.16) 0%, rgb(var(--fg-rgb) / 0) 46%);
 }
 .glass {
-  border: 1px solid rgba(255, 255, 255, 0.13);
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.025) 65%);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1) inset, 0 8px 20px -14px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgb(var(--fg-rgb) / 0.13);
+  background: linear-gradient(165deg, rgb(var(--fg-rgb) / 0.09) 0%, rgb(var(--fg-rgb) / 0.025) 65%);
+  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.1) inset, 0 8px 20px -14px rgba(0, 0, 0, 0.8);
 }
 .glass:hover:not(:disabled) {
-  border-color: rgba(255, 255, 255, 0.26);
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 65%);
+  border-color: rgb(var(--fg-rgb) / 0.26);
+  background: linear-gradient(165deg, rgb(var(--fg-rgb) / 0.15) 0%, rgb(var(--fg-rgb) / 0.05) 65%);
   transform: translateY(-1px);
 }
 .glass-on {
   border: 1px solid rgb(var(--accent-light-rgb) / 0.5);
   color: #fff;
   background: linear-gradient(165deg, rgb(var(--accent-light-rgb) / 0.66) 0%, rgb(var(--accent-rgb) / 0.54) 55%, rgb(var(--accent-dark-rgb) / 0.62) 100%);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.32) inset, 0 10px 26px -12px rgb(var(--accent-rgb) / 0.85);
+  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.32) inset, 0 10px 26px -12px rgb(var(--accent-rgb) / 0.85);
 }
 .glass-on:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.36) inset, 0 12px 30px -10px rgb(var(--accent-rgb) / 0.95);
+  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.36) inset, 0 12px 30px -10px rgb(var(--accent-rgb) / 0.95);
 }
 .glass-accent {
   border: 1px solid rgb(var(--accent-rgb) / 0.45);
   color: var(--color-red);
   background: linear-gradient(165deg, rgb(var(--accent-rgb) / 0.2) 0%, rgb(var(--accent-rgb) / 0.05) 70%);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.08) inset;
 }
 .glass-accent:hover:not(:disabled) {
   color: #fff;
   border-color: rgb(var(--accent-light-rgb) / 0.6);
   background: linear-gradient(165deg, rgb(var(--accent-light-rgb) / 0.42) 0%, rgb(var(--accent-rgb) / 0.3) 70%);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.24) inset, 0 10px 24px -12px rgb(var(--accent-rgb) / 0.85);
+  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.24) inset, 0 10px 24px -12px rgb(var(--accent-rgb) / 0.85);
   transform: translateY(-1px);
 }
 .glass:active:not(:disabled),
@@ -448,7 +468,7 @@ body {
   border: 1px solid rgba(226, 185, 111, 0.45);
   color: var(--color-gold);
   background: linear-gradient(165deg, rgba(226, 185, 111, 0.2) 0%, rgba(226, 185, 111, 0.05) 70%);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.08) inset;
   transition: background 200ms ease, border-color 200ms ease, color 200ms ease, transform 150ms ease;
 }
 .glass-gold:hover:not(:disabled) {
@@ -462,15 +482,15 @@ body {
   transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
 }
 .glass-flat:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: rgb(var(--fg-rgb) / 0.07);
+  border-color: rgb(var(--fg-rgb) / 0.1);
 }
 .glass-track {
-  background: rgba(0, 0, 0, 0.32);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgb(var(--bg-rgb) / 0.32);
+  border: 1px solid rgb(var(--fg-rgb) / 0.1);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
   backdrop-filter: blur(16px) saturate(140%);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) inset, 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) inset, 0 1px 0 rgb(var(--fg-rgb) / 0.05);
 }
 .glass:disabled,
 .glass-on:disabled,
@@ -623,16 +643,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     backdrop-filter: none !important;
   }
   .glass {
-    background: #17171b;
-    border-color: rgba(255, 255, 255, 0.3);
+    background: rgb(var(--raised-rgb));
+    border-color: rgb(var(--fg-rgb) / 0.3);
   }
   .glass-accent {
     background: rgb(var(--accent-dark-rgb) / 0.35);
     border-color: rgb(var(--accent-light-rgb));
   }
   .glass-gold {
-    background: #2a2010;
-    border-color: #f5d696;
+    background: rgb(var(--raised-rgb));
+    border-color: var(--color-gold);
   }
   .glass-on,
   .btn-primary {
@@ -641,15 +661,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     color: #fff;
   }
   .glass-track {
-    background: #0b0b0d;
-    border-color: rgba(255, 255, 255, 0.28);
+    background: rgb(var(--surface-rgb));
+    border-color: rgb(var(--fg-rgb) / 0.28);
   }
   .nav-pillbar {
-    background: #0b0b0d;
+    background: rgb(var(--surface-rgb));
   }
   .panel-surface {
-    background: #0d0d10;
-    border-color: rgba(255, 255, 255, 0.24);
+    background: rgb(var(--surface-rgb));
+    border-color: rgb(var(--fg-rgb) / 0.24);
   }
   .glass::before,
   .glass-on::before,
@@ -659,8 +679,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 @media (prefers-contrast: more) {
   :root {
-    --color-muted: rgba(255, 255, 255, 0.85);
-    --color-muted-2: rgba(255, 255, 255, 0.72);
+    --color-muted: rgb(var(--fg-rgb) / 0.85);
+    --color-muted-2: rgb(var(--fg-rgb) / 0.72);
   }
 }
 
@@ -727,7 +747,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   to { background-position: -200% 0; }
 }
 .skeleton {
-  background: linear-gradient(100deg, rgba(255, 255, 255, 0.05) 30%, rgba(255, 255, 255, 0.13) 50%, rgba(255, 255, 255, 0.05) 70%);
+  background: linear-gradient(100deg, rgb(var(--fg-rgb) / 0.05) 30%, rgb(var(--fg-rgb) / 0.13) 50%, rgb(var(--fg-rgb) / 0.05) 70%);
   background-size: 200% 100%;
   animation: skeleton-sweep 1.6s ease-in-out infinite;
 }
@@ -773,4 +793,61 @@ input[type="date"]::-webkit-calendar-picker-indicator {
    tint (see ExerciseCard) makes them read as one set. Your own photos are left alone. */
 .photo-tone {
   filter: saturate(0.6) contrast(1.06) brightness(0.96);
+}
+
+/* ── Light theme ─────────────────────────────────────────────────────────
+   Same components, swapped channels. A few things that are "light on dark"
+   by design (glass highlights, accent buttons, the glow halos) are re-tuned. */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --fg-rgb: 22 22 28;
+  --bg-rgb: 244 244 247;
+  --surface-rgb: 255 255 255;
+  --raised-rgb: 255 255 255;
+  --color-bg: #f4f4f7;
+  --color-surface: #ffffff;
+  --color-surface-2: #ececf0;
+  --color-ink: #14141a;
+  --color-gold: #94670f;
+  --color-warn: #a86a00;
+  --color-good: #1c8a4e;
+}
+:root[data-theme="light"][data-accent="gold"] {
+  --accent-rgb: 176 128 30;
+  --accent-light-rgb: 210 165 65;
+  --accent-dark-rgb: 120 84 10;
+}
+:root[data-theme="light"] .glass::before,
+:root[data-theme="light"] .glass-on::before,
+:root[data-theme="light"] .glass-accent::before {
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0) 46%);
+}
+:root[data-theme="light"] .glass {
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.55) 70%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 8px 20px -14px rgba(30, 30, 60, 0.35);
+}
+:root[data-theme="light"] .glass-on,
+:root[data-theme="light"] .btn-primary {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) inset, 0 10px 26px -12px rgb(var(--accent-rgb) / 0.7);
+}
+:root[data-theme="light"] .panel-surface {
+  border-color: rgb(var(--fg-rgb) / 0.1);
+  box-shadow: 0 14px 34px -22px rgba(30, 30, 60, 0.35), 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+}
+:root[data-theme="light"] .panel-surface-glow {
+  border-color: rgb(var(--accent-rgb) / 0.4);
+  box-shadow: 0 14px 34px -22px rgba(30, 30, 60, 0.3), 0 0 34px -14px rgb(var(--accent-rgb) / 0.4);
+}
+:root[data-theme="light"] .ambient-glow {
+  opacity: 0.22;
+}
+:root[data-theme="light"] .nav-pillbar {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 12px 26px -16px rgba(30, 30, 60, 0.35);
+}
+/* Decorative art that blends with "screen" only works on dark. */
+:root[data-theme="light"] [class*="mix-blend-screen"] {
+  display: none;
+}
+:root[data-theme="light"] .photo-tone {
+  filter: saturate(0.7) contrast(1.02) brightness(1);
 }

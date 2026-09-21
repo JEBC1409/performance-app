@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HOME_CARDS, normalizeOrder, parseUiPrefs } from "../uiPrefs";
+import { DEFAULT_NAV, HOME_CARDS, normalizeNav, normalizeOrder, parseUiPrefs } from "../uiPrefs";
 
 describe("uiPrefs", () => {
   it("falls back to defaults for missing or broken storage", () => {
@@ -17,5 +17,12 @@ describe("uiPrefs", () => {
     expect(normalizeOrder(["stats", "rings", "stats", "bogus"])).toEqual(["stats", "rings", ...all.filter((k) => k !== "stats" && k !== "rings")]);
     expect(normalizeOrder(undefined)).toEqual(all);
     expect(normalizeOrder(all).length).toBe(all.length);
+  });
+
+  it("keeps the bottom bar to known screens, at most four, at least two", () => {
+    expect(normalizeNav(["focus", "hoy", "focus", "nada", "entreno", "datos", "perfil"])).toEqual(["focus", "hoy", "entreno", "datos"]);
+    expect(normalizeNav(["focus"])).toEqual(DEFAULT_NAV);
+    expect(normalizeNav(undefined)).toEqual(DEFAULT_NAV);
+    expect(parseUiPrefs(JSON.stringify({ navTabs: ["hoy", "focus"] })).navTabs).toEqual(["hoy", "focus"]);
   });
 });

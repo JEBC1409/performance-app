@@ -1,5 +1,7 @@
 import { confirmAction } from "@/lib/confirm";
-import { HORARIO, HORARIO_NOTE, HORARIO_GOAL, BLOCK_COLOR, BLOCK_LABEL, BLOCK_TINT, BLOCK_BORDER, BLOCK_TEXT, type BlockType, type HorarioCell } from "@/data/horario";
+import { HORARIO, HORARIO_NOTE, HORARIO_GOAL, BLOCK_COLOR, BLOCK_LABEL, type BlockType } from "@/data/horario";
+import { BlockChip } from "./BlockChip";
+import { DayTimeline } from "./DayTimeline";
 import { DIAS_CORTO, jsDowToIndex } from "@/lib/date";
 import { Card, Eyebrow } from "@/ui";
 import { ScheduleNotifyCard } from "./ScheduleNotifyCard";
@@ -15,6 +17,9 @@ export function Horario() {
   useConfigVersion(); // schedule edits re-render this screen
   const todayCol = jsDowToIndex(new Date().getDay());
   const [editing, setEditing] = useState(false);
+  // Phones show one day at a time; the wide week grid is one tap away.
+  const [mobileView, setMobileView] = useState<"dia" | "semana">("dia");
+  const [dayIdx, setDayIdx] = useState(todayCol);
   const [block, setBlock] = useState<{ day: number; row: number } | null>(null);
   const [rowEdit, setRowEdit] = useState<number | null>(null);
   const [addingRow, setAddingRow] = useState(false);
@@ -43,6 +48,18 @@ export function Horario() {
       </div>
       {editing ? <p className="-mt-2 text-[12px] leading-snug text-[var(--color-muted)]">Toca un bloque para cambiarlo, una celda vacía para llenarla, o una hora para editarla. Se guarda solo.</p> : null}
 
+      <div className="sidebar:hidden">
+        <div className="glass-track mb-4 flex gap-1 rounded-full p-1" role="tablist" aria-label="Vista del horario">
+          {(["dia", "semana"] as const).map((v) => (
+            <button key={v} role="tab" aria-selected={mobileView === v} onClick={() => setMobileView(v)} className={`flex-1 rounded-full py-2 text-[12px] font-semibold uppercase ${mobileView === v ? "glass-on" : "glass-flat text-[var(--color-muted)]"}`}>
+              {v === "dia" ? "Día" : "Semana"}
+            </button>
+          ))}
+        </div>
+        {mobileView === "dia" ? <DayTimeline day={dayIdx} onDay={setDayIdx} editing={editing} onPick={(d, r) => setBlock({ day: d, row: r })} /> : null}
+      </div>
+
+      <div className={mobileView === "semana" ? "" : "hidden sidebar:block"}>
       <Card padded={false} className="panel-surface-glow">
         <div className="overflow-x-auto">
           <table className="border-collapse text-[12.5px] min-w-[900px] w-full">
@@ -100,6 +117,7 @@ export function Horario() {
           </table>
         </div>
       </Card>
+      </div>
 
       <div className="flex flex-wrap gap-2">
         {LEGEND.map((t) => (
@@ -133,39 +151,3 @@ export function Horario() {
     </div>
   );
 }
-
-function BlockChip({ cell, editing = false }: { cell: HorarioCell; editing?: boolean }) {
-  if (cell.text === "—" && cell.type === "otro") {
-    return editing ? (
-      <div className="flex min-h-[34px] items-center justify-center rounded-xl border border-dashed border-[var(--color-line-strong)] text-[16px] text-[var(--color-muted-2)]">+</div>
-    ) : (
-      <div className="px-1.5 py-1.5 text-[12px] leading-snug text-[var(--color-muted)]">{cell.text}</div>
-    );
-  }
-  if (cell.type === "otro") {
-    return <div className="px-1.5 py-1.5 text-[12px] leading-snug text-[var(--color-muted)]">{cell.text}</div>;
-  }
-  return (
-    <div
-      className={`h-full rounded-xl px-2.5 py-2 text-[12px] leading-snug ${cell.soft ? "font-medium" : "font-semibold"}`}
-      style={
-        cell.key
-          ? {
-              background: "rgb(var(--accent-rgb) / 0.3)",
-              border: "1.5px solid var(--color-red)",
-              color: "var(--color-ink)",
-              boxShadow: "0 0 18px -4px rgb(var(--accent-rgb) / 0.75), 0 0 0 1px rgb(var(--accent-rgb) / 0.25) inset",
-            }
-          : {
-              background: BLOCK_TINT[cell.type],
-              border: `1px ${cell.soft ? "dashed" : "solid"} ${BLOCK_BORDER[cell.type]}`,
-              color: BLOCK_TEXT[cell.type],
-              opacity: cell.soft ? 0.55 : 1,
-            }
-      }
-    >
-      {cell.text}
-    </div>
-  );
-}
-

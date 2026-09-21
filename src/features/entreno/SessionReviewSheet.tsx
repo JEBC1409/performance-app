@@ -115,7 +115,7 @@ function Body({ review: r, next, onGoDay, onClose }: { review: SessionReview; ne
         <div className="num mt-2 text-[11px] text-[var(--color-muted-2)]">{facts.join(" · ")}</div>
       </div>
 
-      <div className="rounded-2xl border border-[var(--color-line-strong)] bg-[rgba(255,255,255,0.03)] px-4 py-3">
+      <div className="rounded-2xl border border-[var(--color-line-strong)] bg-[rgb(var(--fg-rgb)/0.03)] px-4 py-3">
         <div className="eyebrow">Volumen</div>
         <div className="mt-1 flex items-baseline gap-2">
           <span className="num font-[var(--font-display)] text-[26px] font-light leading-none">{fmtVol(r.volume)}</span>

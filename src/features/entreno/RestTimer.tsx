@@ -7,8 +7,8 @@ function DigitBox({ value, urgent }: { value: string; urgent: boolean }) {
         urgent ? "border-[var(--color-red)] text-[var(--color-red)]" : "border-[var(--color-line-strong)] text-[var(--color-ink)]"
       }`}
       style={{
-        background: "linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.3))",
-        boxShadow: "0 1px 0 rgba(255,255,255,0.06) inset, 0 -3px 6px -3px rgba(0,0,0,0.6) inset",
+        background: "linear-gradient(180deg, rgb(var(--fg-rgb)/0.05), rgb(var(--bg-rgb)/0.3))",
+        boxShadow: "0 1px 0 rgb(var(--fg-rgb)/0.06) inset, 0 -3px 6px -3px rgba(0,0,0,0.6) inset",
       }}
     >
       {value}
@@ -36,8 +36,8 @@ export function RestTimer({
       <div
         className={`flex items-center gap-3 rounded-2xl border px-3.5 py-2.5 ${urgent ? "border-[var(--color-red)]" : "border-[var(--color-line-strong)]"}`}
         style={{
-          background: "linear-gradient(155deg, rgba(255,255,255,0.05), rgba(10,10,12,0.85) 55%, rgba(0,0,0,0.9) 100%)",
-          boxShadow: `0 18px 40px -20px rgba(0,0,0,0.85), 0 0 ${urgent ? 36 : 22}px -8px rgb(var(--accent-rgb)/${urgent ? 0.75 : 0.4}), 0 1px 0 rgba(255,255,255,0.04) inset`,
+          background: "linear-gradient(155deg, rgb(var(--fg-rgb)/0.05), rgb(var(--surface-rgb)/0.85) 55%, rgb(var(--bg-rgb)/0.9) 100%)",
+          boxShadow: `0 18px 40px -20px rgba(0,0,0,0.85), 0 0 ${urgent ? 36 : 22}px -8px rgb(var(--accent-rgb)/${urgent ? 0.75 : 0.4}), 0 1px 0 rgb(var(--fg-rgb)/0.04) inset`,
           transition: "box-shadow 300ms ease, border-color 300ms ease",
         }}
       >

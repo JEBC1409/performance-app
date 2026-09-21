@@ -198,7 +198,7 @@ export function Hoy({
     session: (
       <div key="session" className={`panel-surface enter enter-delay-1 ${slot !== "rest" ? "panel-surface-glow" : ""}`}>
         <div className="px-4 pt-4 pb-3 border-b border-[var(--color-line)]">
-          <Eyebrow>Sesión del día</Eyebrow>
+          <div className="card-title">Sesión del día</div>
         </div>
         <div className="px-4 py-3">
           {slot === "rest" ? (
@@ -241,7 +241,7 @@ export function Hoy({
     habits: (
       <div key="habits" className="panel-surface enter enter-delay-2">
         <div className="px-4 pt-4 pb-3 border-b border-[var(--color-line)] flex items-center justify-between">
-          <Eyebrow>Hábitos hoy</Eyebrow>
+          <div className="card-title">Hábitos de hoy</div>
           <span className="eyebrow">
             <span className="text-[var(--color-red)] not-italic">{habitsCompleted}</span>/{habitsTotal}
           </span>
@@ -256,7 +256,7 @@ export function Hoy({
                 aria-pressed={on}
                 className={`tap-target flex items-center gap-2.5 rounded-full px-3 py-2 text-left ${on ? "glass-on" : "glass"}`}
               >
-                <span className={`flex h-7 w-7 flex-none items-center justify-center rounded-full ${on ? "bg-[rgba(255,255,255,0.22)] pop" : "bg-[rgba(255,255,255,0.06)]"}`}>
+                <span className={`flex h-7 w-7 flex-none items-center justify-center rounded-full ${on ? "bg-[rgb(var(--fg-rgb)/0.22)] pop" : "bg-[rgb(var(--fg-rgb)/0.06)]"}`}>
                   <HabitGlyph icon={h.icon} active={on} activeColor="#fff" size={12} />
                 </span>
                 <span className={`text-[11px] font-semibold uppercase tracking-wide leading-tight ${on ? "text-white" : "text-[var(--color-muted)]"}`}>{h.label}</span>

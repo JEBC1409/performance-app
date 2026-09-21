@@ -76,7 +76,7 @@ export function FreezeGlyph({ size = 10, className = "" }: { size?: number; clas
 }
 
 export function NavGlyph({ tab, active, activeColor = "var(--color-red)" }: { tab: string; active: boolean; activeColor?: string }) {
-  const stroke = active ? activeColor : "rgba(255,255,255,0.5)";
+  const stroke = active ? activeColor : "rgb(var(--fg-rgb)/0.5)";
   const common = { width: 18, height: 18, viewBox: "0 0 18 18", "aria-hidden": true as const };
   switch (tab) {
     case "hoy":

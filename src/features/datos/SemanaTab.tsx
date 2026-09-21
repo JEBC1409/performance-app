@@ -178,7 +178,7 @@ function Hero({ cur, prev }: { cur: WeekStats; prev: WeekStats }) {
             <span
               className="h-7 w-full rounded-lg border"
               style={{
-                background: on ? "var(--color-red)" : "rgba(255,255,255,0.03)",
+                background: on ? "var(--color-red)" : "rgb(var(--fg-rgb)/0.03)",
                 borderColor: on ? "var(--color-red)" : "var(--color-line-strong)",
                 boxShadow: on ? "0 0 12px -2px var(--color-red-soft)" : "none",
               }}

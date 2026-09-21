@@ -121,7 +121,7 @@ export function ExerciseLogForm({
       ) : null}
 
       {suggestion && done < target ? (
-        <div className="flex items-center gap-3 rounded-2xl border border-[var(--color-line-strong)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5">
+        <div className="flex items-center gap-3 rounded-2xl border border-[var(--color-line-strong)] bg-[rgb(var(--fg-rgb)/0.03)] px-3 py-2.5">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em]" style={{ color: SUGGESTION_COLOR[suggestion.kind] }}>
@@ -244,7 +244,7 @@ export function ExerciseLogForm({
         ) : null}
         <button
           onClick={save}
-          className="tap-target flex-1 btn-primary text-white border border-[rgb(var(--accent-light-rgb)/0.5)] rounded-full py-2.5 text-[12.5px] font-semibold uppercase tracking-wide shadow-[0_1px_0_rgba(255,255,255,0.35)_inset,0_-6px_10px_-6px_rgba(0,0,0,0.45)_inset,0_10px_24px_-10px_rgb(var(--accent-rgb)/0.75)] hover:brightness-110 active:brightness-95 active:translate-y-px transition-all duration-150"
+          className="tap-target flex-1 btn-primary text-white border border-[rgb(var(--accent-light-rgb)/0.5)] rounded-full py-2.5 text-[12.5px] font-semibold uppercase tracking-wide shadow-[0_1px_0_rgb(var(--fg-rgb)/0.35)_inset,0_-6px_10px_-6px_rgba(0,0,0,0.45)_inset,0_10px_24px_-10px_rgb(var(--accent-rgb)/0.75)] hover:brightness-110 active:brightness-95 active:translate-y-px transition-all duration-150"
         >
           {editing ? "Actualizar serie" : "Guardar serie"}
         </button>

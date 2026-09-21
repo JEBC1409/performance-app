@@ -148,7 +148,7 @@ export function DateField({
                   type="button"
                   onClick={() => shiftMonth(-1)}
                   aria-label="Mes anterior"
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[rgba(255,255,255,0.06)]"
+                  className="flex h-6 w-6 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[rgb(var(--fg-rgb)/0.06)]"
                 >
                   <ChevronGlyph dir="left" />
                 </button>
@@ -159,7 +159,7 @@ export function DateField({
                   type="button"
                   onClick={() => shiftMonth(1)}
                   aria-label="Mes siguiente"
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[rgba(255,255,255,0.06)]"
+                  className="flex h-6 w-6 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[rgb(var(--fg-rgb)/0.06)]"
                 >
                   <ChevronGlyph dir="right" />
                 </button>
@@ -189,7 +189,7 @@ export function DateField({
                             ? "text-[var(--color-muted-2)] opacity-30"
                             : isToday
                               ? "border border-[var(--color-red)] text-[var(--color-red)]"
-                              : "text-[var(--color-ink)] hover:bg-[rgba(255,255,255,0.08)]"
+                              : "text-[var(--color-ink)] hover:bg-[rgb(var(--fg-rgb)/0.08)]"
                       }`}
                     >
                       {Number(iso.slice(8))}

@@ -3,6 +3,7 @@
  * <html> as data attributes, so the CSS does the rest. */
 
 export type Accent = "red" | "gold" | "blue" | "violet";
+export type Theme = "dark" | "light" | "auto";
 
 export const ACCENTS: { key: Accent; label: string; swatch: string }[] = [
   { key: "red", label: "Rojo", swatch: "#df2531" },
@@ -22,15 +23,44 @@ export const HOME_CARDS: { key: HomeCard; label: string }[] = [
   { key: "verse", label: "Versículo" },
 ];
 
+/** Screens that can sit in the mobile bottom bar (the rest live under "Más"). */
+export type NavKey = "hoy" | "entreno" | "habitos" | "datos" | "horario" | "focus" | "kairos" | "mouredev" | "perfil";
+
+export const NAV_TABS: { key: NavKey; label: string }[] = [
+  { key: "hoy", label: "Hoy" },
+  { key: "entreno", label: "Entreno" },
+  { key: "habitos", label: "Hábitos" },
+  { key: "datos", label: "Datos" },
+  { key: "horario", label: "Horario" },
+  { key: "focus", label: "Focus" },
+  { key: "kairos", label: "Oración" },
+  { key: "mouredev", label: "MoureDev" },
+  { key: "perfil", label: "Perfil" },
+];
+
+export const NAV_SLOTS = 4;
+export const DEFAULT_NAV: NavKey[] = ["hoy", "entreno", "habitos", "datos"];
+
+/** Known screens only, each once, at most NAV_SLOTS, at least 2; else the default. */
+export function normalizeNav(saved: unknown): NavKey[] {
+  const known = new Set<string>(NAV_TABS.map((t) => t.key));
+  const out: NavKey[] = [];
+  if (Array.isArray(saved)) for (const k of saved) if (typeof k === "string" && known.has(k) && !out.includes(k as NavKey)) out.push(k as NavKey);
+  const trimmed = out.slice(0, NAV_SLOTS);
+  return trimmed.length >= 2 ? trimmed : DEFAULT_NAV;
+}
+
 export interface UiPrefs {
   accent: Accent;
+  theme: Theme;
   calm: boolean;
   homeOrder: HomeCard[];
+  navTabs: NavKey[];
 }
 
 const KEY = "performance_ui_prefs_v1";
 const DEFAULT_ORDER = HOME_CARDS.map((c) => c.key);
-export const DEFAULT_UI_PREFS: UiPrefs = { accent: "red", calm: false, homeOrder: DEFAULT_ORDER };
+export const DEFAULT_UI_PREFS: UiPrefs = { accent: "red", theme: "dark", calm: false, homeOrder: DEFAULT_ORDER, navTabs: DEFAULT_NAV };
 
 /** Known cards only, each once, in the saved order; anything new is appended. */
 export function normalizeOrder(saved: unknown): HomeCard[] {
@@ -49,8 +79,10 @@ export function parseUiPrefs(raw: string | null): UiPrefs {
     const r = JSON.parse(raw) as Partial<UiPrefs>;
     return {
       accent: ACCENTS.some((a) => a.key === r.accent) ? (r.accent as Accent) : "red",
+      theme: r.theme === "light" || r.theme === "auto" ? r.theme : "dark",
       calm: r.calm === true,
       homeOrder: normalizeOrder(r.homeOrder),
+      navTabs: normalizeNav(r.navTabs),
     };
   } catch {
     return DEFAULT_UI_PREFS;
@@ -77,6 +109,14 @@ export function subscribeUiPrefs(cb: () => void): () => void {
   return () => listeners.delete(cb);
 }
 
+let autoListener = false;
+
+/** "auto" follows the system's light/dark setting. */
+export function resolveTheme(theme: Theme): "dark" | "light" {
+  if (theme !== "auto") return theme;
+  return typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
+}
+
 /** Puts the prefs on <html>; safe to call before React renders (no flash). */
 export function applyUiPrefs(p: UiPrefs = prefs): void {
   if (typeof document === "undefined") return;
@@ -85,10 +125,19 @@ export function applyUiPrefs(p: UiPrefs = prefs): void {
   else root.dataset.accent = p.accent;
   if (p.calm) root.dataset.calm = "true";
   else delete root.dataset.calm;
+  const theme = resolveTheme(p.theme);
+  root.dataset.theme = theme;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "light" ? "#f4f4f7" : "#000000");
+  if (!autoListener && typeof window !== "undefined" && window.matchMedia) {
+    autoListener = true;
+    window.matchMedia("(prefers-color-scheme: light)").addEventListener?.("change", () => {
+      if (prefs.theme === "auto") applyUiPrefs(prefs);
+    });
+  }
 }
 
 export function setUiPrefs(patch: Partial<UiPrefs>): void {
-  prefs = { ...prefs, ...patch, homeOrder: normalizeOrder(patch.homeOrder ?? prefs.homeOrder) };
+  prefs = { ...prefs, ...patch, homeOrder: normalizeOrder(patch.homeOrder ?? prefs.homeOrder), navTabs: normalizeNav(patch.navTabs ?? prefs.navTabs) };
   try {
     localStorage.setItem(KEY, JSON.stringify(prefs));
   } catch {

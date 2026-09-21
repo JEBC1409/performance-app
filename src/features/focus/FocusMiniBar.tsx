@@ -22,7 +22,7 @@ export function FocusMiniBar({ visible, onOpen }: { visible: boolean; onOpen: ()
         <button onClick={onOpen} aria-label="Abrir Focus" className="flex items-center gap-2.5 rounded-full py-1 pl-2 pr-2">
           <span className="relative flex h-7 w-7 flex-none items-center justify-center">
             <svg viewBox="0 0 28 28" width="28" height="28" className="-rotate-90" aria-hidden>
-              <circle cx="14" cy="14" r="11" fill="none" stroke="rgba(255,255,255,0.14)" strokeWidth="3" />
+              <circle cx="14" cy="14" r="11" fill="none" stroke="rgb(var(--fg-rgb)/0.14)" strokeWidth="3" />
               <circle cx="14" cy="14" r="11" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeDasharray={69.1} strokeDashoffset={69.1 * (1 - progress)} />
             </svg>
           </span>

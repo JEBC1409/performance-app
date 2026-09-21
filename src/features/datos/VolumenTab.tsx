@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
-import { Card, Eyebrow, RankBadge } from "@/ui";
+import { Card, RankBadge } from "@/ui";
 import { Radar } from "@/ui/Radar";
 import { MUSCLE_GROUP_ORDER, MUSCLE_GROUP_LABEL, groupForExercise, type MuscleGroup } from "@/data/muscleGroups";
 import { rankProgress, groupStrengthPct } from "@/lib/muscleRank";
@@ -56,7 +56,7 @@ export function VolumenTab() {
 
   return (
     <Card>
-      <Eyebrow accent>Volumen por grupo muscular · últimos 28 días</Eyebrow>
+      <div className="card-title">Volumen por grupo muscular <span className="text-[12px] font-normal text-[var(--color-muted)]">· últimos 28 días</span></div>
       <div className="flex justify-center mt-4">
         <Radar axes={axes} />
       </div>

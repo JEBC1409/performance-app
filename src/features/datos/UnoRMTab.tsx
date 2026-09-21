@@ -3,7 +3,7 @@ import { useConfigVersion } from "@/hooks/useConfigVersion";
 import { useMemo } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, type SetRecord } from "@/db/db";
-import { Card, Eyebrow, BarChart, type BarPoint } from "@/ui";
+import { Card, BarChart, type BarPoint } from "@/ui";
 import { startOfWeek, fmtDateHuman } from "@/lib/date";
 import { GYM_DIAS, GYM_DAY_ORDER, allExerciseNames, startDate } from "@/data/gym";
 
@@ -49,7 +49,7 @@ export function UnoRMTab() {
 
   return (
     <Card>
-      <Eyebrow accent>Progreso de carga por semana</Eyebrow>
+      <div className="card-title">Progreso de carga por semana</div>
       {exercises.length ? (
         <div className="mt-3 grid grid-cols-1 sidebar:grid-cols-2 gap-3">
           {exercises.map((ex) => (

@@ -1,7 +1,9 @@
 import { Icon } from "@/ui/Icon";
 import { Card, Eyebrow } from "@/ui";
 import { useUiPrefs } from "@/hooks/useUiPrefs";
-import { ACCENTS, DEFAULT_UI_PREFS, HOME_CARDS, setUiPrefs } from "@/lib/uiPrefs";
+import { ACCENTS, DEFAULT_NAV, DEFAULT_UI_PREFS, HOME_CARDS, NAV_SLOTS, NAV_TABS, setUiPrefs } from "@/lib/uiPrefs";
+import type { NavKey } from "@/lib/uiPrefs";
+import { showToast } from "@/ui/Toast";
 
 /** Perfil › Apariencia: accent color, "sobrio" mode, and the order of Hoy. */
 export function AppearanceCard() {
@@ -14,6 +16,17 @@ export function AppearanceCard() {
     if (j < 0 || j >= next.length) return;
     [next[i], next[j]] = [next[j], next[i]];
     setUiPrefs({ homeOrder: next });
+  }
+
+  function toggleNav(key: NavKey) {
+    const has = prefs.navTabs.includes(key);
+    if (has) {
+      if (prefs.navTabs.length <= 2) return showToast("Deja al menos 2 pantallas abajo");
+      setUiPrefs({ navTabs: prefs.navTabs.filter((k) => k !== key) });
+    } else {
+      if (prefs.navTabs.length >= NAV_SLOTS) return showToast(`Caben ${NAV_SLOTS}: quita una primero`);
+      setUiPrefs({ navTabs: [...prefs.navTabs, key] });
+    }
   }
 
   return (
@@ -41,6 +54,17 @@ export function AppearanceCard() {
         </div>
       </div>
 
+      <div className="mt-4">
+        <div className="mb-2 text-[11.5px] text-[var(--color-muted)]">Tema</div>
+        <div className="glass-track grid grid-cols-3 gap-1 rounded-full p-1" role="radiogroup" aria-label="Tema">
+          {([["dark", "Oscuro"], ["light", "Claro"], ["auto", "Automático"]] as const).map(([k, label]) => (
+            <button key={k} role="radio" aria-checked={prefs.theme === k} onClick={() => setUiPrefs({ theme: k })} className={`rounded-full py-2 text-[12px] font-semibold ${prefs.theme === k ? "glass-on" : "glass-flat text-[var(--color-muted)]"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="mt-4 flex items-center justify-between gap-3">
         <div>
           <div className="text-[13px] font-semibold">Modo sobrio</div>
@@ -55,6 +79,26 @@ export function AppearanceCard() {
         >
           <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${prefs.calm ? "left-[26px]" : "left-0.5"}`} />
         </button>
+      </div>
+
+      <div className="mt-4">
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-[11.5px] text-[var(--color-muted)]">Barra de abajo (elige hasta {NAV_SLOTS})</span>
+          <button onClick={() => setUiPrefs({ navTabs: DEFAULT_NAV })} className="text-[11px] text-[var(--color-muted)] hover:text-[var(--color-red)]">
+            Restablecer
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {NAV_TABS.map((t) => {
+            const idx = prefs.navTabs.indexOf(t.key);
+            return (
+              <button key={t.key} onClick={() => toggleNav(t.key)} aria-pressed={idx >= 0} className={`rounded-full px-3.5 py-2 text-[11.5px] font-semibold ${idx >= 0 ? "glass-on" : "glass text-[var(--color-muted)]"}`}>
+                {idx >= 0 ? `${idx + 1} · ` : ""}
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="mt-4">

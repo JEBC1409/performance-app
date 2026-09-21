@@ -66,7 +66,7 @@ function Dial({ progress, isBreak, live, children }: DialProps) {
               y1={C - r1 * Math.cos(th)}
               x2={C + r2 * Math.sin(th)}
               y2={C - r2 * Math.cos(th)}
-              stroke={lit ? a : "rgba(255,255,255,0.14)"}
+              stroke={lit ? a : "rgb(var(--fg-rgb)/0.14)"}
               strokeOpacity={lit ? 0.95 : major ? 1 : 0.7}
               strokeWidth={major ? 2 : 1.2}
               strokeLinecap="round"
@@ -75,7 +75,7 @@ function Dial({ progress, isBreak, live, children }: DialProps) {
           );
         })}
 
-        <circle cx={C} cy={C} r={RING_R} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="10" />
+        <circle cx={C} cy={C} r={RING_R} fill="none" stroke="rgb(var(--fg-rgb)/0.07)" strokeWidth="10" />
         <g transform={`rotate(-90 ${C} ${C})`}>
           <circle
             cx={C}
@@ -282,7 +282,7 @@ function FocusView() {
                   key={i}
                   className={`h-1.5 w-5 rounded-full transition-all ${current ? "pulse" : ""}`}
                   style={{
-                    background: done ? "var(--color-red)" : current ? "var(--color-red-soft)" : "rgba(255,255,255,0.1)",
+                    background: done ? "var(--color-red)" : current ? "var(--color-red-soft)" : "rgb(var(--fg-rgb)/0.1)",
                     boxShadow: done ? "0 0 8px var(--color-red-soft)" : "none",
                   }}
                 />
@@ -337,9 +337,9 @@ function FocusView() {
                     ? {
                         background: "linear-gradient(165deg, rgba(90,235,150,0.5) 0%, rgba(47,174,102,0.42) 55%, rgba(20,110,60,0.5) 100%)",
                         borderColor: "rgba(120,240,170,0.5)",
-                        boxShadow: "0 1px 0 rgba(255,255,255,0.3) inset, 0 12px 30px -10px rgba(47,174,102,0.85)",
+                        boxShadow: "0 1px 0 rgb(var(--fg-rgb)/0.3) inset, 0 12px 30px -10px rgba(47,174,102,0.85)",
                       }
-                    : { boxShadow: "0 1px 0 rgba(255,255,255,0.3) inset, 0 14px 34px -10px rgb(var(--accent-rgb)/0.9)" }
+                    : { boxShadow: "0 1px 0 rgb(var(--fg-rgb)/0.3) inset, 0 14px 34px -10px rgb(var(--accent-rgb)/0.9)" }
                 }
               >
                 {paused ? <PlayIcon /> : <PauseIcon />}
@@ -373,7 +373,7 @@ function FocusView() {
                 }}
                 placeholder="Ej. Terminar el módulo de React"
                 maxLength={80}
-                className="w-full rounded-2xl border border-[var(--color-line-strong)] bg-[rgba(255,255,255,0.03)] px-4 py-3.5 text-center text-[15px] outline-none transition-colors placeholder:text-[var(--color-muted-2)] focus:border-[var(--color-red)] focus:bg-[rgb(var(--accent-rgb)/0.05)]"
+                className="w-full rounded-2xl border border-[var(--color-line-strong)] bg-[rgb(var(--fg-rgb)/0.03)] px-4 py-3.5 text-center text-[15px] outline-none transition-colors placeholder:text-[var(--color-muted-2)] focus:border-[var(--color-red)] focus:bg-[rgb(var(--accent-rgb)/0.05)]"
               />
             </label>
 
@@ -440,7 +440,7 @@ function FocusView() {
                   onBlur={() => setCustomText(String(focusMin))}
                   inputMode="numeric"
                   aria-label="Minutos del bloque"
-                  className="num w-24 rounded-2xl border border-[var(--color-line-strong)] bg-[rgba(255,255,255,0.03)] px-3 py-2.5 text-center text-[18px] font-semibold outline-none focus:border-[var(--color-red)]"
+                  className="num w-24 rounded-2xl border border-[var(--color-line-strong)] bg-[rgb(var(--fg-rgb)/0.03)] px-3 py-2.5 text-center text-[18px] font-semibold outline-none focus:border-[var(--color-red)]"
                 />
                 <span className="text-[11.5px] text-[var(--color-muted)]">
                   minutos
@@ -529,7 +529,7 @@ function FocusView() {
                   key={i}
                   className="h-2 w-2 rounded-full"
                   style={{
-                    background: i < todaySessions.length ? "var(--color-red)" : "rgba(255,255,255,0.1)",
+                    background: i < todaySessions.length ? "var(--color-red)" : "rgb(var(--fg-rgb)/0.1)",
                     boxShadow: i < todaySessions.length ? "0 0 6px var(--color-red-soft)" : "none",
                   }}
                 />

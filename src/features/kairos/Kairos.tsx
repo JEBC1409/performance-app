@@ -196,7 +196,7 @@ export function Kairos() {
                       <span className="num mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-[var(--color-surface-2)] text-[10.5px] font-bold text-[var(--color-red)] transition-colors group-hover:bg-[var(--color-red)] group-hover:text-white">
                         {i + 1}
                       </span>
-                      <span className="text-[14px] leading-relaxed text-[rgba(255,255,255,0.82)] transition-colors group-hover:text-[var(--color-ink)]">
+                      <span className="text-[14px] leading-relaxed text-[rgb(var(--fg-rgb)/0.82)] transition-colors group-hover:text-[var(--color-ink)]">
                         {text}
                       </span>
                     </button>

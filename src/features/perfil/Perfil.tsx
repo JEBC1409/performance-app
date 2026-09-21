@@ -14,6 +14,8 @@ import { currentStreak } from "@/lib/streak";
 import { useHabitDefs } from "@/hooks/useHabitDefs";
 import { HabitManager } from "./HabitManager";
 import { AppearanceCard } from "./AppearanceCard";
+import { Section } from "@/ui/Section";
+import { requestGuide } from "@/lib/onboarding";
 import { RoutineEditor } from "./RoutineEditor";
 
 const HEAVY_DUTY_RULES = [
@@ -158,126 +160,142 @@ export function Perfil() {
         <Stat label="Ciclo" value={slot === "rest" ? "Descanso" : slot} />
       </div>
 
-      <Card>
-        <div className="flex items-center justify-between">
-          <Eyebrow accent>Cuenta</Eyebrow>
-          <Chip tone="good">Conectado</Chip>
-        </div>
-        <p className="text-[13px] mt-2">{session?.user.email}</p>
-        <Button className="mt-3 w-full" onClick={() => supabase?.auth.signOut()}>
-          Cerrar sesión
-        </Button>
-      </Card>
+      <div className="flex flex-col gap-3">
+        <Section id="ajustes" title="Ajustes" summary={`${unitLabel(unit)} · descanso ${settings?.defaultRestSec ?? DEFAULT_SETTINGS.defaultRestSec}s · dormir ${settings?.sleepTime ?? DEFAULT_SETTINGS.sleepTime}`} defaultOpen>
+        <Card>
+          <Eyebrow>Preferencias</Eyebrow>
+          <div className="grid grid-cols-2 gap-2.5 mt-3">
+            <Field label="Unidad de peso">
+              <Select value={unit} onChange={(e) => patch({ unit: e.target.value as Unit })}>
+                <option value="kg">Kilogramos (kg)</option>
+                <option value="lb">Libras (lb)</option>
+              </Select>
+            </Field>
+            <Field label={`Meta semanal (${unitLabel(unit)})`}>
+              <Input
+                key={unit}
+                inputMode="decimal"
+                defaultValue={fromKg(settings?.weeklyGoalKg ?? DEFAULT_SETTINGS.weeklyGoalKg, unit)}
+                onBlur={(e) => {
+                  const typed = parseFloat(e.target.value);
+                  patch({ weeklyGoalKg: Number.isNaN(typed) ? DEFAULT_SETTINGS.weeklyGoalKg : toKg(typed, unit) });
+                }}
+              />
+            </Field>
+            <Field label="Descanso por defecto (seg)">
+              <Input
+                inputMode="numeric"
+                defaultValue={settings?.defaultRestSec ?? DEFAULT_SETTINGS.defaultRestSec}
+                onBlur={(e) => patch({ defaultRestSec: parseInt(e.target.value, 10) || DEFAULT_SETTINGS.defaultRestSec })}
+              />
+            </Field>
+            <Field label="Sin celular desde">
+              <Input type="time" defaultValue={settings?.noPhoneTime ?? DEFAULT_SETTINGS.noPhoneTime} onBlur={(e) => patch({ noPhoneTime: e.target.value })} />
+            </Field>
+            <Field label="Hora de dormir">
+              <Input type="time" defaultValue={settings?.sleepTime ?? DEFAULT_SETTINGS.sleepTime} onBlur={(e) => patch({ sleepTime: e.target.value })} />
+            </Field>
+          </div>
+        </Card>
 
-      <Card>
-        <Eyebrow accent>Ciclo actual</Eyebrow>
-        <div className="mt-2 flex items-center gap-2">
-          <Chip tone="accent">{slot === "rest" ? "Descanso" : `Día ${slot}`}</Chip>
-          <span className="text-[11.5px] text-[var(--color-muted)]">A → B → C → descanso → repetir</span>
-        </div>
-      </Card>
+        </Section>
 
-      <Card>
-        <Eyebrow>Preferencias</Eyebrow>
-        <div className="grid grid-cols-2 gap-2.5 mt-3">
-          <Field label="Unidad de peso">
-            <Select value={unit} onChange={(e) => patch({ unit: e.target.value as Unit })}>
-              <option value="kg">Kilogramos (kg)</option>
-              <option value="lb">Libras (lb)</option>
-            </Select>
-          </Field>
-          <Field label={`Meta semanal (${unitLabel(unit)})`}>
-            <Input
-              key={unit}
-              inputMode="decimal"
-              defaultValue={fromKg(settings?.weeklyGoalKg ?? DEFAULT_SETTINGS.weeklyGoalKg, unit)}
-              onBlur={(e) => {
-                const typed = parseFloat(e.target.value);
-                patch({ weeklyGoalKg: Number.isNaN(typed) ? DEFAULT_SETTINGS.weeklyGoalKg : toKg(typed, unit) });
-              }}
-            />
-          </Field>
-          <Field label="Descanso por defecto (seg)">
-            <Input
-              inputMode="numeric"
-              defaultValue={settings?.defaultRestSec ?? DEFAULT_SETTINGS.defaultRestSec}
-              onBlur={(e) => patch({ defaultRestSec: parseInt(e.target.value, 10) || DEFAULT_SETTINGS.defaultRestSec })}
-            />
-          </Field>
-          <Field label="Sin celular desde">
-            <Input type="time" defaultValue={settings?.noPhoneTime ?? DEFAULT_SETTINGS.noPhoneTime} onBlur={(e) => patch({ noPhoneTime: e.target.value })} />
-          </Field>
-          <Field label="Hora de dormir">
-            <Input type="time" defaultValue={settings?.sleepTime ?? DEFAULT_SETTINGS.sleepTime} onBlur={(e) => patch({ sleepTime: e.target.value })} />
-          </Field>
-        </div>
-      </Card>
+        <Section id="entreno" title="Entrenamiento" summary="Tu rutina, series y pesos, y las reglas Heavy Duty">
+        <RoutineEditor />
+        <Card>
+          <Eyebrow>Reglas Heavy Duty</Eyebrow>
+          <ul className="mt-2.5 flex flex-col gap-2">
+            {HEAVY_DUTY_RULES.map((rule) => (
+              <li key={rule} className="text-[12.5px] text-[var(--color-muted)] flex gap-2">
+                <span className="text-[var(--color-red)] flex-none">—</span>
+                {rule}
+              </li>
+            ))}
+          </ul>
+        </Card>
 
-      <HabitManager />
+        </Section>
 
-      <RoutineEditor />
-
-      <AppearanceCard />
-
-      <Card>
-        <div className="flex items-center justify-between">
-          <Eyebrow accent>Recordatorios</Eyebrow>
-          {permission === "granted" ? (
-            <Chip tone="good">Activos</Chip>
-          ) : permission === "denied" ? (
-            <Chip tone="bad">Bloqueados</Chip>
-          ) : permission === "unsupported" ? (
-            <Chip tone="neutral">No disponible</Chip>
-          ) : (
-            <Chip tone="neutral">Inactivos</Chip>
-          )}
-        </div>
-        <p className="text-[12px] text-[var(--color-muted)] mt-2">
-          Avisa con una notificación cuando llega la hora de guardar el celular ({settings?.noPhoneTime ?? DEFAULT_SETTINGS.noPhoneTime}) y la hora
-          de dormir ({settings?.sleepTime ?? DEFAULT_SETTINGS.sleepTime}). Solo funciona con la app abierta en el navegador.
-        </p>
-        {permission === "granted" ? (
-          <Button
-            className="mt-3 w-full"
-            onClick={() => patch({ remindersEnabled: !(settings?.remindersEnabled ?? true) })}
-          >
-            {settings?.remindersEnabled ?? true ? "Desactivar" : "Reactivar"}
-          </Button>
-        ) : permission === "denied" ? (
-          <p className="text-[11.5px] text-[var(--color-red)] mt-3">
-            Bloqueaste las notificaciones para este sitio. Habilitalas desde los ajustes del navegador para reactivarlas.
+        <Section id="habitos" title="Hábitos y avisos" summary={`${habitDefs?.length ?? 0} hábitos · recordatorios ${permission === "granted" ? "activos" : "inactivos"}`}>
+        <HabitManager />
+        <Card>
+          <div className="flex items-center justify-between">
+            <Eyebrow accent>Recordatorios</Eyebrow>
+            {permission === "granted" ? (
+              <Chip tone="good">Activos</Chip>
+            ) : permission === "denied" ? (
+              <Chip tone="bad">Bloqueados</Chip>
+            ) : permission === "unsupported" ? (
+              <Chip tone="neutral">No disponible</Chip>
+            ) : (
+              <Chip tone="neutral">Inactivos</Chip>
+            )}
+          </div>
+          <p className="text-[12px] text-[var(--color-muted)] mt-2">
+            Avisa con una notificación cuando llega la hora de guardar el celular ({settings?.noPhoneTime ?? DEFAULT_SETTINGS.noPhoneTime}) y la hora
+            de dormir ({settings?.sleepTime ?? DEFAULT_SETTINGS.sleepTime}). Solo funciona con la app abierta en el navegador.
           </p>
-        ) : permission === "unsupported" ? null : (
-          <Button variant="primary" className="mt-3 w-full" onClick={enableReminders}>
-            Activar notificaciones
-          </Button>
-        )}
-      </Card>
+          {permission === "granted" ? (
+            <Button
+              className="mt-3 w-full"
+              onClick={() => patch({ remindersEnabled: !(settings?.remindersEnabled ?? true) })}
+            >
+              {settings?.remindersEnabled ?? true ? "Desactivar" : "Reactivar"}
+            </Button>
+          ) : permission === "denied" ? (
+            <p className="text-[11.5px] text-[var(--color-red)] mt-3">
+              Bloqueaste las notificaciones para este sitio. Habilitalas desde los ajustes del navegador para reactivarlas.
+            </p>
+          ) : permission === "unsupported" ? null : (
+            <Button variant="primary" className="mt-3 w-full" onClick={enableReminders}>
+              Activar notificaciones
+            </Button>
+          )}
+        </Card>
 
-      <Card>
-        <Eyebrow>Reglas Heavy Duty</Eyebrow>
-        <ul className="mt-2.5 flex flex-col gap-2">
-          {HEAVY_DUTY_RULES.map((rule) => (
-            <li key={rule} className="text-[12.5px] text-[var(--color-muted)] flex gap-2">
-              <span className="text-[var(--color-red)] flex-none">—</span>
-              {rule}
-            </li>
-          ))}
-        </ul>
-      </Card>
+        </Section>
 
-      <Card>
-        <Eyebrow>Datos</Eyebrow>
-        <div className="flex flex-col gap-2 mt-3">
-          <Button onClick={exportBackup}>Exportar todo (.json)</Button>
-          <Button onClick={() => fileRef.current?.click()}>Importar backup (.json)</Button>
-          <Button onClick={() => excelRef.current?.click()} disabled={importing}>
-            {importing ? "Importando…" : "Importar Excel original (.xlsx)"}
+        <Section id="apariencia" title="Apariencia" summary="Color, modo sobrio, barra de abajo y orden de Hoy">
+        <AppearanceCard />
+        </Section>
+
+        <Section id="cuenta" title="Cuenta y datos" summary={session?.user.email ?? "Tu cuenta y tus copias de seguridad"}>
+        <Card>
+          <div className="flex items-center justify-between">
+            <Eyebrow accent>Cuenta</Eyebrow>
+            <Chip tone="good">Conectado</Chip>
+          </div>
+          <p className="text-[13px] mt-2">{session?.user.email}</p>
+          <Button className="mt-3 w-full" onClick={requestGuide}>
+          Ver la guía de inicio
+        </Button>
+        <Button className="mt-2 w-full" onClick={() => supabase?.auth.signOut()}>
+            Cerrar sesión
           </Button>
-          <input ref={fileRef} type="file" accept="application/json" className="hidden" onChange={onImportJson} />
-          <input ref={excelRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={onImportExcel} />
-        </div>
-      </Card>
+        </Card>
+
+        <Card>
+          <Eyebrow accent>Ciclo actual</Eyebrow>
+          <div className="mt-2 flex items-center gap-2">
+            <Chip tone="accent">{slot === "rest" ? "Descanso" : `Día ${slot}`}</Chip>
+            <span className="text-[11.5px] text-[var(--color-muted)]">A → B → C → descanso → repetir</span>
+          </div>
+        </Card>
+
+        <Card>
+          <Eyebrow>Datos</Eyebrow>
+          <div className="flex flex-col gap-2 mt-3">
+            <Button onClick={exportBackup}>Exportar todo (.json)</Button>
+            <Button onClick={() => fileRef.current?.click()}>Importar backup (.json)</Button>
+            <Button onClick={() => excelRef.current?.click()} disabled={importing}>
+              {importing ? "Importando…" : "Importar Excel original (.xlsx)"}
+            </Button>
+            <input ref={fileRef} type="file" accept="application/json" className="hidden" onChange={onImportJson} />
+            <input ref={excelRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={onImportExcel} />
+          </div>
+        </Card>
+        </Section>
+      </div>
     </div>
   );
 }

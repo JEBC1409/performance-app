@@ -103,7 +103,7 @@ export function BookPicker({ value, onChange, books }: { value: string; onChange
                             setOpen(false);
                           }}
                           className={`flex w-full items-center px-3.5 py-1.5 text-left text-[12.5px] transition-colors ${
-                            isSelected ? "bg-[rgb(var(--accent-rgb)/0.14)] text-[var(--color-red)] font-semibold" : "text-[var(--color-ink)] hover:bg-[rgba(255,255,255,0.06)]"
+                            isSelected ? "bg-[rgb(var(--accent-rgb)/0.14)] text-[var(--color-red)] font-semibold" : "text-[var(--color-ink)] hover:bg-[rgb(var(--fg-rgb)/0.06)]"
                           }`}
                         >
                           {b.name}

@@ -5,6 +5,7 @@ import { Shell } from "@/layout/Shell";
 import { ToastHost } from "@/ui/Toast";
 import { ConfirmHost } from "@/ui/Confirm";
 import { readDeepLink } from "@/lib/deepLink";
+import { Guide } from "@/features/onboarding/Guide";
 import { seedIfNeeded } from "@/db/seed";
 import { db } from "@/db/db";
 import { useReminders } from "@/hooks/useReminders";
@@ -169,6 +170,7 @@ export default function App() {
       <ErrorBoundary fallback={() => null}>
         <FocusMiniBar visible={tab !== "focus"} onOpen={() => setTab("focus")} />
       </ErrorBoundary>
+      <Guide onNavigate={setTab} />
       <ConfirmHost />
       <ToastHost />
     </Shell>

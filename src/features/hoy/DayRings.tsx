@@ -56,7 +56,7 @@ export function DayRings({ habitsDone, habitsTotal, slot }: { habitsDone: number
       label: rest ? "Descanso" : "Entreno",
       value: rest ? "hoy toca recuperar" : setsTarget ? `${setsDone}/${setsTarget} series` : "—",
       pct: p.workout,
-      color: "#f3f3f5",
+      color: "var(--color-ink)",
       r: 49,
     },
     { key: "focus", label: "Focus", value: `${focusMin}/${FOCUS_DAILY_GOAL_MIN} min`, pct: p.focus, color: "var(--color-good)", r: 36 },
@@ -70,7 +70,7 @@ export function DayRings({ habitsDone, habitsTotal, slot }: { habitsDone: number
             const circ = 2 * Math.PI * r.r;
             return (
               <g key={r.key}>
-                <circle cx={C} cy={C} r={r.r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={STROKE} />
+                <circle cx={C} cy={C} r={r.r} fill="none" stroke="rgb(var(--fg-rgb)/0.07)" strokeWidth={STROKE} />
                 <circle
                   cx={C}
                   cy={C}

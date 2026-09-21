@@ -81,7 +81,7 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
         }}
         style={dy ? { transform: `translateY(${dy}px)`, transition: "none" } : { transition: "transform 200ms ease" }}
         className="relative w-full outline-none sidebar:max-w-md bg-[var(--color-surface)] border-t sidebar:border border-[var(--color-line-strong)] p-5 pb-[calc(1.25rem_+_env(safe-area-inset-bottom))] sidebar:pb-5 max-h-[85vh] overflow-y-auto enter">
-        <span aria-hidden className="mx-auto -mt-2 mb-3 block h-1 w-10 rounded-full bg-[rgba(255,255,255,0.18)] sidebar:hidden" />
+        <span aria-hidden className="mx-auto -mt-2 mb-3 block h-1 w-10 rounded-full bg-[rgb(var(--fg-rgb)/0.18)] sidebar:hidden" />
         <div className="flex items-center justify-between mb-4">
           {title ? <div className="eyebrow">{title}</div> : <span />}
           <button onClick={onClose} className="glass hit w-7 h-7 rounded-full flex items-center justify-center text-[var(--color-muted)] hover:text-[var(--color-ink)]" aria-label="Cerrar">
