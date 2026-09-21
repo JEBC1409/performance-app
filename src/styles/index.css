@@ -844,9 +844,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 :root[data-theme="light"] .nav-pillbar {
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 12px 26px -16px rgba(30, 30, 60, 0.35);
 }
-/* Decorative art that blends with "screen" only works on dark. */
-:root[data-theme="light"] [class*="mix-blend-screen"] {
-  display: none;
+/* The side art (mascots, Kairos) is light-on-black and blends with "screen",
+   which makes it vanish on a light page. Inverting it turns the black backdrop
+   white and the figure dark, and "multiply" then drops the white out, so the
+   figures stay visible as soft ink silhouettes. */
+:root[data-theme="light"] [class*="mix-blend-screen"],
+:root[data-theme="light"] .kairos-knight-img {
+  mix-blend-mode: multiply;
+  filter: invert(1) contrast(1.1);
+  opacity: 0.4;
 }
 :root[data-theme="light"] .photo-tone {
   filter: saturate(0.7) contrast(1.02) brightness(1);
