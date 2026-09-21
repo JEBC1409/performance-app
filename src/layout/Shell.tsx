@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { NavGlyph, AmbientBackground, JourneyTicker, SyncStatusDot } from "@/ui";
 import type { Tab } from "@/App";
+import { OfflineBanner } from "@/ui/OfflineBanner";
 
 const MOBILE_TABS: { key: Tab; label: string }[] = [
   { key: "hoy", label: "Hoy" },
@@ -110,6 +111,7 @@ export function Shell({
             <SyncStatusDot />
           </div>
         </header>
+        <OfflineBanner />
 
         <main className="flex-1 px-4 py-5 pb-[calc(6rem_+_env(safe-area-inset-bottom))] sidebar:px-8 sidebar:py-8 sidebar:pb-10 max-w-[1000px] w-full mx-auto">
           {children}

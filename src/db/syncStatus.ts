@@ -8,21 +8,25 @@ export type SyncState = "idle" | "syncing" | "offline" | "error";
 export interface SyncStatusSnapshot {
   state: SyncState;
   lastSyncedAt: number | null;
+  /** Network calls in flight right now. */
   pending: number;
+  /** Changes saved on this device that haven't reached the cloud yet. */
+  queued: number;
   lastError: string | null;
 }
 
 let pending = 0;
 let lastSyncedAt: number | null = null;
 let lastError: string | null = null;
+let queued = 0;
 const listeners = new Set<() => void>();
 
-let snapshot: SyncStatusSnapshot = { state: "idle", lastSyncedAt: null, pending: 0, lastError: null };
+let snapshot: SyncStatusSnapshot = { state: "idle", lastSyncedAt: null, pending: 0, queued: 0, lastError: null };
 
 function recompute() {
   const state: SyncState =
     typeof navigator !== "undefined" && !navigator.onLine ? "offline" : lastError ? "error" : pending > 0 ? "syncing" : "idle";
-  snapshot = { state, lastSyncedAt, pending, lastError };
+  snapshot = { state, lastSyncedAt, pending, queued, lastError };
   listeners.forEach((l) => l());
 }
 
@@ -37,6 +41,19 @@ export function subscribeSyncStatus(cb: () => void): () => void {
 
 export function syncStarted(): void {
   pending++;
+  recompute();
+}
+
+export function setQueued(n: number): void {
+  if (n === queued) return;
+  queued = n;
+  recompute();
+}
+
+/** A sync attempt ended without learning anything about the cloud (e.g. the
+ * connection dropped mid-way): not a success, and not worth an error either. */
+export function syncAborted(): void {
+  pending = Math.max(0, pending - 1);
   recompute();
 }
 

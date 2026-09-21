@@ -1,6 +1,8 @@
 import type { Table } from "dexie";
 import { supabase } from "@/lib/supabase";
-import { syncStarted, syncFinished } from "./syncStatus";
+import { syncStarted, syncFinished, syncAborted } from "./syncStatus";
+import { enqueue, flushOutbox, pendingKeys, refreshQueued } from "./outbox";
+import type { Executor } from "./outbox";
 import {
   db,
   type SetRecord,
@@ -199,6 +201,43 @@ function fromRemoteSettings(row: Record<string, unknown>, local?: SettingsRecord
   };
 }
 
+// ---------- outbox: queued, retried cloud writes ----------
+
+/** Performs one queued write. Supabase reports network failures as an
+ * `error` object rather than throwing, and flushOutbox classifies those. */
+const executor: Executor = async (entry) => {
+  if (!supabase) return { error: { message: "Supabase no está configurado" } };
+  if (entry.op === "upsert") return supabase.from(entry.table).upsert(entry.payload!);
+  return supabase.from(entry.table).delete().match(entry.match!);
+};
+
+/** Sends whatever is queued for the signed-in user (no-op when nothing is). */
+async function flushNow(): Promise<void> {
+  const userId = currentUserId;
+  if (!userId || !supabase) return;
+  if ((await refreshQueued()) === 0) return;
+  syncStarted();
+  try {
+    const res = await flushOutbox(userId, executor);
+    if (res.offline) syncAborted();
+    else syncFinished(res.lastError ?? undefined);
+  } catch (err) {
+    console.error("Cloud sync: flushing the outbox failed", err);
+    syncFinished(err instanceof Error ? err.message : "Error de sincronización");
+  }
+}
+
+function queue(entry: Parameters<typeof enqueue>[0]): void {
+  enqueue(entry)
+    .then(flushNow)
+    .catch((err) => console.error("Cloud sync: could not queue a change", err));
+}
+
+/** Retry button / reconnect: send the queue, then pull the latest. */
+export function retrySync(): void {
+  if (currentUserId) fullSync(currentUserId).catch((err) => console.error("Cloud sync failed", err));
+}
+
 // ---------- generic per-table sync ----------
 
 /** Deliberately loose: this config drives a generic sync loop over six
@@ -221,16 +260,20 @@ interface TableSync {
    * the Supabase row's id — merges then have to match rows up by remoteId
    * instead of assuming the local and remote primary keys line up. */
   idKeyed: boolean;
+  /** Stable identity of a row (local or remote-converted) — what the outbox
+   * coalesces on and what pending-write checks compare against. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  keyOf: (row: any) => string;
 }
 
-const setsSync: TableSync = { remoteTable: "sets", localTable: db.sets, toRemote: toRemoteSet, fromRemote: fromRemoteSet, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true };
-const habitDaysSync: TableSync = { remoteTable: "habit_days", localTable: db.habitDays, toRemote: toRemoteHabitDay, fromRemote: fromRemoteHabitDay, remoteMatch: (date) => ({ date }), idKeyed: false };
-const habitDefsSync: TableSync = { remoteTable: "habit_defs", localTable: db.habitDefs, toRemote: toRemoteHabitDef, fromRemote: fromRemoteHabitDef, remoteMatch: (key) => ({ key }), idKeyed: false };
-const focusSessionsSync: TableSync = { remoteTable: "focus_sessions", localTable: db.focusSessions, toRemote: toRemoteFocusSession, fromRemote: fromRemoteFocusSession, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true };
-const weightsSync: TableSync = { remoteTable: "weights", localTable: db.weights, toRemote: toRemoteWeight, fromRemote: fromRemoteWeight, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true };
-const sleepSync: TableSync = { remoteTable: "sleep", localTable: db.sleep, toRemote: toRemoteSleep, fromRemote: fromRemoteSleep, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true };
-const savedVersesSync: TableSync = { remoteTable: "saved_verses", localTable: db.savedVerses, toRemote: toRemoteSavedVerse, fromRemote: fromRemoteSavedVerse, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true };
-const moureWeeksSync: TableSync = { remoteTable: "moure_weeks", localTable: db.moureWeeks, toRemote: toRemoteMoureWeek, fromRemote: fromRemoteMoureWeek, remoteMatch: (week) => ({ week }), idKeyed: false };
+const setsSync: TableSync = { remoteTable: "sets", localTable: db.sets, toRemote: toRemoteSet, fromRemote: fromRemoteSet, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true, keyOf: (r) => String(r.remoteId) };
+const habitDaysSync: TableSync = { remoteTable: "habit_days", localTable: db.habitDays, toRemote: toRemoteHabitDay, fromRemote: fromRemoteHabitDay, remoteMatch: (date) => ({ date }), idKeyed: false, keyOf: (r) => String(r.date) };
+const habitDefsSync: TableSync = { remoteTable: "habit_defs", localTable: db.habitDefs, toRemote: toRemoteHabitDef, fromRemote: fromRemoteHabitDef, remoteMatch: (key) => ({ key }), idKeyed: false, keyOf: (r) => String(r.key) };
+const focusSessionsSync: TableSync = { remoteTable: "focus_sessions", localTable: db.focusSessions, toRemote: toRemoteFocusSession, fromRemote: fromRemoteFocusSession, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true, keyOf: (r) => String(r.remoteId) };
+const weightsSync: TableSync = { remoteTable: "weights", localTable: db.weights, toRemote: toRemoteWeight, fromRemote: fromRemoteWeight, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true, keyOf: (r) => String(r.remoteId) };
+const sleepSync: TableSync = { remoteTable: "sleep", localTable: db.sleep, toRemote: toRemoteSleep, fromRemote: fromRemoteSleep, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true, keyOf: (r) => String(r.remoteId) };
+const savedVersesSync: TableSync = { remoteTable: "saved_verses", localTable: db.savedVerses, toRemote: toRemoteSavedVerse, fromRemote: fromRemoteSavedVerse, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true, keyOf: (r) => String(r.remoteId) };
+const moureWeeksSync: TableSync = { remoteTable: "moure_weeks", localTable: db.moureWeeks, toRemote: toRemoteMoureWeek, fromRemote: fromRemoteMoureWeek, remoteMatch: (week) => ({ week }), idKeyed: false, keyOf: (r) => String(r.week) };
 
 const COLLECTION_TABLES: TableSync[] = [setsSync, habitDaysSync, habitDefsSync, focusSessionsSync, weightsSync, sleepSync, savedVersesSync, moureWeeksSync];
 
@@ -262,14 +305,17 @@ async function syncCollection(cfg: TableSync, userId: string) {
       if (upErr) throw upErr;
     }
   } else {
+    // Rows changed on this device but not uploaded yet are newer than what the
+    // cloud has (or, for a pending delete, already gone here): leave them be.
+    const pending = await pendingKeys(cfg.remoteTable, userId);
     await withHooksSuppressed(async () => {
       if (cfg.idKeyed) {
-        await mergeByRemoteId(cfg, data);
+        await mergeByRemoteId(cfg, data.filter((row) => !pending.has(String(row.id))));
       } else {
         // fromRemote can return null to reject a row (e.g. one that predates
         // a schema migration and would otherwise convert into a lossy,
         // wrong local value) — bulkPut only the rows that actually convert.
-        const converted = data.map((row) => cfg.fromRemote(row)).filter((row) => row != null);
+        const converted = data.map((row) => cfg.fromRemote(row)).filter((row) => row != null && !pending.has(cfg.keyOf(row)));
         if (converted.length) await cfg.localTable.bulkPut(converted);
       }
     });
@@ -286,7 +332,7 @@ async function syncSettings(userId: string) {
       const { error: upErr } = await supabase.from("settings").upsert(toRemoteSettings(local, userId));
       if (upErr) throw upErr;
     }
-  } else {
+  } else if (!(await pendingKeys("settings", userId)).has("app")) {
     await withHooksSuppressed(async () => {
       const local = await db.settings.get("app");
       await db.settings.put(fromRemoteSettings(data, local));
@@ -300,35 +346,45 @@ async function syncSettings(userId: string) {
  * syncing normally. A single such failure used to reject the whole
  * Promise.all, which could leave the rest of the account's data stuck
  * unsynced for reasons that had nothing to do with it. */
-export async function fullSync(userId: string): Promise<void> {
+let fullSyncRun: Promise<void> | null = null;
+
+export function fullSync(userId: string): Promise<void> {
+  if (!fullSyncRun) {
+    fullSyncRun = doFullSync(userId).finally(() => {
+      fullSyncRun = null;
+    });
+  }
+  return fullSyncRun;
+}
+
+async function doFullSync(userId: string): Promise<void> {
   syncStarted();
+  // Deliver offline changes first, so the pull below can't clobber them.
+  let flushError: string | undefined;
+  try {
+    const flushed = await flushOutbox(userId, executor);
+    flushError = flushed.lastError ?? undefined;
+    if (flushed.offline) {
+      syncAborted();
+      return;
+    }
+  } catch (err) {
+    console.error("Cloud sync: flushing the outbox failed", err);
+  }
   const results = await Promise.allSettled([...COLLECTION_TABLES.map((cfg) => syncCollection(cfg, userId)), syncSettings(userId)]);
   const failures = results.filter((r): r is PromiseRejectedResult => r.status === "rejected");
   for (const f of failures) console.error("Cloud sync: a table failed to sync", f.reason);
-  syncFinished(failures[0] ? (failures[0].reason instanceof Error ? failures[0].reason.message : "Error de sincronización") : undefined);
+  const failure = failures[0] ? (failures[0].reason instanceof Error ? failures[0].reason.message : "Error de sincronización") : flushError;
+  await refreshQueued();
+  syncFinished(failure);
 }
 
 // ---------- write-through hooks ----------
 
-function logPushError(table: string, error: unknown) {
-  console.error(`Cloud sync: failed to push "${table}"`, error);
-}
-
 function registerHook(cfg: TableSync) {
   function push(row: unknown) {
     if (suppressHooks || !currentUserId || !supabase) return;
-    syncStarted();
-    supabase
-      .from(cfg.remoteTable)
-      .upsert(cfg.toRemote(row as never, currentUserId))
-      .then(({ error }) => {
-        if (error) {
-          logPushError(cfg.remoteTable, error);
-          syncFinished(error.message);
-        } else {
-          syncFinished();
-        }
-      });
+    queue({ table: cfg.remoteTable, key: cfg.keyOf(row), op: "upsert", userId: currentUserId, payload: cfg.toRemote(row as never, currentUserId) });
   }
 
   // `suppressHooks` must be read here, synchronously as the hook fires (not
@@ -353,19 +409,7 @@ function registerHook(cfg: TableSync) {
     if (suppressHooks) return;
     (this as { onsuccess?: () => void }).onsuccess = () => {
       if (suppressHooks || !currentUserId || !supabase) return;
-      syncStarted();
-      supabase
-        .from(cfg.remoteTable)
-        .delete()
-        .match(cfg.remoteMatch(primKey, obj))
-        .then(({ error }) => {
-          if (error) {
-            logPushError(cfg.remoteTable, error);
-            syncFinished(error.message);
-          } else {
-            syncFinished();
-          }
-        });
+      queue({ table: cfg.remoteTable, key: cfg.keyOf(obj), op: "delete", userId: currentUserId, match: cfg.remoteMatch(primKey, obj) });
     };
   });
 }
@@ -373,18 +417,7 @@ function registerHook(cfg: TableSync) {
 function registerSettingsHooks() {
   const push = (row: SettingsRecord) => {
     if (suppressHooks || !currentUserId || !supabase) return;
-    syncStarted();
-    supabase
-      .from("settings")
-      .upsert(toRemoteSettings(row, currentUserId))
-      .then(({ error }) => {
-        if (error) {
-          logPushError("settings", error);
-          syncFinished(error.message);
-        } else {
-          syncFinished();
-        }
-      });
+    queue({ table: "settings", key: "app", op: "upsert", userId: currentUserId, payload: toRemoteSettings(row, currentUserId) });
   };
   db.settings.hook("creating", function (_primKey, obj) {
     if (suppressHooks) return;
@@ -404,6 +437,25 @@ function registerAllHooks() {
   registerSettingsHooks();
 }
 
+// ---------- when to try again ----------
+
+let triggersBound = false;
+function bindReconnectTriggers() {
+  if (triggersBound || typeof window === "undefined") return;
+  triggersBound = true;
+  // Back online: deliver what piled up, then pull whatever changed elsewhere.
+  window.addEventListener("online", () => retrySync());
+  // Coming back to the app is a good moment to retry too.
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) void flushNow();
+  });
+  // A flaky connection can leave changes queued while the browser still says
+  // "online" — keep trying quietly in the background.
+  window.setInterval(() => {
+    if (navigator.onLine) void flushNow();
+  }, 30_000);
+}
+
 // ---------- session wiring ----------
 
 // Tracks which user id fullSync has already run for (or started running for),
@@ -421,6 +473,7 @@ function syncOnce(uid: string) {
 export function initCloudSync(): void {
   if (!supabase) return;
   registerAllHooks();
+  bindReconnectTriggers();
 
   supabase.auth.getSession().then(({ data }) => {
     const uid = data.session?.user.id ?? null;

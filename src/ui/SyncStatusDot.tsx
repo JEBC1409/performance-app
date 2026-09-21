@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSyncStatus } from "@/hooks/useSyncStatus";
 import { fmtRelativeTime } from "@/lib/date";
+import { retrySync } from "@/db/cloudSync";
 import { showToast } from "./Toast";
 
 const DOT_COLOR: Record<string, string> = {
@@ -22,17 +23,25 @@ export function SyncStatusDot() {
     return () => window.clearInterval(id);
   }, []);
 
+  const n = status.queued;
+  const changes = `${n} ${n === 1 ? "cambio" : "cambios"}`;
   let label: string;
-  if (status.state === "syncing") label = "Sincronizando…";
-  else if (status.state === "offline") label = "Sin conexión";
-  else if (status.state === "error") label = "Error de sync";
+  if (status.state === "offline") label = n ? `Sin conexión · ${changes} por subir` : "Sin conexión";
+  else if (status.state === "syncing") label = n ? `Subiendo ${changes}…` : "Sincronizando…";
+  else if (status.state === "error") label = n ? `Error de sync · ${changes} por subir` : "Error de sync";
+  else if (n) label = `${changes} por subir`;
   else label = status.lastSyncedAt ? `Sincronizado ${fmtRelativeTime(status.lastSyncedAt)}` : "Sincronizado";
+  // Anything waiting (or failed) can be retried with a tap.
+  const dotColor = n > 0 && status.state !== "syncing" && status.state !== "error" ? "#e0a030" : DOT_COLOR[status.state];
+  const canRetry = status.state !== "offline" && status.state !== "syncing" && (n > 0 || status.state === "error");
 
   return (
     <button
       type="button"
       onClick={() => {
         if (status.state === "error" && status.lastError) showToast(status.lastError);
+        else if (status.state === "offline" && n) showToast("Tus cambios están guardados aquí; se suben al volver la conexión");
+        if (canRetry) retrySync();
       }}
       title={label}
       aria-label={label}
@@ -40,7 +49,7 @@ export function SyncStatusDot() {
     >
       <span
         className={`h-1.5 w-1.5 rounded-full flex-none ${status.state === "syncing" ? "animate-pulse" : ""}`}
-        style={{ background: DOT_COLOR[status.state], boxShadow: status.state !== "offline" ? `0 0 6px ${DOT_COLOR[status.state]}` : "none" }}
+        style={{ background: dotColor, boxShadow: status.state !== "offline" || n > 0 ? `0 0 6px ${dotColor}` : "none" }}
       />
       <span className="text-[9px] uppercase tracking-wide text-[var(--color-muted-2)]">{label}</span>
     </button>

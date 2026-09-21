@@ -72,6 +72,27 @@ export interface ExercisePhotoRecord {
   caption?: string;
 }
 
+/** A cloud write that hasn't reached Supabase yet (offline, or it failed).
+ * Local writes are queued here and retried until they land, so working
+ * offline never loses a change. One entry per (table, key): a newer write to
+ * the same row replaces the older one. */
+export interface OutboxRecord {
+  id?: number;
+  /** Remote table name. */
+  table: string;
+  /** Stable identity of the row (remote id, date, key…). */
+  key: string;
+  op: "upsert" | "delete";
+  userId: string;
+  /** upsert: the remote-shaped row to write. */
+  payload?: Record<string, unknown>;
+  /** delete: how to find the remote row. */
+  match?: Record<string, unknown>;
+  createdAt: number;
+  attempts: number;
+  lastError?: string;
+}
+
 export interface FocusSessionRecord {
   id?: number;
   remoteId?: string;
@@ -129,6 +150,7 @@ export const db = new Dexie("performance-db") as Dexie & {
   habitDefs: EntityTable<HabitDefRecord, "key">;
   focusSessions: EntityTable<FocusSessionRecord, "id">;
   exercisePhotos: EntityTable<ExercisePhotoRecord, "name">;
+  outbox: EntityTable<OutboxRecord, "id">;
   weights: EntityTable<WeightRecord, "id">;
   sleep: EntityTable<SleepRecord, "id">;
   savedVerses: EntityTable<SavedVerseRecord, "id">;
@@ -218,6 +240,11 @@ db.version(4).stores({
 /** v5 adds exercisePhotos (user-chosen exercise photos). New table only. */
 db.version(5).stores({
   exercisePhotos: "name",
+});
+
+/** v6 adds the outbox (pending cloud writes). New table only. */
+db.version(6).stores({
+  outbox: "++id, [table+key], table, userId",
 });
 
 export const DEFAULT_SETTINGS: SettingsRecord = {

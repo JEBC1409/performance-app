@@ -34,6 +34,7 @@
     "@vitejs/plugin-react": "^6.1.0",
     "autoprefixer": "^10.5.4",
     "drizzle-kit": "^0.31.10",
+    "fake-indexeddb": "^6.2.5",
     "jsdom": "^30.0.1",
     "oxlint": "^1.79.0",
     "postcss": "^8.5.26",
