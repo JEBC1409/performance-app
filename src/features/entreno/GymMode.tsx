@@ -9,46 +9,13 @@ import { haptic } from "@/lib/feedback";
 import { parseRepRange, suggestFromStart, suggestNext } from "@/lib/progression";
 import { holdScreenAwake } from "@/lib/wakeLock";
 import { Button } from "@/ui";
+import { BigStepper } from "./BigStepper";
+import { WEIGHT_STEPS, fmtNum as fmt, readStep, writeStep } from "./stepperConfig";
 import type { LogSetPayload } from "./ExerciseLogForm";
 import { resolvePhoto, useExercisePhotos } from "./photos";
+import { seedWeightReps } from "./setSeed";
 import type { RestTimerState } from "./useRestTimer";
 import { useLastSession } from "./useEntrenoData";
-
-const WEIGHT_STEPS = [0.5, 1, 2.5, 5];
-const STEP_KEY = "performance_gym_step_v1";
-const fmt = (n: number) => String(Math.round(n * 10) / 10);
-
-function readStep(): number {
-  try {
-    const n = Number(localStorage.getItem(STEP_KEY));
-    return WEIGHT_STEPS.includes(n) ? n : 2.5;
-  } catch {
-    return 2.5;
-  }
-}
-
-function BigStepper({ label, value, unit, onMinus, onPlus, chip }: { label: string; value: string; unit?: string; onMinus: () => void; onPlus: () => void; chip?: React.ReactNode }) {
-  return (
-    <div className="glass-track rounded-3xl px-3 py-4">
-      <div className="flex items-center justify-between px-2">
-        <span className="eyebrow">{label}</span>
-        {chip}
-      </div>
-      <div className="mt-2 flex items-center justify-between gap-2">
-        <button onClick={onMinus} aria-label={`Menos ${label}`} className="glass flex h-16 w-16 flex-none items-center justify-center rounded-full text-[30px] leading-none">
-          <Icon name="minus" size={26} />
-        </button>
-        <div className="min-w-0 text-center">
-          <span className="num font-[var(--font-display)] text-[64px] font-light leading-none tracking-tight">{value}</span>
-          {unit ? <span className="ml-1 text-[15px] text-[var(--color-muted)]">{unit}</span> : null}
-        </div>
-        <button onClick={onPlus} aria-label={`Más ${label}`} className="glass-on flex h-16 w-16 flex-none items-center justify-center rounded-full text-[30px] leading-none">
-          <Icon name="plus" size={26} />
-        </button>
-      </div>
-    </div>
-  );
-}
 
 /** One exercise at a time, big and thumb-friendly: weight and reps steppers,
  * one huge Save button, and the rest timer front and center. Keeps the screen
@@ -166,15 +133,11 @@ function GymExercise({
   );
 
   // What the steppers open on: what you just did today, else the suggestion, else last time's best set.
-  const seed = useMemo(() => {
-    const prevToday = sets[sets.length - 1];
-    if (prevToday?.weight != null || prevToday?.reps != null) return { weight: prevToday.weight, reps: prevToday.reps ?? 8 };
-    if (suggestion) return { weight: suggestion.weight, reps: suggestion.reps };
-    const top = last?.sets.reduce<{ weight: number | null; reps: number | null } | null>((m, st) => (m == null || (st.weight ?? 0) > (m.weight ?? 0) ? st : m), null);
-    const fallbackReps = range && range !== "fail" ? range.min : 8;
-    return { weight: top?.weight ?? null, reps: top?.reps ?? fallbackReps };
+  const seed = useMemo(
+    () => seedWeightReps(sets, suggestion, last, range && range !== "fail" ? range.min : 8),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    [],
+  );
 
   const [weight, setWeight] = useState<number | null>(seed.weight);
   const [reps, setReps] = useState<number>(seed.reps ?? 8);
@@ -187,11 +150,7 @@ function GymExercise({
   function cycleStep() {
     const next = WEIGHT_STEPS[(WEIGHT_STEPS.indexOf(step) + 1) % WEIGHT_STEPS.length];
     setStep(next);
-    try {
-      localStorage.setItem(STEP_KEY, String(next));
-    } catch {
-      /* not remembered */
-    }
+    writeStep(next);
   }
 
   function save() {

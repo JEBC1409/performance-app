@@ -17,7 +17,10 @@ export function ExerciseCard({
   const imgUrl = photo.src;
 
   return (
-    <button onClick={onOpen} className="panel-surface group flex flex-col text-left">
+    <button
+      onClick={onOpen}
+      className={`panel-surface group flex flex-col text-left transition-opacity ${complete ? "opacity-60 hover:opacity-100" : ""}`}
+    >
       <div className="relative aspect-[4/3] overflow-hidden bg-[var(--color-surface-2)]">
         {imgUrl ? (
           <img

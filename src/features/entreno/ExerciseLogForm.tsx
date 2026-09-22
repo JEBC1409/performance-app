@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { startDate } from "@/data/gym";
 import type { ExerciseTarget } from "@/data/gym";
 import type { SetRecord } from "@/db/db";
@@ -6,6 +6,9 @@ import type { LastSession } from "./useEntrenoData";
 import { fmtDateHuman } from "@/lib/date";
 import { parseRepRange, suggestFromStart, suggestNext } from "@/lib/progression";
 import type { SuggestionKind } from "@/lib/progression";
+import { BigStepper } from "./BigStepper";
+import { WEIGHT_STEPS, fmtNum, readStep, writeStep } from "./stepperConfig";
+import { seedWeightReps } from "./setSeed";
 
 export interface LogSetPayload {
   weight: number | null;
@@ -14,8 +17,6 @@ export interface LogSetPayload {
   rpe: number | null;
   note: string;
 }
-
-const emptyForm = { weight: "", reps: "", toFailure: false, rpe: "", note: "" };
 
 const SUGGESTION_LABEL: Record<SuggestionKind, string> = {
   increase: "Sube peso",
@@ -44,7 +45,24 @@ export function ExerciseLogForm({
   onUpdateSet: (id: number, payload: LogSetPayload) => void;
   onDeleteSet: (id: number) => void;
 }) {
-  const [form, setForm] = useState(emptyForm);
+  const range = parseRepRange(exercise.repsLabel);
+  // Until a session is logged after the starting weights were set, those
+  // weights (what you're at today) drive the suggestion, not older history.
+  const hasStart = exercise.startKg != null || exercise.startReps != null;
+  const fromStart = hasStart && (!lastSession || lastSession.date < startDate(exercise));
+  const suggestion = fromStart || !lastSession ? suggestFromStart(range, exercise.startKg, exercise.startReps) : suggestNext(range, lastSession.sets);
+  const fallbackReps = range && range !== "fail" ? range.min : 8;
+
+  // Same big +/- controls as Gym Mode, seeded the same way, so logging a set
+  // from an exercise card feels identical to logging it from there — no
+  // keyboard popping up over a cramped sheet, no fat-fingered typos.
+  const seed = useMemo(() => seedWeightReps(sets, suggestion, lastSession, fallbackReps), []); // eslint-disable-line react-hooks/exhaustive-deps
+  const [weight, setWeight] = useState<number | null>(seed.weight);
+  const [reps, setReps] = useState<number>(seed.reps ?? fallbackReps);
+  const [rpe, setRpe] = useState("");
+  const [note, setNote] = useState("");
+  const [toFailure, setToFailure] = useState(false);
+  const [step, setStep] = useState(readStep);
   const [editingId, setEditingId] = useState<number | null>(null);
   // Swipe a logged set to the left to delete it.
   const [drag, setDrag] = useState<{ id: number; x0: number; dx: number } | null>(null);
@@ -52,46 +70,47 @@ export function ExerciseLogForm({
   const done = sets.length;
   const target = exercise.series;
   const editing = editingId != null;
+  const bodyweight = seed.weight == null && exercise.startKg == null && !lastSession?.sets.some((s) => s.weight != null) && !editing;
+
+  function cycleStep() {
+    const next = WEIGHT_STEPS[(WEIGHT_STEPS.indexOf(step) + 1) % WEIGHT_STEPS.length];
+    setStep(next);
+    writeStep(next);
+  }
 
   function startEdit(s: SetRecord) {
     setEditingId(s.id!);
-    setForm({
-      weight: s.weight != null ? String(s.weight) : "",
-      reps: s.reps != null ? String(s.reps) : "",
-      toFailure: !!s.toFailure,
-      rpe: s.rpe != null ? String(s.rpe) : "",
-      note: s.note ?? "",
-    });
+    setWeight(s.weight);
+    setReps(s.reps ?? fallbackReps);
+    setToFailure(!!s.toFailure);
+    setRpe(s.rpe != null ? String(s.rpe) : "");
+    setNote(s.note ?? "");
   }
 
   function cancelEdit() {
     setEditingId(null);
-    setForm(emptyForm);
+    setWeight(seed.weight);
+    setReps(seed.reps ?? fallbackReps);
+    setToFailure(false);
+    setRpe("");
+    setNote("");
   }
 
   function save() {
-    const w = form.weight.trim() ? parseFloat(form.weight.replace(",", ".")) : null;
-    const r = form.reps.trim() ? parseFloat(form.reps.replace(",", ".")) : null;
-    if (w === null && r === null) return;
-    const payload: LogSetPayload = { weight: w, reps: r, toFailure: form.toFailure, rpe: form.rpe.trim() ? parseFloat(form.rpe) : null, note: form.note.trim() };
+    const payload: LogSetPayload = { weight, reps, toFailure, rpe: rpe.trim() ? parseFloat(rpe) : null, note: note.trim() };
     if (editingId != null) onUpdateSet(editingId, payload);
     else onLogSet(payload);
-    setForm(emptyForm);
+    setToFailure(false);
+    setRpe("");
+    setNote("");
     setEditingId(null);
   }
-
-  const range = parseRepRange(exercise.repsLabel);
-  // Until a session is logged after the starting weights were set, those
-  // weights (what you're at today) drive the suggestion, not older history.
-  const hasStart = exercise.startKg != null || exercise.startReps != null;
-  const fromStart = hasStart && (!lastSession || lastSession.date < startDate(exercise));
-  const suggestion = fromStart || !lastSession ? suggestFromStart(range, exercise.startKg, exercise.startReps) : suggestNext(range, lastSession.sets);
-  const fmtNum = (n: number) => String(Math.round(n * 10) / 10);
 
   function applySuggestion() {
     if (!suggestion) return;
     setEditingId(null);
-    setForm((f) => ({ ...f, weight: suggestion.weight != null ? fmtNum(suggestion.weight) : "", reps: String(suggestion.reps) }));
+    setWeight(suggestion.weight);
+    setReps(suggestion.reps);
   }
 
   const lastTop = lastSession?.sets.reduce<number | null>((max, s) => (s.weight != null && (max == null || s.weight > max) ? s.weight : max), null);
@@ -154,7 +173,7 @@ export function ExerciseLogForm({
       ) : null}
 
       {sets.length ? (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5" aria-label="Series de hoy">
           {sets.map((s) => (
             <span
               key={s.id}
@@ -193,44 +212,43 @@ export function ExerciseLogForm({
         </div>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-2">
-        <input
-          value={form.weight}
-          onChange={(e) => setForm((f) => ({ ...f, weight: e.target.value }))}
-          inputMode="decimal"
-          placeholder="kg"
-          className="num rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-2.5 py-2 text-[13px] outline-none focus:border-[var(--color-red)]"
+      {!bodyweight ? (
+        <BigStepper
+          label="Peso"
+          value={weight != null ? fmtNum(weight) : "—"}
+          unit="kg"
+          onMinus={() => setWeight((w) => Math.max(0, Math.round(((w ?? 0) - step) * 10) / 10))}
+          onPlus={() => setWeight((w) => Math.round(((w ?? 0) + step) * 10) / 10)}
+          chip={
+            <button onClick={cycleStep} className="glass-flat rounded-full px-2.5 py-1 text-[11px] font-semibold text-[var(--color-muted)]" aria-label={`Paso de peso ${step} kilos; toca para cambiar`}>
+              paso {fmtNum(step)}
+            </button>
+          }
         />
+      ) : null}
+      <BigStepper label="Repeticiones" value={String(reps)} onMinus={() => setReps((r) => Math.max(0, r - 1))} onPlus={() => setReps((r) => r + 1)} />
+
+      <div className="flex items-center gap-2">
         <input
-          value={form.reps}
-          onChange={(e) => setForm((f) => ({ ...f, reps: e.target.value }))}
-          inputMode="decimal"
-          placeholder="reps"
-          className="num rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-2.5 py-2 text-[13px] outline-none focus:border-[var(--color-red)]"
-        />
-      </div>
-      <div className="mt-2 flex items-center gap-2">
-        <input
-          value={form.rpe}
-          onChange={(e) => setForm((f) => ({ ...f, rpe: e.target.value }))}
+          value={rpe}
+          onChange={(e) => setRpe(e.target.value)}
           inputMode="decimal"
           placeholder="RPE (opcional)"
           className="num flex-1 rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-2.5 py-2 text-[13px] outline-none focus:border-[var(--color-red)]"
         />
         <button
-          onClick={() => setForm((f) => ({ ...f, toFailure: !f.toFailure }))}
-          className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-wide ${
-            form.toFailure ? "glass-on" : "glass text-[var(--color-muted)]"
-          }`}
+          onClick={() => setToFailure((f) => !f)}
+          aria-pressed={toFailure}
+          className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-wide ${toFailure ? "glass-on" : "glass text-[var(--color-muted)]"}`}
         >
           Al fallo
         </button>
       </div>
       <input
-        value={form.note}
-        onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
         placeholder="Nota (opcional)"
-        className="mt-2 w-full rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-2.5 py-2 text-[13px] outline-none focus:border-[var(--color-red)]"
+        className="w-full rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-2.5 py-2 text-[13px] outline-none focus:border-[var(--color-red)]"
       />
       {/* Pinned to the bottom of the sheet so saving never needs a scroll. */}
       <div className="sticky bottom-0 z-10 -mx-5 mt-1 flex gap-2 bg-gradient-to-t from-[var(--color-surface)] via-[var(--color-surface)] to-transparent px-5 pb-1 pt-4">
