@@ -1,6 +1,7 @@
 import { getFocusState, pauseFocus, remainingSeconds, resumeFocus, subscribeFocus } from "./focusTimer";
 import type { FocusTimerState } from "./focusTimer";
 import { subscribeTick } from "./ticker";
+import { readAccentRgb } from "./uiPrefs";
 
 /** Floating, always-on-top timer.
  *
@@ -106,14 +107,17 @@ function fmt(sec: number) {
 
 function drawFrame(ctx: CanvasRenderingContext2D, s: FocusTimerState) {
   const isBreak = s.phase === "break";
-  const accent = isBreak ? "#2fae66" : "#df2531";
+  // A <canvas> can't read CSS custom properties at all, so the current accent
+  // has to be resolved to a literal color here rather than left as a var().
+  const acc = readAccentRgb();
+  const accent = isBreak ? "#2fae66" : `rgb(${acc.base})`;
   const left = Math.min(remainingSeconds(s, Date.now()), s.totalSec);
   const progress = s.totalSec > 0 ? 1 - left / s.totalSec : 0;
 
   ctx.fillStyle = "#050506";
   ctx.fillRect(0, 0, CW, CH);
   const glow = ctx.createRadialGradient(CW / 2, CH / 2, 10, CW / 2, CH / 2, 200);
-  glow.addColorStop(0, isBreak ? "rgba(47,174,102,0.22)" : "rgba(223,37,49,0.24)");
+  glow.addColorStop(0, isBreak ? "rgba(47,174,102,0.22)" : `rgb(${acc.base} / 0.24)`);
   glow.addColorStop(1, "rgba(0,0,0,0)");
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, CW, CH);

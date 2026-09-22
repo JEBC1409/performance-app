@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { closePip, getPip, subscribePip } from "@/lib/focusPip";
 import { pauseFocus, remainingSeconds, resumeFocus, stopFocus } from "@/lib/focusTimer";
 import type { FocusTimerState } from "@/lib/focusTimer";
+import { readAccentRgb } from "@/lib/uiPrefs";
 import { fmtClock, useFocusTimer, useNow } from "@/hooks/useFocusTimer";
 
 const FONT = "'Space Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif";
@@ -25,7 +26,11 @@ function roundBtn(size: number, style: CSSProperties): CSSProperties {
 function MiniTimer({ timer, now }: { timer: FocusTimerState; now: number }) {
   const isBreak = timer.phase === "break";
   const paused = timer.status === "paused";
-  const accent = isBreak ? "#2fae66" : "#df2531";
+  // Computed here (in the main window) rather than left to `var(--accent-rgb)`
+  // in the portaled styles: the PiP window is a separate Document, and a
+  // custom property set on the main page's <html> doesn't reach it.
+  const acc = readAccentRgb();
+  const accent = isBreak ? "#2fae66" : `rgb(${acc.base})`;
   const left = Math.min(remainingSeconds(timer, now), timer.totalSec);
   const progress = timer.totalSec > 0 ? 1 - left / timer.totalSec : 0;
   const label = isBreak ? "Descanso" : paused ? "En pausa" : "Enfocado";
@@ -42,7 +47,7 @@ function MiniTimer({ timer, now }: { timer: FocusTimerState; now: number }) {
         justifyContent: "space-between",
         color: "#fff",
         fontFamily: FONT,
-        background: `radial-gradient(120% 90% at 50% 40%, ${isBreak ? "rgba(47,174,102,0.2)" : "rgb(var(--accent-rgb)/0.22)"}, #050506 70%)`,
+        background: `radial-gradient(120% 90% at 50% 40%, ${isBreak ? "rgba(47,174,102,0.2)" : `rgb(${acc.base} / 0.22)`}, #050506 70%)`,
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
@@ -77,8 +82,8 @@ function MiniTimer({ timer, now }: { timer: FocusTimerState; now: number }) {
             style={roundBtn(46, {
               border: "none",
               color: "#fff",
-              background: isBreak ? "linear-gradient(145deg,#3ddc84,#1f8a4c)" : "linear-gradient(145deg,#ff4a55,#b81c27)",
-              boxShadow: `0 8px 20px -6px ${isBreak ? "rgba(47,174,102,0.8)" : "rgb(var(--accent-rgb)/0.8)"}`,
+              background: isBreak ? "linear-gradient(145deg,#3ddc84,#1f8a4c)" : `linear-gradient(145deg, rgb(${acc.light}), rgb(${acc.dark}))`,
+              boxShadow: `0 8px 20px -6px ${isBreak ? "rgba(47,174,102,0.8)" : `rgb(${acc.base} / 0.8)`}`,
             })}
           >
             {paused ? (

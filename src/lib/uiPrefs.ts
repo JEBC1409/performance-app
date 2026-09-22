@@ -136,6 +136,19 @@ export function applyUiPrefs(p: UiPrefs = prefs): void {
   }
 }
 
+/** The live accent RGB triplets ("223 37 49") straight off <html> — for the
+ * rare spot that can't lean on `var(--accent-rgb)` in CSS, like Focus's
+ * Picture-in-Picture mini timer: its document-PiP window is a separate
+ * `Document`, so a custom property set on the main page's :root doesn't
+ * reach it, and its canvas fallback needs a literal color string anyway. */
+export function readAccentRgb(): { base: string; light: string; dark: string } {
+  const fallback = { base: "223 37 49", light: "255 95 105", dark: "140 15 25" };
+  if (typeof document === "undefined") return fallback;
+  const cs = getComputedStyle(document.documentElement);
+  const pick = (name: string, dflt: string) => cs.getPropertyValue(name).trim() || dflt;
+  return { base: pick("--accent-rgb", fallback.base), light: pick("--accent-light-rgb", fallback.light), dark: pick("--accent-dark-rgb", fallback.dark) };
+}
+
 export function setUiPrefs(patch: Partial<UiPrefs>): void {
   prefs = { ...prefs, ...patch, homeOrder: normalizeOrder(patch.homeOrder ?? prefs.homeOrder), navTabs: normalizeNav(patch.navTabs ?? prefs.navTabs) };
   try {
