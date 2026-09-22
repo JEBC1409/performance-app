@@ -119,15 +119,15 @@ export function Habitos() {
             </button>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-[11px]">
+        <div className="overflow-x-auto px-1 pb-1">
+          <table className="w-full text-[11px]" style={{ borderCollapse: "separate", borderSpacing: "3px 4px" }}>
             <thead>
               <tr>
                 <th className="sticky left-0 bg-[var(--color-surface)] text-left px-3 py-2 text-[var(--color-muted)] font-semibold">Hábito</th>
                 {Array.from({ length: nDays }, (_, i) => i + 1).map((d) => (
                   <th
                     key={d}
-                    className={`num px-0 py-2 text-center font-medium w-6 ${isCurrentMonth && d === new Date().getDate() ? "text-[var(--color-red)]" : "text-[var(--color-muted-2)]"}`}
+                    className={`num px-0 pb-1 text-center font-medium w-7 sidebar:w-8 ${isCurrentMonth && d === new Date().getDate() ? "text-[var(--color-red)]" : "text-[var(--color-muted-2)]"}`}
                   >
                     {d}
                   </th>
@@ -139,10 +139,12 @@ export function Habitos() {
               {habitList.map((h) => {
                 let total = 0;
                 return (
-                  <tr key={h.key} className="border-t border-[var(--color-line)]">
-                    <td className="sticky left-0 bg-[var(--color-surface)] px-3 py-1.5 font-semibold whitespace-nowrap flex items-center gap-1.5">
-                      <HabitGlyph icon={h.icon} />
-                      {h.label}
+                  <tr key={h.key}>
+                    <td className="sticky left-0 bg-[var(--color-surface)] px-3 py-1 font-semibold whitespace-nowrap">
+                      <span className="flex items-center gap-1.5">
+                        <HabitGlyph icon={h.icon} />
+                        {h.label}
+                      </span>
                     </td>
                     {Array.from({ length: nDays }, (_, i) => i + 1).map((d) => {
                       const date = `${year}-${pad2(month + 1)}-${pad2(d)}`;
@@ -150,13 +152,24 @@ export function Habitos() {
                       if (on) total++;
                       const isToday = isCurrentMonth && d === new Date().getDate();
                       return (
-                        <td key={d} className={`p-0 text-center ${isToday ? "shadow-[inset_0_0_0_1px_var(--color-red)]" : ""}`}>
+                        <td key={d} className="p-0 text-center">
                           <button
                             onClick={() => toggle(date, h.key)}
-                            className={`hit w-6 h-6 ${on ? "bg-[var(--color-red-soft)]" : ""}`}
+                            className={`group tap-target flex w-7 h-7 sidebar:w-8 sidebar:h-8 items-center justify-center rounded-[7px] border transition-colors ${
+                              on
+                                ? "border-transparent bg-[var(--color-red)]"
+                                : isToday
+                                  ? "border-[var(--color-red)]/50 bg-[var(--color-red-soft)]/10 hover:bg-[var(--color-red-soft)]/25"
+                                  : "border-[var(--color-line)] bg-[rgb(var(--fg-rgb)/0.02)] hover:border-[var(--color-red)]/40 hover:bg-[var(--color-red-soft)]/15"
+                            }`}
+                            aria-pressed={on}
                             aria-label={`${h.label} ${date}`}
                           >
-                            {on ? <span className="text-[var(--color-red)] text-[11px]">✓</span> : null}
+                            {on ? (
+                              <Icon name="check" size={13} className="text-white" />
+                            ) : (
+                              <span className="h-1 w-1 rounded-full bg-[var(--color-muted-2)] opacity-0 group-hover:opacity-70 transition-opacity" />
+                            )}
                           </button>
                         </td>
                       );
