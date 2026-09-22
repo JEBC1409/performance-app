@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
 import { GYM_DAY_ORDER, GYM_DIAS, CARDIO_NOTA, targetSetsForDay } from "@/data/gym";
 import { Tabs, Eyebrow, Card, Sheet, DateField, Button } from "@/ui";
@@ -47,10 +47,20 @@ export function Entreno({
 }) {
   useConfigVersion(); // routine edits re-render this screen
   // Opens on today's turn in the cycle (or the day already being trained today);
-  // once you pick a day yourself, that choice sticks.
+  // once a day is settled on — picked by hand or seeded from the cycle — it sticks
+  // for the rest of this visit, even if logging a set nudges the cycle's own count.
+  // Recomputing `day` on every render from a live query was exactly that bug: mid-set
+  // it could flip under the user, swapping the exercise list while they were typing.
   const defaultDay = useDefaultGymDay();
   const [pickedDay, setDay] = useState<GymDay | null>(autoStart?.day ?? null);
-  const day = pickedDay ?? defaultDay;
+  const seeded = useRef(pickedDay != null);
+  useEffect(() => {
+    if (!seeded.current && defaultDay != null) {
+      seeded.current = true;
+      setDay(defaultDay);
+    }
+  }, [defaultDay]);
+  const day = pickedDay ?? defaultDay ?? "A";
   const [sessionDate, setSessionDate] = useState<string>(autoStart?.date ?? todayISO());
   const [openExercise, setOpenExercise] = useState<ExerciseTarget | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -69,6 +79,7 @@ export function Entreno({
 
   useEffect(() => {
     if (autoStart) {
+      seeded.current = true;
       setDay(autoStart.day);
       setSessionDate(autoStart.date);
       onConsumeAutoStart();

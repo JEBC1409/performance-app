@@ -5,6 +5,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/hooks/useBible", () => ({ useBible: () => ({ bible: null, loading: true }) }));
 
+// Lets a test drive `useDefaultGymDay`'s return value across renders, the way the
+// cycle's live session count actually does mid-session.
+let mockDefaultDay: "A" | "B" | "C" | undefined = "A";
+vi.mock("@/hooks/useCycle", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/hooks/useCycle")>()),
+  useDefaultGymDay: () => mockDefaultDay,
+}));
+
 const { db } = await import("@/db/db");
 const { todayISO } = await import("@/lib/date");
 const { Hoy } = await import("@/features/hoy/Hoy");
@@ -61,6 +69,65 @@ describe("Hoy · start a workout", () => {
     expect(onStart).toHaveBeenCalledWith("B", todayISO());
     // no sessions logged yet, and the cycle now sits on B (index 1)
     await waitFor(async () => expect((await db.appConfig.get("cycle_offset"))?.value).toBe(1));
+  });
+});
+
+describe("Entreno", () => {
+  afterEach(() => {
+    mockDefaultDay = "A";
+  });
+
+  it("keeps the day and its logged sets in view when the cycle count shifts mid-session", async () => {
+    const { Entreno } = await import("@/features/entreno/Entreno");
+    mockDefaultDay = "A";
+    render(<Entreno autoStart={null} onConsumeAutoStart={() => {}} />);
+
+    // Settles on the cycle's day A once the (mocked) default resolves.
+    await screen.findByText(/Día A ·/i);
+
+    const target = GYM_DIAS.A.ex[0].series;
+    await act(async () => {
+      await db.sets.add({
+        date: todayISO(),
+        day: "A",
+        exercise: GYM_DIAS.A.ex[0].name,
+        setIndex: 1,
+        weight: 40,
+        reps: 8,
+        toFailure: null,
+        rpe: null,
+        note: "",
+        createdAt: Date.now(),
+      });
+    });
+    expect(screen.getByText(GYM_DIAS.A.ex[0].name)).toBeInTheDocument();
+    expect(screen.getByText(`1/${target}`)).toBeInTheDocument();
+
+    // Logging a set nudges the cycle's live session count, which used to flip
+    // `useDefaultGymDay`'s return value mid-session and swap the exercise list
+    // out from under the user — making the set they just logged vanish. It must
+    // no longer move Entreno once a day has been settled on. (The extra db write
+    // here just forces the re-render that would pick the new mock value up.)
+    await act(async () => {
+      mockDefaultDay = "B";
+      await db.sets.add({
+        date: todayISO(),
+        day: "A",
+        exercise: GYM_DIAS.A.ex[1].name,
+        setIndex: 1,
+        weight: 20,
+        reps: 10,
+        toFailure: null,
+        rpe: null,
+        note: "",
+        createdAt: Date.now(),
+      });
+    });
+    expect(screen.getByText(/Día A ·/i)).toBeInTheDocument();
+    expect(screen.getByText(GYM_DIAS.A.ex[0].name)).toBeInTheDocument();
+    // Both of today's sets (the original plus the one just added) still count —
+    // proof the session wasn't quietly reset to a different day.
+    expect(screen.getByText(/^2 \/ \d+ series$/)).toBeInTheDocument();
   });
 });
 
