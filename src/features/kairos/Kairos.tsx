@@ -2,10 +2,14 @@ import { Skeleton } from "@/ui/Skeleton";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
+import type { SavedVerseRecord } from "@/db/db";
 import { useBible } from "@/hooks/useBible";
 import { BIBLE_BOOKS } from "@/data/bible/books";
 import { getChapter, chapterCount } from "@/data/bible/loader";
 import { Eyebrow, Card, Sheet, Field, Input, Button } from "@/ui";
+import { Icon } from "@/ui/Icon";
+import { Section } from "@/ui/Section";
+import { confirmAction } from "@/lib/confirm";
 import { showToast } from "@/ui/Toast";
 import { BookPicker } from "./BookPicker";
 import { ChapterPicker } from "./ChapterPicker";
@@ -59,12 +63,57 @@ export function Kairos() {
   const isAtBookmark = !!bookmark && bookmark.abbrev === abbrev && bookmark.chapter === chapter;
 
   const saved = useLiveQuery(() => db.savedVerses.orderBy("createdAt").reverse().toArray(), []);
+  // Which verses of *this* chapter already have something saved — shown as a
+  // small dot while reading, so you can see at a glance where you left a note.
+  const notedVerses = useMemo(() => new Set((saved ?? []).filter((s) => s.abbrev === abbrev && s.chapter === chapter).map((s) => s.verse)), [saved, abbrev, chapter]);
+  const existingForPicked = useMemo(
+    () => (pickedVerse ? (saved ?? []).filter((s) => s.abbrev === abbrev && s.chapter === chapter && s.verse === pickedVerse.verse) : []),
+    [saved, abbrev, chapter, pickedVerse],
+  );
   const filteredSaved = useMemo(() => {
     if (!saved) return [];
     const q = query.trim().toLowerCase();
     if (!q) return saved;
     return saved.filter((s) => s.text.toLowerCase().includes(q) || s.note.toLowerCase().includes(q) || s.bookName.toLowerCase().includes(q));
   }, [saved, query]);
+
+  // Grouped by book (in Bible order) so a growing pile of notes stays
+  // findable — scanning one long list by date makes it hard to land back on
+  // a teaching you remember writing. The book you saved to most recently
+  // opens by default; the rest stay collapsed until you go looking.
+  const bookOrder = useMemo(() => new Map(BIBLE_BOOKS.map((b, i) => [b.abbrev, i])), []);
+  const groupedSaved = useMemo(() => {
+    const byBook = new Map<string, SavedVerseRecord[]>();
+    for (const v of filteredSaved) {
+      const list = byBook.get(v.abbrev);
+      if (list) list.push(v);
+      else byBook.set(v.abbrev, [v]);
+    }
+    const groups = [...byBook.entries()].map(([bookAbbrev, items]) => ({
+      abbrev: bookAbbrev,
+      bookName: items[0].bookName,
+      // Canonical reading order within a book — it reads like your own
+      // study notes in Bible order, not a jumble sorted by when you wrote them.
+      items: [...items].sort((a, b) => a.chapter - b.chapter || a.verse - b.verse || a.createdAt - b.createdAt),
+    }));
+    groups.sort((a, b) => (bookOrder.get(a.abbrev) ?? 0) - (bookOrder.get(b.abbrev) ?? 0));
+    return groups;
+  }, [filteredSaved, bookOrder]);
+  const mostRecentAbbrev = saved?.[0]?.abbrev;
+
+  async function deleteSaved(v: SavedVerseRecord) {
+    if (!(await confirmAction({ title: "¿Eliminar este guardado?", message: `${v.bookName} ${v.chapter}:${v.verse}`, confirmLabel: "Eliminar", danger: true }))) return;
+    await db.savedVerses.delete(v.id!);
+    showToast("Guardado eliminado", {
+      action: {
+        label: "Deshacer",
+        onClick: () => {
+          const { id: _dropped, ...rest } = v;
+          void db.savedVerses.add(rest);
+        },
+      },
+    });
+  }
 
   async function saveVerse() {
     if (!pickedVerse) return;
@@ -187,20 +236,31 @@ export function Kairos() {
                   </div>
                 </div>
                 <div className="flex flex-col divide-y divide-[var(--color-line)]">
-                  {verses.map((text, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setPickedVerse({ verse: i + 1, text })}
-                      className="group flex items-start gap-3 py-3 text-left first:pt-0 last:pb-0"
-                    >
-                      <span className="num mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-[var(--color-surface-2)] text-[10.5px] font-bold text-[var(--color-red)] transition-colors group-hover:bg-[var(--color-red)] group-hover:text-white">
-                        {i + 1}
-                      </span>
-                      <span className="text-[14px] leading-relaxed text-[rgb(var(--fg-rgb)/0.82)] transition-colors group-hover:text-[var(--color-ink)]">
-                        {text}
-                      </span>
-                    </button>
-                  ))}
+                  {verses.map((text, i) => {
+                    const vNum = i + 1;
+                    const noted = notedVerses.has(vNum);
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => setPickedVerse({ verse: vNum, text })}
+                        className="group flex items-start gap-3 py-3 text-left first:pt-0 last:pb-0"
+                      >
+                        <span className="relative num mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-[var(--color-surface-2)] text-[10.5px] font-bold text-[var(--color-red)] transition-colors group-hover:bg-[var(--color-red)] group-hover:text-white">
+                          {vNum}
+                          {noted ? (
+                            <span
+                              aria-hidden
+                              className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-[var(--color-gold)] ring-2 ring-[var(--color-surface)]"
+                            />
+                          ) : null}
+                        </span>
+                        <span className="text-[14px] leading-relaxed text-[rgb(var(--fg-rgb)/0.82)] transition-colors group-hover:text-[var(--color-ink)]">
+                          {text}
+                          {noted ? <span className="sr-only"> · tienes una nota guardada aquí</span> : null}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </Card>
             </>
@@ -210,21 +270,33 @@ export function Kairos() {
             <Field label="Buscar">
               <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Texto, nota o libro…" className="w-full" />
             </Field>
-            {filteredSaved.length ? (
-              filteredSaved.map((v) => (
-                <Card key={v.id} className="panel-surface-glow">
-                  <div className="inline-flex items-center rounded-full border border-[var(--color-red-soft)] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-red)] num">
-                    {v.bookName} {v.chapter}:{v.verse}
-                  </div>
-                  <p className="text-[14px] mt-2.5 leading-relaxed">{v.text}</p>
-                  {v.note ? (
-                    <p className="text-[12px] text-[var(--color-muted)] mt-2.5 border-l-2 border-[var(--color-red-soft)] pl-3 italic">{v.note}</p>
-                  ) : null}
-                  <div className="text-[10.5px] text-[var(--color-muted-2)] mt-2.5 num">{new Date(v.createdAt).toLocaleDateString("es-CO")}</div>
-                </Card>
-              ))
+            {!filteredSaved.length ? (
+              <div className="text-center py-10 text-[13px] text-[var(--color-muted)]">
+                {query ? "Nada coincide con esa búsqueda." : "Sin versículos guardados."}
+              </div>
+            ) : query ? (
+              // While actively searching, grouping only gets in the way — the flat list is already narrow.
+              <div className="flex flex-col gap-3">
+                {filteredSaved.map((v) => (
+                  <SavedCard key={v.id} v={v} onDelete={deleteSaved} />
+                ))}
+              </div>
             ) : (
-              <div className="text-center py-10 text-[13px] text-[var(--color-muted)]">Sin versículos guardados.</div>
+              <div className="flex flex-col gap-3">
+                {groupedSaved.map((g) => (
+                  <Section
+                    key={g.abbrev}
+                    id={`kairos-${g.abbrev}`}
+                    title={g.bookName}
+                    summary={`${g.items.length} guardado${g.items.length === 1 ? "" : "s"} · último ${new Date(Math.max(...g.items.map((i) => i.createdAt))).toLocaleDateString("es-CO")}`}
+                    defaultOpen={g.abbrev === mostRecentAbbrev}
+                  >
+                    {g.items.map((v) => (
+                      <SavedCard key={v.id} v={v} onDelete={deleteSaved} />
+                    ))}
+                  </Section>
+                ))}
+              </div>
             )}
           </div>
         )}
@@ -236,6 +308,32 @@ export function Kairos() {
                 {bookName} {chapter}:{pickedVerse.verse}
               </div>
               <p className="text-[13.5px] mt-3 leading-relaxed">{pickedVerse.text}</p>
+              {existingForPicked.length ? (
+                <div className="mt-3 flex flex-col gap-2">
+                  <span className="eyebrow eyebrow-accent">
+                    Ya guardaste esto {existingForPicked.length > 1 ? `(${existingForPicked.length} veces)` : ""}
+                  </span>
+                  {existingForPicked.map((v) => (
+                    <div key={v.id} className="flex items-start gap-2 rounded-xl border border-[var(--color-line-strong)] px-3 py-2">
+                      <div className="min-w-0 flex-1">
+                        {v.note ? (
+                          <p className="text-[12px] italic text-[var(--color-muted)]">{v.note}</p>
+                        ) : (
+                          <p className="text-[12px] text-[var(--color-muted-2)]">Sin nota — solo el versículo.</p>
+                        )}
+                        <div className="text-[10.5px] text-[var(--color-muted-2)] mt-1 num">{new Date(v.createdAt).toLocaleDateString("es-CO")}</div>
+                      </div>
+                      <button
+                        onClick={() => deleteSaved(v)}
+                        aria-label="Eliminar este guardado"
+                        className="hit flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted-2)] hover:bg-[var(--color-red)] hover:text-white"
+                      >
+                        <Icon name="close" size={11} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
               <Field label="Tu nota">
                 <textarea
                   value={note}
@@ -252,5 +350,27 @@ export function Kairos() {
         </Sheet>
       </div>
     </>
+  );
+}
+
+function SavedCard({ v, onDelete }: { v: SavedVerseRecord; onDelete: (v: SavedVerseRecord) => void }) {
+  return (
+    <Card className="panel-surface-glow">
+      <div className="flex items-start justify-between gap-2">
+        <div className="inline-flex items-center rounded-full border border-[var(--color-red-soft)] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-red)] num">
+          {v.bookName} {v.chapter}:{v.verse}
+        </div>
+        <button
+          onClick={() => onDelete(v)}
+          aria-label="Eliminar guardado"
+          className="hit flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted-2)] hover:bg-[var(--color-red)] hover:text-white"
+        >
+          <Icon name="close" size={11} />
+        </button>
+      </div>
+      <p className="text-[14px] mt-2.5 leading-relaxed">{v.text}</p>
+      {v.note ? <p className="text-[12px] text-[var(--color-muted)] mt-2.5 border-l-2 border-[var(--color-red-soft)] pl-3 italic">{v.note}</p> : null}
+      <div className="text-[10.5px] text-[var(--color-muted-2)] mt-2.5 num">{new Date(v.createdAt).toLocaleDateString("es-CO")}</div>
+    </Card>
   );
 }
