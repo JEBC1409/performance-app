@@ -6,11 +6,13 @@ import type { SavedVerseRecord } from "@/db/db";
 import { useBible } from "@/hooks/useBible";
 import { BIBLE_BOOKS } from "@/data/bible/books";
 import { getChapter, chapterCount } from "@/data/bible/loader";
-import { Eyebrow, Card, Sheet, Field, Input, Button } from "@/ui";
+import { Eyebrow, Card, Sheet, Field, Input, Button, FlameGlyph } from "@/ui";
 import { Icon } from "@/ui/Icon";
 import { Section } from "@/ui/Section";
 import { confirmAction } from "@/lib/confirm";
 import { showToast } from "@/ui/Toast";
+import { currentStreak } from "@/lib/streak";
+import { todayISO } from "@/lib/date";
 import { BookPicker } from "./BookPicker";
 import { ChapterPicker } from "./ChapterPicker";
 
@@ -38,6 +40,7 @@ export function Kairos() {
   const [pickedVerse, setPickedVerse] = useState<{ verse: number; text: string } | null>(null);
   const [note, setNote] = useState("");
   const [query, setQuery] = useState("");
+  const [scrollToVerse, setScrollToVerse] = useState<number | null>(null);
 
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const bookmark = settings?.readingProgress ?? null;
@@ -56,11 +59,48 @@ export function Kairos() {
     showToast("Marcado — aquí vas");
   }
 
+  /** Pins the bookmark to one exact verse (not just the chapter), so
+   * "Continuar" can drop you back at, say, Marcos 7:13 instead of the top. */
+  async function markVerseHere(verse: number) {
+    await db.settings.put({ ...(settings ?? DEFAULT_SETTINGS), readingProgress: { abbrev, chapter, verse } });
+    showToast(`Marcado — vas en ${bookName} ${chapter}:${verse}`);
+    setPickedVerse(null);
+  }
+
   const chapters = bible ? chapterCount(bible, abbrev) : 0;
   const verses = bible ? getChapter(bible, abbrev, chapter) : [];
   const bookName = BIBLE_BOOKS.find((b) => b.abbrev === abbrev)?.name ?? abbrev;
   const bookmarkBookName = bookmark ? (BIBLE_BOOKS.find((b) => b.abbrev === bookmark.abbrev)?.name ?? bookmark.abbrev) : null;
   const isAtBookmark = !!bookmark && bookmark.abbrev === abbrev && bookmark.chapter === chapter;
+
+  // Jump-to-verse after "Continuar": set once the target chapter is picked,
+  // then scroll as soon as that chapter's verses (and thus the verse's own
+  // element) are actually on the page.
+  useEffect(() => {
+    if (scrollToVerse == null) return;
+    const el = document.getElementById(`kairos-verse-${scrollToVerse}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    setScrollToVerse(null);
+    // `verses` itself isn't a dep: it's a fresh array every render, but this
+    // only needs to re-check once the target chapter has actually rendered —
+    // which `abbrev`/`chapter` changing already signals.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scrollToVerse, abbrev, chapter]);
+
+  // A day counts as "read" the moment a chapter is actually on screen — once
+  // per day, written automatically rather than something you have to tick.
+  const readDays = useLiveQuery(() => db.bibleReadDays.toArray(), []);
+  useEffect(() => {
+    if (view !== "leer" || loading || !verses.length || !readDays) return;
+    const today = todayISO();
+    if (readDays.some((d) => d.date === today)) return;
+    void db.bibleReadDays.put({ date: today });
+  }, [view, loading, verses.length, readDays]);
+  const bibleStreak = useMemo(
+    () => currentStreak((readDays ?? []).map((d) => ({ date: d.date, done: ["bible"] })), "bible"),
+    [readDays],
+  );
 
   const saved = useLiveQuery(() => db.savedVerses.orderBy("createdAt").reverse().toArray(), []);
   // Which verses of *this* chapter already have something saved — shown as a
@@ -172,6 +212,15 @@ export function Kairos() {
           </button>
         </div>
 
+        {bibleStreak > 0 ? (
+          <div className="flex items-center gap-2 px-1">
+            <FlameGlyph size={16} className="flame-glow flex-none" />
+            <span className="text-[11.5px] text-[var(--color-muted)]">
+              <span className="num font-semibold text-[var(--color-ink)]">{bibleStreak}</span> {bibleStreak === 1 ? "día seguido leyendo" : "días seguidos leyendo"}
+            </span>
+          </div>
+        ) : null}
+
         {view === "leer" ? (
           loading ? (
             <div className="flex flex-col gap-3 py-4" role="status" aria-label="Cargando biblia">
@@ -186,12 +235,13 @@ export function Kairos() {
                   onClick={() => {
                     setAbbrev(bookmark.abbrev);
                     setChapter(bookmark.chapter);
+                    setScrollToVerse(bookmark.verse ?? null);
                   }}
                   className="glass-gold flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-left"
                 >
                   <BookmarkGlyph filled className="flex-none text-[var(--color-red)]" />
                   <span className="text-[12px] text-[var(--color-ink)]">
-                    Ibas en <span className="font-semibold">{bookmarkBookName} {bookmark.chapter}</span>
+                    Ibas en <span className="font-semibold">{bookmarkBookName} {bookmark.chapter}{bookmark.verse ? `:${bookmark.verse}` : ""}</span>
                   </span>
                   <span className="ml-auto flex-none text-[11px] uppercase tracking-wide text-[var(--color-red)]">Continuar →</span>
                 </button>
@@ -239,11 +289,13 @@ export function Kairos() {
                   {verses.map((text, i) => {
                     const vNum = i + 1;
                     const noted = notedVerses.has(vNum);
+                    const isBookmarked = bookmark?.abbrev === abbrev && bookmark?.chapter === chapter && bookmark?.verse === vNum;
                     return (
                       <button
                         key={i}
+                        id={`kairos-verse-${vNum}`}
                         onClick={() => setPickedVerse({ verse: vNum, text })}
-                        className="group flex items-start gap-3 py-3 text-left first:pt-0 last:pb-0"
+                        className={`group flex items-start gap-3 py-3 text-left first:pt-0 last:pb-0 ${isBookmarked ? "-mx-2 rounded-xl px-2 bg-[rgb(var(--accent-rgb)/0.07)]" : ""}`}
                       >
                         <span className="relative num mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-[var(--color-surface-2)] text-[10.5px] font-bold text-[var(--color-red)] transition-colors group-hover:bg-[var(--color-red)] group-hover:text-white">
                           {vNum}
@@ -256,8 +308,10 @@ export function Kairos() {
                         </span>
                         <span className="text-[14px] leading-relaxed text-[rgb(var(--fg-rgb)/0.82)] transition-colors group-hover:text-[var(--color-ink)]">
                           {text}
+                          {isBookmarked ? <span className="sr-only"> · aquí vas</span> : null}
                           {noted ? <span className="sr-only"> · tienes una nota guardada aquí</span> : null}
                         </span>
+                        {isBookmarked ? <BookmarkGlyph filled className="mt-1 flex-none self-center text-[var(--color-red)]" /> : null}
                       </button>
                     );
                   })}
@@ -304,8 +358,17 @@ export function Kairos() {
         <Sheet open={!!pickedVerse} onClose={() => setPickedVerse(null)} title="Guardar versículo">
           {pickedVerse ? (
             <div>
-              <div className="inline-flex items-center rounded-full border border-[var(--color-red-soft)] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-red)] num">
-                {bookName} {chapter}:{pickedVerse.verse}
+              <div className="flex items-start justify-between gap-2">
+                <div className="inline-flex items-center rounded-full border border-[var(--color-red-soft)] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-red)] num">
+                  {bookName} {chapter}:{pickedVerse.verse}
+                </div>
+                <button
+                  onClick={() => markVerseHere(pickedVerse.verse)}
+                  className="glass-gold tap-target flex flex-none items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-ink)]"
+                >
+                  <BookmarkGlyph filled />
+                  Marcar aquí
+                </button>
               </div>
               <p className="text-[13.5px] mt-3 leading-relaxed">{pickedVerse.text}</p>
               {existingForPicked.length ? (

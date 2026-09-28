@@ -16,6 +16,7 @@ import {
   type SavedVerseRecord,
   type MoureWeekRecord,
   type SettingsRecord,
+  type BibleReadDayRecord,
 } from "./db";
 
 /** Mirrors every local Dexie table to the matching Supabase table (see
@@ -152,6 +153,13 @@ function fromRemoteSavedVerse(row: Record<string, unknown>): SavedVerseRecord {
   };
 }
 
+function toRemoteBibleReadDay(row: BibleReadDayRecord, userId: string) {
+  return { user_id: userId, date: row.date };
+}
+function fromRemoteBibleReadDay(row: Record<string, unknown>): BibleReadDayRecord | null {
+  return typeof row.date === "string" ? { date: row.date } : null;
+}
+
 function toRemoteMoureWeek(row: MoureWeekRecord, userId: string) {
   // date is a real Postgres `date` column — "" (unstarted week) isn't a valid literal.
   return { user_id: userId, week: row.week, date: row.date || null, topic: row.topic, hours: row.hours, project: row.project, done: row.done };
@@ -174,20 +182,22 @@ function toRemoteSettings(row: SettingsRecord, userId: string) {
     avatar_data_url: row.avatarDataUrl ?? null,
     reading_abbrev: row.readingProgress?.abbrev ?? null,
     reading_chapter: row.readingProgress?.chapter ?? null,
+    reading_verse: row.readingProgress?.verse ?? null,
   };
 }
 /** `local` backs the reading-progress fields when the remote row predates
- * supabase/migrations/0003 (adds reading_abbrev/reading_chapter) — same
- * fix as fromRemoteHabitDay: a pre-migration row has no such columns at
- * all, and reading that absence as "no bookmark set" would put(), wiping
- * whatever the user had actually marked locally on the very next sync. */
+ * supabase/migrations/0003 (adds reading_abbrev/reading_chapter) or 0006
+ * (adds reading_verse) — same fix as fromRemoteHabitDay: a pre-migration row
+ * has no such columns at all, and reading that absence as "no bookmark set"
+ * would put(), wiping whatever the user had actually marked locally on the
+ * very next sync. */
 function fromRemoteSettings(row: Record<string, unknown>, local?: SettingsRecord): SettingsRecord {
   // The bookmark is only ever set on a device (there's no "clear"), so an
   // empty cloud value means "not uploaded yet" — e.g. it was set before the
   // reading columns existed and the push failed — never "deleted". Keep the
   // local one rather than let a pull erase it.
   const readingProgress = row.reading_abbrev
-    ? { abbrev: row.reading_abbrev as string, chapter: row.reading_chapter as number }
+    ? { abbrev: row.reading_abbrev as string, chapter: row.reading_chapter as number, verse: (row.reading_verse as number | null) ?? undefined }
     : (local?.readingProgress ?? null);
   return {
     id: "app",
@@ -296,8 +306,9 @@ const moureWeeksSync: TableSync = { remoteTable: "moure_weeks", localTable: db.m
 
 const appConfigSync: TableSync = { remoteTable: "app_config", localTable: db.appConfig, toRemote: toRemoteAppConfig, fromRemote: fromRemoteAppConfig, remoteMatch: (key) => ({ key }), idKeyed: false, keyOf: (r) => String(r.key) };
 const exercisePhotosSync: TableSync = { remoteTable: "exercise_photos", localTable: db.exercisePhotos, toRemote: toRemoteExercisePhoto, fromRemote: fromRemoteExercisePhoto, remoteMatch: (name) => ({ name }), idKeyed: false, keyOf: (r) => String(r.name) };
+const bibleReadDaysSync: TableSync = { remoteTable: "bible_read_days", localTable: db.bibleReadDays, toRemote: toRemoteBibleReadDay, fromRemote: fromRemoteBibleReadDay, remoteMatch: (date) => ({ date }), idKeyed: false, keyOf: (r) => String(r.date) };
 
-const COLLECTION_TABLES: TableSync[] = [setsSync, habitDaysSync, habitDefsSync, focusSessionsSync, weightsSync, sleepSync, savedVersesSync, moureWeeksSync, appConfigSync, exercisePhotosSync];
+const COLLECTION_TABLES: TableSync[] = [setsSync, habitDaysSync, habitDefsSync, focusSessionsSync, weightsSync, sleepSync, savedVersesSync, moureWeeksSync, appConfigSync, exercisePhotosSync, bibleReadDaysSync];
 
 /** Id-keyed tables can't just bulkPut incoming remote rows — the local
  * primary key is an unrelated auto-increment number, so each remote row has

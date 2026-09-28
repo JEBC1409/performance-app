@@ -167,9 +167,11 @@ export const settings = pgTable(
     displayName: text("display_name").notNull().default(""),
     avatarDataUrl: text("avatar_data_url"),
     // The passage last marked "aquí voy" in Oración — both null together
-    // means no bookmark set.
+    // means no bookmark set. readingVerse is optional even with a bookmark
+    // set: a chapter-level mark (no specific verse) leaves it null.
     readingAbbrev: text("reading_abbrev"),
     readingChapter: integer("reading_chapter"),
+    readingVerse: integer("reading_verse"),
   },
   (table) => [ownedByUser(table)],
 ).enableRLS();
@@ -197,4 +199,15 @@ export const exercisePhotos = pgTable(
     caption: text("caption"),
   },
   (table) => [primaryKey({ columns: [table.userId, table.name] }), ownedByUser(table)],
+).enableRLS();
+
+/** One row per calendar day the user opened a chapter in Oración — backs the
+ * Bible reading streak. Presence is the whole signal, no other columns. */
+export const bibleReadDays = pgTable(
+  "bible_read_days",
+  {
+    userId: userIdColumn(),
+    date: date("date").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.date] }), ownedByUser(table)],
 ).enableRLS();

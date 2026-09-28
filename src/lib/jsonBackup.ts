@@ -16,6 +16,7 @@ export async function exportBackup(): Promise<void> {
     savedVerses: await db.savedVerses.toArray(),
     moureWeeks: await db.moureWeeks.toArray(),
     settings: await db.settings.toArray(),
+    bibleReadDays: await db.bibleReadDays.toArray(),
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -32,7 +33,7 @@ export async function importBackup(file: File): Promise<void> {
   const text = await file.text();
   const data = JSON.parse(text);
   if (!data || typeof data !== "object") throw new Error("Archivo no reconocido");
-  await db.transaction("rw", [db.sets, db.habitDays, db.habitDefs, db.focusSessions, db.exercisePhotos, db.appConfig, db.weights, db.sleep, db.savedVerses, db.moureWeeks, db.settings], async () => {
+  await db.transaction("rw", [db.sets, db.habitDays, db.habitDefs, db.focusSessions, db.exercisePhotos, db.appConfig, db.weights, db.sleep, db.savedVerses, db.moureWeeks, db.settings, db.bibleReadDays], async () => {
     if (Array.isArray(data.sets)) {
       await db.sets.clear();
       await db.sets.bulkAdd(data.sets.map(({ id: _id, ...rest }: Record<string, unknown>) => rest));
@@ -59,5 +60,6 @@ export async function importBackup(file: File): Promise<void> {
     }
     if (Array.isArray(data.moureWeeks)) await db.moureWeeks.bulkPut(data.moureWeeks);
     if (Array.isArray(data.settings)) await db.settings.bulkPut(data.settings);
+    if (Array.isArray(data.bibleReadDays)) await db.bibleReadDays.bulkPut(data.bibleReadDays);
   });
 }

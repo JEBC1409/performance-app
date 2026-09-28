@@ -149,8 +149,16 @@ export interface SettingsRecord {
   avatarDataUrl?: string | null;
   /** The Bible passage you last marked as "aquí voy" in Oración — set
    * explicitly (not on every navigation), so casually browsing to a
-   * different passage doesn't silently move your actual bookmark. */
-  readingProgress?: { abbrev: string; chapter: number } | null;
+   * different passage doesn't silently move your actual bookmark. `verse` is
+   * optional: marking a whole chapter (rather than a specific verse) leaves it unset. */
+  readingProgress?: { abbrev: string; chapter: number; verse?: number } | null;
+}
+
+/** One row per calendar day you opened a chapter in "Leer" — presence alone
+ * is the signal, written once automatically (not a habit you tick), so the
+ * Bible streak reflects actual reading and not just verses you bothered to save. */
+export interface BibleReadDayRecord {
+  date: string;
 }
 
 export const db = new Dexie("performance-db") as Dexie & {
@@ -166,6 +174,7 @@ export const db = new Dexie("performance-db") as Dexie & {
   savedVerses: EntityTable<SavedVerseRecord, "id">;
   moureWeeks: EntityTable<MoureWeekRecord, "week">;
   settings: EntityTable<SettingsRecord, "id">;
+  bibleReadDays: EntityTable<BibleReadDayRecord, "date">;
 };
 
 db.version(1).stores({
@@ -260,6 +269,11 @@ db.version(6).stores({
 /** v7 adds appConfig (editable routine / schedule / prefs). New table only. */
 db.version(7).stores({
   appConfig: "key",
+});
+
+/** v8 adds bibleReadDays (the Bible reading streak). New table only. */
+db.version(8).stores({
+  bibleReadDays: "date",
 });
 
 export const DEFAULT_SETTINGS: SettingsRecord = {
