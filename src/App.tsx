@@ -17,6 +17,7 @@ import { Login } from "@/features/auth/Login";
 import { Hoy } from "@/features/hoy/Hoy";
 import { FocusPipHost } from "@/features/focus/FocusPip";
 import { FocusMiniBar } from "@/features/focus/FocusMiniBar";
+import { MusicHost } from "@/features/focus/MusicHost";
 import { flushSync } from "react-dom";
 import { ErrorBoundary } from "@/ui/ErrorBoundary";
 import type { GymDay } from "@/lib/cycle";
@@ -192,6 +193,9 @@ export default function App() {
       </ErrorBoundary>
       <ErrorBoundary fallback={() => null}>
         <FocusMiniBar visible={tab !== "focus"} onOpen={() => setTab("focus")} />
+      </ErrorBoundary>
+      <ErrorBoundary fallback={() => null}>
+        <MusicHost />
       </ErrorBoundary>
       <Guide onNavigate={setTab} />
       <ConfirmHost />

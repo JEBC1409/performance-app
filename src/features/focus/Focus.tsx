@@ -14,6 +14,7 @@ import { BLOCKS_PER_SET, FOCUS_OPTIONS, MAX_FOCUS_MIN, MIN_FOCUS_MIN, pauseFocus
 import { fmtClock, useFocusTimer, useNow } from "@/hooks/useFocusTimer";
 import { getPip, pipSupport, subscribePip, togglePip } from "@/lib/focusPip";
 import { isSoundOn, setSoundOn, subscribeSound, unlockAudio } from "@/lib/focusSound";
+import { MusicPanel, MusicZen } from "./MusicPanel";
 
 const SIZE = 300;
 const C = SIZE / 2;
@@ -463,7 +464,7 @@ function FocusView() {
 
       {zen
         ? createPortal(
-            <div className="fixed inset-0 z-[68] flex flex-col items-center justify-between bg-[var(--color-bg)] px-6" role="dialog" aria-modal aria-label="Focus en pantalla completa" style={{ paddingTop: "calc(1rem + env(safe-area-inset-top))", paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}>
+            <div className="fixed inset-0 z-[68] flex flex-col items-center justify-between gap-4 overflow-y-auto bg-[var(--color-bg)] px-6" role="dialog" aria-modal aria-label="Focus en pantalla completa" style={{ paddingTop: "calc(1rem + env(safe-area-inset-top))", paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}>
               <div className="ambient-bg" aria-hidden>
                 <div className="ambient-glow" />
               </div>
@@ -482,6 +483,7 @@ function FocusView() {
                   <div className="mt-3 text-[10.5px] font-medium uppercase tracking-[0.22em] text-[var(--color-muted)]">{isBreak ? "respira" : `bloque de ${timer.focusMin} min`}</div>
                 </Dial>
               </div>
+              <MusicZen />
               <div className="flex items-center gap-6">
                 <button
                   onClick={() => {
@@ -507,6 +509,8 @@ function FocusView() {
             document.body,
           )
         : null}
+
+      <MusicPanel />
 
       {/* today */}
       <div className="panel-surface p-4">
