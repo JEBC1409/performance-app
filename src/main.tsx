@@ -5,6 +5,7 @@ import { ErrorBoundary } from "./ui/ErrorBoundary";
 import { initCloudSync } from "./db/cloudSync";
 import { applyUiPrefs } from "./lib/uiPrefs";
 import { initAppConfig } from "./lib/appConfig";
+import { claimServiceWorkerReload } from "./lib/swReload";
 import "./styles/index.css";
 
 initCloudSync();
@@ -22,7 +23,9 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (reloaded) return;
     reloaded = true;
-    window.location.reload();
+    // Rate-limited across reloads too: `reloaded` resets with every page load,
+    // so on its own it can't stop a worker that keeps changing from looping.
+    if (claimServiceWorkerReload()) window.location.reload();
   });
 }
 
