@@ -60,7 +60,9 @@ export function MusicHost() {
     <div
       ref={wrapRef}
       aria-hidden={music.slotMode !== "zen"}
-      className="pointer-events-auto fixed z-[69] overflow-hidden rounded-2xl bg-black"
+      // Our own controls drive it; letting the pointer reach the iframe would
+      // pop YouTube's title / share / logo overlays over the video.
+      className="pointer-events-none fixed z-[69] overflow-hidden rounded-2xl bg-black"
       style={PARKED as React.CSSProperties}
     />,
     document.body,

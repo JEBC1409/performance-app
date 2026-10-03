@@ -190,11 +190,13 @@ export function MusicZen() {
     );
   }
   return (
-    <div className="flex w-full max-w-[360px] flex-col items-center gap-2.5">
-      <div ref={slotRef} className="h-[200px] w-full rounded-2xl" />
-      <div className="w-full min-w-0 text-center">
-        <div className="truncate text-[14px] font-semibold">{m.title || waitingText(m)}</div>
-        <div className="truncate text-[12px] text-[var(--color-muted)]">{m.error ?? m.author}</div>
+    <div className="flex w-full max-w-[340px] flex-col items-center gap-3 rounded-[28px] border border-[var(--color-line-strong)] bg-[rgb(var(--fg-rgb)/0.03)] p-3">
+      {/* The player itself is laid over this box by MusicHost (it has to stay
+          visible); 16:9 so the video fills it with no bars of its own. */}
+      <div ref={slotRef} className="aspect-video w-full rounded-2xl bg-black" />
+      <div className="w-full min-w-0 px-1 text-center">
+        <div className="truncate text-[15px] font-semibold leading-tight">{m.title || waitingText(m)}</div>
+        <div className="mt-0.5 truncate text-[12px] text-[var(--color-muted)]">{m.error ?? m.author}</div>
       </div>
       <Controls playing={m.playing} big />
     </div>
