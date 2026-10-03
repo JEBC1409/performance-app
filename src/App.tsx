@@ -156,6 +156,11 @@ export default function App() {
     setTab("entreno");
   }
 
+  // Tells public/boot-watchdog.js the app got past its loading screens.
+  useEffect(() => {
+    if (!authLoading && (ready || !session)) document.documentElement.dataset.booted = "1";
+  }, [authLoading, ready, session]);
+
   if (authLoading) return <LoadingScreen />;
   if (!session) {
     const cameFromLanding = new URLSearchParams(window.location.search).has("enter");
