@@ -9,8 +9,13 @@ const upserts: { table: string; row: unknown }[] = [];
 vi.mock("@/lib/supabase", () => {
   const from = (table: string) => ({
     select: () => {
-      const q = Promise.resolve({ data: remote[table] ?? [], error: null }) as Promise<unknown> & { maybeSingle: () => Promise<unknown> };
+      const q = Promise.resolve({ data: remote[table] ?? [], error: null }) as Promise<unknown> & {
+        maybeSingle: () => Promise<unknown>;
+        order: () => { range: (from: number, to: number) => Promise<unknown> };
+      };
       q.maybeSingle = () => Promise.resolve({ data: remote[table]?.[0] ?? null, error: null });
+      // Collections are read in pages: select().order(pk).range(from, to).
+      q.order = () => ({ range: (from, to) => Promise.resolve({ data: (remote[table] ?? []).slice(from, to + 1), error: null }) });
       return q;
     },
     upsert: (row: unknown) => {
@@ -94,5 +99,30 @@ describe("settings sync and the reading bookmark", () => {
     await fullSync(U);
 
     expect((await db.settings.get("app"))?.readingProgress).toEqual({ abbrev: "sal", chapter: 23 });
+  });
+});
+
+describe("pulling a long history", () => {
+  it("reads past Supabase's 1000-row page and writes only what changed", async () => {
+    const days = Array.from({ length: 2300 }, (_, i) => {
+      const d = new Date(Date.UTC(2020, 0, 1 + i)).toISOString().slice(0, 10);
+      return { date: d, done: ["sleep"] };
+    });
+    remote.habit_days = days;
+
+    await fullSync(U);
+    expect(await db.habitDays.count()).toBe(2300); // nothing lost to the 1000-row cap
+
+    // A second pull of identical data must not rewrite a single row.
+    let writes = 0;
+    const count = () => {
+      writes++;
+    };
+    db.habitDays.hook("updating", count);
+    db.habitDays.hook("creating", count);
+    await fullSync(U);
+    db.habitDays.hook("updating").unsubscribe(count);
+    db.habitDays.hook("creating").unsubscribe(count);
+    expect(writes).toBe(0);
   });
 });

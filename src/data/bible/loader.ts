@@ -56,12 +56,32 @@ export interface VerseRef {
   text: string;
 }
 
-export function verseOfDay(bible: RawBibleBook[], date: Date = new Date()): VerseRef | null {
+function verseOfDayIndex(date: Date): number {
   const start = new Date(date.getFullYear(), 0, 0);
   const dayOfYear = Math.floor((date.getTime() - start.getTime()) / 86400000);
-  const ref = VERSE_OF_DAY_REFS[dayOfYear % VERSE_OF_DAY_REFS.length];
+  return dayOfYear % VERSE_OF_DAY_REFS.length;
+}
+
+export function verseOfDay(bible: RawBibleBook[], date: Date = new Date()): VerseRef | null {
+  const ref = VERSE_OF_DAY_REFS[verseOfDayIndex(date)];
   const text = getChapter(bible, ref.abbrev, ref.chapter)[ref.verse - 1];
   if (!text) return null;
   const name = BIBLE_BOOKS.find((b) => b.abbrev === ref.abbrev)?.name ?? ref.abbrev;
   return { abbrev: ref.abbrev, bookName: name, chapter: ref.chapter, verse: ref.verse, text };
+}
+
+/** The verse of the day from public/bible/verse-of-day.json — the same 15
+ * verses, in the same order, as VERSE_OF_DAY_REFS, pre-extracted (2 KB). Hoy
+ * used to download and parse the whole 4 MB Bible just to show one verse. */
+let votdCache: Promise<{ abbrev: string; chapter: number; verse: number; text: string }[]> | null = null;
+export async function loadVerseOfDay(date: Date = new Date()): Promise<VerseRef | null> {
+  votdCache ??= fetch("/bible/verse-of-day.json").then((r) => r.json());
+  const list = await votdCache.catch(() => {
+    votdCache = null;
+    return [];
+  });
+  const entry = list[verseOfDayIndex(date)];
+  if (!entry?.text) return null;
+  const name = BIBLE_BOOKS.find((b) => b.abbrev === entry.abbrev)?.name ?? entry.abbrev;
+  return { abbrev: entry.abbrev, bookName: name, chapter: entry.chapter, verse: entry.verse, text: entry.text };
 }

@@ -19,8 +19,7 @@ import { habitForBlock, toggleHabitDay } from "@/lib/habits";
 import { celebrate, haptic } from "@/lib/feedback";
 import { HORARIO } from "@/data/horario";
 import { setCycleSlot, useCycleSlot } from "@/hooks/useCycle";
-import { useBible } from "@/hooks/useBible";
-import { verseOfDay } from "@/data/bible/loader";
+import { useVerseOfDay } from "@/hooks/useBible";
 import { fromKg, unitLabel } from "@/lib/units";
 import { buildDailySummary } from "@/lib/dailySummary";
 import { showToast } from "@/ui/Toast";
@@ -60,7 +59,7 @@ export function Hoy({
     const rows = await db.moureWeeks.toArray();
     return rows.reduce((a, r) => a + (num(r.hours) ?? 0), 0);
   }, []);
-  const { bible } = useBible();
+  const verse = useVerseOfDay();
 
   const info = currentBlockInfo();
   const row = info.rowIndex >= 0 ? HORARIO[info.rowIndex] : null;
@@ -71,7 +70,6 @@ export function Hoy({
   const nowCell = row ? row.cells[info.col] : null;
   const nextCell = nextRow ? nextRow.cells[info.col] : null;
 
-  const verse = bible ? verseOfDay(bible) : null;
   const weightDelta =
     lastWeight?.weightKg != null && firstWeight?.weightKg != null
       ? lastWeight.weightKg - firstWeight.weightKg

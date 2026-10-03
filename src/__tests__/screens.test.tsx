@@ -3,7 +3,7 @@ import { useState } from "react";
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/hooks/useBible", () => ({ useBible: () => ({ bible: null, loading: true }) }));
+vi.mock("@/hooks/useBible", () => ({ useBible: () => ({ bible: null, loading: true }), useVerseOfDay: () => null }));
 
 // Lets a test drive `useDefaultGymDay`'s return value across renders, the way the
 // cycle's live session count actually does mid-session.

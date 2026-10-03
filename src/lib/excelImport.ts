@@ -1,8 +1,11 @@
-import * as XLSX from "xlsx";
 import { db, type SetRecord } from "@/db/db";
 import type { GymDay } from "./cycle";
 import { parseNum } from "./parseNum";
 import { pad2 } from "./date";
+
+// SheetJS is ~350 KB and only an Excel import needs it, so it is loaded on demand
+// (it used to ride along inside the Perfil screen's code for everyone).
+let XLSX: typeof import("xlsx");
 
 export interface ImportSummary {
   sets: number;
@@ -93,6 +96,7 @@ function parseGymLogSheet(rows: unknown[][], day: GymDay): SetRecord[] {
 }
 
 export async function importExcelFile(file: File): Promise<ImportSummary> {
+  XLSX = await import("xlsx");
   const buf = await file.arrayBuffer();
   const wb = XLSX.read(buf, { cellDates: true });
   const summary: ImportSummary = { sets: 0, weights: 0, moureWeeks: 0, errors: [] };

@@ -293,43 +293,85 @@ interface TableSync {
    * coalesces on and what pending-write checks compare against. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   keyOf: (row: any) => string;
+  /** The remote column that orders the table stably (its primary key), for paging. */
+  pk: string;
 }
 
-const setsSync: TableSync = { remoteTable: "sets", localTable: db.sets, toRemote: toRemoteSet, fromRemote: fromRemoteSet, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true, keyOf: (r) => String(r.remoteId) };
-const habitDaysSync: TableSync = { remoteTable: "habit_days", localTable: db.habitDays, toRemote: toRemoteHabitDay, fromRemote: fromRemoteHabitDay, remoteMatch: (date) => ({ date }), idKeyed: false, keyOf: (r) => String(r.date) };
-const habitDefsSync: TableSync = { remoteTable: "habit_defs", localTable: db.habitDefs, toRemote: toRemoteHabitDef, fromRemote: fromRemoteHabitDef, remoteMatch: (key) => ({ key }), idKeyed: false, keyOf: (r) => String(r.key) };
-const focusSessionsSync: TableSync = { remoteTable: "focus_sessions", localTable: db.focusSessions, toRemote: toRemoteFocusSession, fromRemote: fromRemoteFocusSession, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true, keyOf: (r) => String(r.remoteId) };
-const weightsSync: TableSync = { remoteTable: "weights", localTable: db.weights, toRemote: toRemoteWeight, fromRemote: fromRemoteWeight, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true, keyOf: (r) => String(r.remoteId) };
-const sleepSync: TableSync = { remoteTable: "sleep", localTable: db.sleep, toRemote: toRemoteSleep, fromRemote: fromRemoteSleep, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true, keyOf: (r) => String(r.remoteId) };
-const savedVersesSync: TableSync = { remoteTable: "saved_verses", localTable: db.savedVerses, toRemote: toRemoteSavedVerse, fromRemote: fromRemoteSavedVerse, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true, keyOf: (r) => String(r.remoteId) };
-const moureWeeksSync: TableSync = { remoteTable: "moure_weeks", localTable: db.moureWeeks, toRemote: toRemoteMoureWeek, fromRemote: fromRemoteMoureWeek, remoteMatch: (week) => ({ week }), idKeyed: false, keyOf: (r) => String(r.week) };
+const setsSync: TableSync = { remoteTable: "sets", localTable: db.sets, toRemote: toRemoteSet, fromRemote: fromRemoteSet, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true, keyOf: (r) => String(r.remoteId), pk: "id" };
+const habitDaysSync: TableSync = { remoteTable: "habit_days", localTable: db.habitDays, toRemote: toRemoteHabitDay, fromRemote: fromRemoteHabitDay, remoteMatch: (date) => ({ date }), idKeyed: false, keyOf: (r) => String(r.date), pk: "date" };
+const habitDefsSync: TableSync = { remoteTable: "habit_defs", localTable: db.habitDefs, toRemote: toRemoteHabitDef, fromRemote: fromRemoteHabitDef, remoteMatch: (key) => ({ key }), idKeyed: false, keyOf: (r) => String(r.key), pk: "key" };
+const focusSessionsSync: TableSync = { remoteTable: "focus_sessions", localTable: db.focusSessions, toRemote: toRemoteFocusSession, fromRemote: fromRemoteFocusSession, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true, keyOf: (r) => String(r.remoteId), pk: "id" };
+const weightsSync: TableSync = { remoteTable: "weights", localTable: db.weights, toRemote: toRemoteWeight, fromRemote: fromRemoteWeight, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true, keyOf: (r) => String(r.remoteId), pk: "id" };
+const sleepSync: TableSync = { remoteTable: "sleep", localTable: db.sleep, toRemote: toRemoteSleep, fromRemote: fromRemoteSleep, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true, keyOf: (r) => String(r.remoteId), pk: "id" };
+const savedVersesSync: TableSync = { remoteTable: "saved_verses", localTable: db.savedVerses, toRemote: toRemoteSavedVerse, fromRemote: fromRemoteSavedVerse, remoteMatch: (_key, obj) => ({ id: obj.remoteId }), idKeyed: true, keyOf: (r) => String(r.remoteId), pk: "id" };
+const moureWeeksSync: TableSync = { remoteTable: "moure_weeks", localTable: db.moureWeeks, toRemote: toRemoteMoureWeek, fromRemote: fromRemoteMoureWeek, remoteMatch: (week) => ({ week }), idKeyed: false, keyOf: (r) => String(r.week), pk: "week" };
 
-const appConfigSync: TableSync = { remoteTable: "app_config", localTable: db.appConfig, toRemote: toRemoteAppConfig, fromRemote: fromRemoteAppConfig, remoteMatch: (key) => ({ key }), idKeyed: false, keyOf: (r) => String(r.key) };
-const exercisePhotosSync: TableSync = { remoteTable: "exercise_photos", localTable: db.exercisePhotos, toRemote: toRemoteExercisePhoto, fromRemote: fromRemoteExercisePhoto, remoteMatch: (name) => ({ name }), idKeyed: false, keyOf: (r) => String(r.name) };
-const bibleReadDaysSync: TableSync = { remoteTable: "bible_read_days", localTable: db.bibleReadDays, toRemote: toRemoteBibleReadDay, fromRemote: fromRemoteBibleReadDay, remoteMatch: (date) => ({ date }), idKeyed: false, keyOf: (r) => String(r.date) };
+const appConfigSync: TableSync = { remoteTable: "app_config", localTable: db.appConfig, toRemote: toRemoteAppConfig, fromRemote: fromRemoteAppConfig, remoteMatch: (key) => ({ key }), idKeyed: false, keyOf: (r) => String(r.key), pk: "key" };
+const exercisePhotosSync: TableSync = { remoteTable: "exercise_photos", localTable: db.exercisePhotos, toRemote: toRemoteExercisePhoto, fromRemote: fromRemoteExercisePhoto, remoteMatch: (name) => ({ name }), idKeyed: false, keyOf: (r) => String(r.name), pk: "name" };
+const bibleReadDaysSync: TableSync = { remoteTable: "bible_read_days", localTable: db.bibleReadDays, toRemote: toRemoteBibleReadDay, fromRemote: fromRemoteBibleReadDay, remoteMatch: (date) => ({ date }), idKeyed: false, keyOf: (r) => String(r.date), pk: "date" };
 
 const COLLECTION_TABLES: TableSync[] = [setsSync, habitDaysSync, habitDefsSync, focusSessionsSync, weightsSync, sleepSync, savedVersesSync, moureWeeksSync, appConfigSync, exercisePhotosSync, bibleReadDaysSync];
 
+/** A canonical form of a row for comparing "is this the same data?": keys
+ * sorted at every level, and null / undefined treated the same (a field that is
+ * absent locally and null in the cloud is not a difference worth a write). */
+function canonical(value: unknown): string {
+  return JSON.stringify(value, (_key, v) =>
+    v && typeof v === "object" && !Array.isArray(v)
+      ? Object.fromEntries(Object.entries(v as Record<string, unknown>).filter(([, x]) => x != null).sort(([a], [b]) => (a < b ? -1 : 1)))
+      : v,
+  );
+}
+
+/** Local rows carry a Dexie-only `id`; the cloud copy never does. */
+function sameRow(local: unknown, incoming: unknown): boolean {
+  const { id: _localId, ...rest } = local as Record<string, unknown>;
+  return canonical(rest) === canonical(incoming);
+}
+
 /** Id-keyed tables can't just bulkPut incoming remote rows — the local
  * primary key is an unrelated auto-increment number, so each remote row has
- * to be matched to its local counterpart (if any) by `remoteId` first. */
+ * to be matched to its local counterpart (if any) by `remoteId` first.
+ *
+ * Only rows that are new or actually different are written. Rewriting every
+ * row on every start (one transaction each, each one re-running every live
+ * query on the screen) is what used to make the app crawl for a long time
+ * after opening once there was a few months of history. */
 async function mergeByRemoteId(cfg: TableSync, remoteRows: Record<string, unknown>[]) {
-  for (const remoteRow of remoteRows) {
-    const local = cfg.fromRemote(remoteRow) as { remoteId?: string };
-    if (!local.remoteId) continue;
-    const existing = await cfg.localTable.where("remoteId").equals(local.remoteId).first();
-    if (existing) {
-      await cfg.localTable.update(existing.id, local);
-    } else {
-      await cfg.localTable.add(local);
-    }
+  const incoming = remoteRows.map((row) => cfg.fromRemote(row) as { remoteId?: string }).filter((row) => row?.remoteId);
+  if (!incoming.length) return;
+  const existing = (await cfg.localTable.toArray()) as { id: number; remoteId?: string }[];
+  const byRemoteId = new Map(existing.filter((e) => e.remoteId).map((e) => [e.remoteId as string, e]));
+  const toAdd: unknown[] = [];
+  const toUpdate: { id: number; row: unknown }[] = [];
+  for (const row of incoming) {
+    const current = byRemoteId.get(row.remoteId as string);
+    if (!current) toAdd.push(row);
+    else if (!sameRow(current, row)) toUpdate.push({ id: current.id, row });
   }
+  if (toAdd.length) await cfg.localTable.bulkAdd(toAdd);
+  for (const u of toUpdate) await cfg.localTable.update(u.id, u.row as object);
+}
+
+/** Supabase answers at most 1000 rows per request and silently drops the rest,
+ * so a table longer than that has to be read in pages (ordered by its key, so
+ * the pages can't overlap or skip). */
+const PAGE = 1000;
+async function fetchAll(cfg: TableSync): Promise<Record<string, unknown>[]> {
+  if (!supabase) return [];
+  const rows: Record<string, unknown>[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase.from(cfg.remoteTable).select("*").order(cfg.pk).range(from, from + PAGE - 1);
+    if (error) throw error;
+    rows.push(...((data as Record<string, unknown>[] | null) ?? []));
+    if (!data || data.length < PAGE) break;
+  }
+  return rows;
 }
 
 async function syncCollection(cfg: TableSync, userId: string) {
   if (!supabase) return;
-  const { data, error } = await supabase.from(cfg.remoteTable).select("*");
-  if (error) throw error;
+  const data = await fetchAll(cfg);
   if (!data || data.length === 0) {
     const local = await cfg.localTable.toArray();
     if (local.length > 0) {
@@ -349,7 +391,13 @@ async function syncCollection(cfg: TableSync, userId: string) {
         // a schema migration and would otherwise convert into a lossy,
         // wrong local value) — bulkPut only the rows that actually convert.
         const converted = data.map((row) => cfg.fromRemote(row)).filter((row) => row != null && !pending.has(cfg.keyOf(row)));
-        if (converted.length) await cfg.localTable.bulkPut(converted);
+        // Only what is new or different: an unchanged row isn't rewritten.
+        const local = new Map((await cfg.localTable.toArray()).map((row) => [cfg.keyOf(row), row]));
+        const changed = converted.filter((row) => {
+          const current = local.get(cfg.keyOf(row));
+          return !current || !sameRow(current, row);
+        });
+        if (changed.length) await cfg.localTable.bulkPut(changed);
       }
     });
   }
