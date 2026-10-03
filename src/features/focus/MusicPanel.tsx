@@ -1,9 +1,16 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { clearMusic, getMusicState, nextMusic, playMusic, prevMusic, registerMusicSlot, saveMusicConfig, setMusicSync, subscribeMusic, toggleMusic } from "@/lib/focusMusic";
+import type { MusicState } from "@/lib/focusMusic";
 import { showToast } from "@/ui/Toast";
 
 function useMusic() {
   return useSyncExternalStore(subscribeMusic, getMusicState, getMusicState);
+}
+
+/** Before the first song plays there's no title to show; say what's actually going on. */
+function waitingText(m: MusicState): string {
+  if (!m.started) return "Lista conectada — pulsa play";
+  return m.ready ? "Pulsa play para empezar" : "Cargando…";
 }
 
 const GLYPH = { width: 18, height: 18, viewBox: "0 0 20 20", "aria-hidden": true } as const;
@@ -132,8 +139,8 @@ export function MusicPanel() {
           {thumb ? <img src={thumb} alt="" className="h-full w-full object-cover" /> : null}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="truncate text-[14px] font-semibold">{m.title || (m.started ? "Cargando…" : "Lista conectada")}</div>
-          <div className="truncate text-[12px] text-[var(--color-muted)]">{m.author || (m.started ? " " : "Pulsa play para empezar")}</div>
+          <div className="truncate text-[14px] font-semibold">{m.title || waitingText(m)}</div>
+          <div className="truncate text-[12px] text-[var(--color-muted)]">{m.author || (m.title || !m.ready ? "" : "El nombre de la canción aparece al sonar")}</div>
         </div>
         <Controls playing={m.playing} />
       </div>
@@ -186,7 +193,7 @@ export function MusicZen() {
     <div className="flex w-full max-w-[360px] flex-col items-center gap-2.5">
       <div ref={slotRef} className="h-[200px] w-full rounded-2xl" />
       <div className="w-full min-w-0 text-center">
-        <div className="truncate text-[14px] font-semibold">{m.title || "Cargando…"}</div>
+        <div className="truncate text-[14px] font-semibold">{m.title || waitingText(m)}</div>
         <div className="truncate text-[12px] text-[var(--color-muted)]">{m.error ?? m.author}</div>
       </div>
       <Controls playing={m.playing} big />

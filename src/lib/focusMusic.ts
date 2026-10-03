@@ -25,6 +25,8 @@ export interface MusicState {
   source: YouTubeSource | null;
   /** The player exists (created the first time you press play). */
   started: boolean;
+  /** …and has finished loading, so it can be told what to do. */
+  ready: boolean;
   playing: boolean;
   title: string;
   author: string;
@@ -83,6 +85,7 @@ let state: MusicState = {
   config: initialConfig,
   source: initialConfig ? parseYouTubeSource(initialConfig.url) : null,
   started: false,
+  ready: false,
   playing: false,
   title: "",
   author: "",
@@ -218,11 +221,18 @@ async function createPlayer(src: YouTubeSource): Promise<void> {
   if (player || !container || !window.YT) return;
   const target = document.createElement("div");
   container.appendChild(target);
-  set({ started: true, error: null });
+  set({ started: true, ready: false, error: null });
+  // Never leave it on "Cargando…" for good: if the player doesn't come up, say so.
+  window.setTimeout(() => {
+    if (player && !ready && !state.error) set({ error: "YouTube no respondió. Revisa tu conexión o el enlace." });
+  }, 12000);
   player = new window.YT.Player(target, {
     width: "100%",
     height: "100%",
-    videoId: src.list ? undefined : src.video,
+    // Only set when there's a video: an explicit `videoId: undefined` makes the
+    // API build an iframe with no src at all (a playlist player then never
+    // starts and the UI sits on "Cargando…" forever).
+    ...(src.list ? {} : { videoId: src.video }),
     playerVars: {
       autoplay: 1,
       controls: 0,
@@ -236,6 +246,7 @@ async function createPlayer(src: YouTubeSource): Promise<void> {
     events: {
       onReady: () => {
         ready = true;
+        set({ ready: true });
         if (src.list) {
           try {
             player?.setLoop(true);
@@ -331,5 +342,5 @@ export function clearMusic(): void {
   ready = false;
   if (container) container.innerHTML = "";
   writeConfig(null);
-  set({ config: null, source: null, started: false, playing: false, title: "", author: "", videoId: "", error: null });
+  set({ config: null, source: null, started: false, ready: false, playing: false, title: "", author: "", videoId: "", error: null });
 }
