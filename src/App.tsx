@@ -1,5 +1,6 @@
 import { SkeletonCard, SkeletonTiles } from "@/ui/Skeleton";
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState, useSyncExternalStore } from "react";
+import { isDbBlocked, subscribeDbBlocked } from "@/db/dbStatus";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Shell } from "@/layout/Shell";
 import { ToastHost } from "@/ui/Toast";
@@ -55,6 +56,13 @@ function ScreenFallback() {
 export type Tab = "hoy" | "entreno" | "habitos" | "datos" | "mas" | "horario" | "focus" | "kairos" | "mouredev" | "perfil";
 
 function LoadingScreen() {
+  const blocked = useSyncExternalStore(subscribeDbBlocked, isDbBlocked, isDbBlocked);
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const id = window.setTimeout(() => setSlow(true), 8000);
+    return () => window.clearTimeout(id);
+  }, []);
+
   return (
     <div className="min-h-screen bg-[var(--color-bg)] px-4 py-6" role="status" aria-label="Cargando PERFORMANCE">
       <div className="mx-auto flex max-w-[600px] flex-col gap-4">
@@ -62,6 +70,21 @@ function LoadingScreen() {
         <SkeletonCard lines={2} />
         <SkeletonCard lines={3} />
         <SkeletonTiles count={2} />
+        {blocked || slow ? (
+          <div className="panel-surface p-4 text-center" role="alert">
+            <p className="text-[13px] text-[var(--color-ink)]">
+              {blocked ? "Hay otra ventana de la app abierta que bloquea la actualización." : "Está tardando más de lo normal."}
+            </p>
+            <p className="mt-1.5 text-[12px] text-[var(--color-muted)]">
+              {blocked
+                ? "Cierra las demás pestañas o la app instalada (deslízala fuera de las recientes) y reintenta. Tus datos están a salvo."
+                : "Revisa tu conexión y reintenta. Tus datos están a salvo en este dispositivo."}
+            </p>
+            <button onClick={() => window.location.reload()} className="glass tap-target mt-3 rounded-full px-6 text-[12px] font-semibold uppercase tracking-[0.1em]">
+              Reintentar
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );
