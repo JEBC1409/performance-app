@@ -29,6 +29,14 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+// Right after a deploy, a tab still running the previous build asks for lazy
+// chunks (a screen's code) whose old hashed files are gone, and the screen
+// never loads. Vite reports that; one guarded reload fetches the new build.
+window.addEventListener("vite:preloadError", (e) => {
+  e.preventDefault();
+  if (claimServiceWorkerReload(Date.now(), "performance_preload_reload_at")) window.location.reload();
+});
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ErrorBoundary>

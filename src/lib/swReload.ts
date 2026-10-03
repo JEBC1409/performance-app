@@ -5,12 +5,13 @@ const KEY = "performance_sw_reload_at";
  * again would just spin the page forever, so we stop and let it run. */
 export const SW_RELOAD_COOLDOWN_MS = 30_000;
 
-/** True when it's fine to reload for a service-worker takeover; records the attempt. */
-export function claimServiceWorkerReload(now: number = Date.now()): boolean {
+/** True when it's fine to reload for a service-worker takeover (or any other
+ * automatic self-heal, with its own `key`); records the attempt. */
+export function claimServiceWorkerReload(now: number = Date.now(), key: string = KEY): boolean {
   try {
-    const last = Number(sessionStorage.getItem(KEY));
+    const last = Number(sessionStorage.getItem(key));
     if (Number.isFinite(last) && last > 0 && now - last < SW_RELOAD_COOLDOWN_MS) return false;
-    sessionStorage.setItem(KEY, String(now));
+    sessionStorage.setItem(key, String(now));
   } catch {
     /* no sessionStorage: fall back to the once-per-page-load guard in main.tsx */
   }
