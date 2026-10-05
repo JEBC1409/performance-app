@@ -15,6 +15,7 @@ import { currentStreak } from "@/lib/streak";
 import { todayISO } from "@/lib/date";
 import { BookPicker } from "./BookPicker";
 import { ChapterPicker } from "./ChapterPicker";
+import { MarkReadChip, ReadingPlanCard } from "./ReadingPlan";
 
 type View = "leer" | "guardados";
 
@@ -65,6 +66,13 @@ export function Kairos() {
     await db.settings.put({ ...(settings ?? DEFAULT_SETTINGS), readingProgress: { abbrev, chapter, verse } });
     showToast(`Marcado — vas en ${bookName} ${chapter}:${verse}`);
     setPickedVerse(null);
+  }
+
+  /** Opens a chapter in the reader (from the reading plan) and brings it into view. */
+  function openChapter(nextAbbrev: string, nextChapter: number) {
+    setAbbrev(nextAbbrev);
+    setChapter(nextChapter);
+    window.setTimeout(() => document.getElementById("kairos-reader")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
   }
 
   const chapters = bible ? chapterCount(bible, abbrev) : 0;
@@ -230,6 +238,8 @@ export function Kairos() {
             </div>
           ) : (
             <>
+              <ReadingPlanCard onOpen={openChapter} />
+
               {bookmark && !isAtBookmark ? (
                 <button
                   onClick={() => {
@@ -263,7 +273,7 @@ export function Kairos() {
                 </Field>
               </div>
 
-              <Card className="panel-surface-glow">
+              <Card id="kairos-reader" className="panel-surface-glow scroll-mt-20">
                 <div className="flex items-center justify-between mb-4 pb-3 border-b border-[var(--color-line)]">
                   <div>
                     <Eyebrow gold>Leyendo</Eyebrow>
@@ -273,6 +283,7 @@ export function Kairos() {
                   </div>
                   <div className="flex flex-none flex-col items-end gap-1.5">
                     <span className="text-[11px] text-[var(--color-muted-2)] num uppercase tracking-wide">{verses.length} versículos</span>
+                    <MarkReadChip abbrev={abbrev} chapter={chapter} />
                     <button
                       onClick={markHere}
                       disabled={isAtBookmark}
