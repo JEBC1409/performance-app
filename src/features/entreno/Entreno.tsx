@@ -7,6 +7,8 @@ import { todayISO, fmtDateHuman } from "@/lib/date";
 import { buildDailySummary } from "@/lib/dailySummary";
 import { slotAfter, type GymDay } from "@/lib/cycle";
 import { reviewSession } from "@/lib/sessionReview";
+import { detectStall, sessionScores } from "@/lib/stagnation";
+import type { Stall } from "@/lib/stagnation";
 import { SessionReviewSheet } from "./SessionReviewSheet";
 import { GymMode } from "./GymMode";
 import { useConfigVersion } from "@/hooks/useConfigVersion";
@@ -72,6 +74,22 @@ export function Entreno({
   const today = todayISO();
   const sessionSets = useSessionSets(day, sessionDate);
   const allSets = useLiveQuery(() => db.sets.toArray(), []);
+  // Exercises of this day whose last few sessions (before this one) never beat what came before.
+  const stalls = useMemo(() => {
+    const out = new Map<string, Stall>();
+    if (!allSets) return out;
+    const byExercise = new Map<string, typeof allSets>();
+    for (const s of allSets) {
+      const list = byExercise.get(s.exercise);
+      if (list) list.push(s);
+      else byExercise.set(s.exercise, [s]);
+    }
+    for (const ex of GYM_DIAS[day].ex) {
+      const stall = detectStall(sessionScores(byExercise.get(ex.name) ?? [], sessionDate));
+      if (stall) out.set(ex.name, stall);
+    }
+    return out;
+  }, [allSets, day, sessionDate]);
   const review = useMemo(
     () => (reviewOpen && allSets && sessionSets.length ? reviewSession(day, sessionDate, sessionSets, allSets) : null),
     [reviewOpen, allSets, sessionSets, day, sessionDate],
@@ -198,7 +216,7 @@ export function Entreno({
       <div className="grid grid-cols-2 sidebar:grid-cols-3 gap-3">
         {GYM_DIAS[day].ex.map((ex) => {
           const doneCount = sessionSets.filter((s) => s.exercise === ex.name).length;
-          return <ExerciseCard key={ex.name} exercise={ex} done={doneCount} onOpen={() => setOpenExercise(ex)} photo={resolvePhoto(ex.name, photos.get(ex.name))} />;
+          return <ExerciseCard key={ex.name} exercise={ex} done={doneCount} stalled={stalls.has(ex.name)} onOpen={() => setOpenExercise(ex)} photo={resolvePhoto(ex.name, photos.get(ex.name))} />;
         })}
       </div>
 
@@ -242,6 +260,7 @@ export function Entreno({
             day={day}
             date={sessionDate}
             exercise={openExercise}
+            stall={stalls.get(openExercise.name) ?? null}
             onLogSet={(payload) => logSet(openExercise.name, payload)}
             onUpdateSet={updateSet}
             onDeleteSet={deleteSet}
@@ -254,6 +273,7 @@ export function Entreno({
 }
 
 function ExerciseDetail({
+  stall,
   day,
   date,
   exercise,
@@ -262,6 +282,7 @@ function ExerciseDetail({
   onDeleteSet,
   allSessionSets,
 }: {
+  stall: Stall | null;
   day: GymDay;
   date: string;
   exercise: ExerciseTarget;
@@ -275,7 +296,7 @@ function ExerciseDetail({
   return (
     <>
       <ExercisePhotoEditor name={exercise.name} />
-      <ExerciseLogForm exercise={exercise} sets={sets} lastSession={lastSession} onLogSet={onLogSet} onUpdateSet={onUpdateSet} onDeleteSet={onDeleteSet} />
+      <ExerciseLogForm exercise={exercise} stall={stall} sets={sets} lastSession={lastSession} onLogSet={onLogSet} onUpdateSet={onUpdateSet} onDeleteSet={onDeleteSet} />
     </>
   );
 }

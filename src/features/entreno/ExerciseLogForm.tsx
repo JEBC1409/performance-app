@@ -9,6 +9,8 @@ import type { SuggestionKind } from "@/lib/progression";
 import { BigStepper } from "./BigStepper";
 import { WEIGHT_STEPS, fmtNum, readStep, writeStep } from "./stepperConfig";
 import { seedWeightReps } from "./setSeed";
+import { stallAdvice } from "@/lib/stagnation";
+import type { Stall } from "@/lib/stagnation";
 
 export interface LogSetPayload {
   weight: number | null;
@@ -32,6 +34,7 @@ const SUGGESTION_COLOR: Record<SuggestionKind, string> = {
 
 export function ExerciseLogForm({
   exercise,
+  stall,
   sets,
   lastSession,
   onLogSet,
@@ -39,6 +42,8 @@ export function ExerciseLogForm({
   onDeleteSet,
 }: {
   exercise: ExerciseTarget;
+  /** Set when the last few sessions of this exercise made no progress. */
+  stall?: Stall | null;
   sets: SetRecord[];
   lastSession: LastSession | null;
   onLogSet: (payload: LogSetPayload) => void;
@@ -136,6 +141,13 @@ export function ExerciseLogForm({
         <div className="num text-[11px] text-[var(--color-muted)]">
           Última vez ({fmtDateHuman(lastSession.date)}): {lastSession.sets.map((s) => `${s.weight ?? "—"}×${s.reps ?? "—"}`).join(" · ")}
           {lastTop != null ? <span className="text-[var(--color-red)]"> · top {lastTop}kg</span> : null}
+        </div>
+      ) : null}
+
+      {stall ? (
+        <div role="note" className="rounded-2xl border border-[var(--color-warn)] bg-[rgb(var(--fg-rgb)/0.03)] px-3 py-2.5">
+          <div className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--color-warn)]">Estancado</div>
+          <p className="mt-1 text-[12px] leading-snug">{stallAdvice(stall)}</p>
         </div>
       ) : null}
 

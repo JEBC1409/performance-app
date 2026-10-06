@@ -7,6 +7,8 @@ import { db, DEFAULT_SETTINGS } from "@/db/db";
 import { Card, Eyebrow, Stat, HabitGlyph, Button, Sheet, DateField } from "@/ui";
 import { DailyStreakCard } from "./DailyStreakCard";
 import { DayRings } from "./DayRings";
+import { PrioritiesCard } from "./PrioritiesCard";
+import { InsightsCard } from "./InsightsCard";
 import { useUiPrefs } from "@/hooks/useUiPrefs";
 import { useConfigVersion } from "@/hooks/useConfigVersion";
 import type { HomeCard } from "@/lib/uiPrefs";
@@ -233,6 +235,10 @@ export function Hoy({
         </div>
       </div>
     ),
+
+    priorities: <PrioritiesCard key="priorities" />,
+
+    insights: <InsightsCard key="insights" />,
 
     streak: <DailyStreakCard key="streak" />,
 

@@ -56,6 +56,29 @@ describe("Hoy", () => {
   });
 });
 
+describe("Hoy · prioridades", () => {
+  it("lets you add a priority, tick it, and close the day", async () => {
+    render(<Hoy onStartEntreno={() => {}} onNavigate={() => {}} />);
+    const input = await screen.findByLabelText(/Nueva prioridad/i);
+    fireEvent.change(input, { target: { value: "Terminar el módulo" } });
+    fireEvent.click(screen.getByRole("button", { name: /Añadir prioridad/i }));
+
+    const tick = await screen.findByRole("button", { name: /Marcar: Terminar el módulo/i });
+    fireEvent.click(tick);
+    await waitFor(async () => {
+      const row = await db.appConfig.get("priorities");
+      expect(row).toBeDefined();
+      const plan = (row!.value as Record<string, { items: { done: boolean }[] }>)[todayISO()];
+      expect(plan.items[0].done).toBe(true);
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /^Cerrar el día$/i }));
+    const dialog = await screen.findByRole("dialog", { name: /Cerrar el día/i });
+    fireEvent.click(within(dialog).getByRole("button", { name: /Cerrar el día/i }));
+    expect(await screen.findByText(/Día cerrado/i)).toBeInTheDocument();
+  });
+});
+
 describe("Hoy · start a workout", () => {
   it("remembers the day you picked as today's turn in the cycle", async () => {
     const onStart = vi.fn();

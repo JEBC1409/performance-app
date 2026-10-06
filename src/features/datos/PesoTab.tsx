@@ -8,6 +8,7 @@ import { evaluateRate } from "@/lib/weightProjection";
 import { todayISO, fmtDateHuman, startOfWeek } from "@/lib/date";
 import { fromKg, toKg, unitLabel } from "@/lib/units";
 import { showToast } from "@/ui/Toast";
+import { WeightGoalCard } from "./WeightGoalCard";
 
 export function PesoTab() {
   const rows = useLiveQuery(() => db.weights.orderBy("date").toArray(), []);
@@ -81,6 +82,8 @@ export function PesoTab() {
           </div>
         ) : null}
       </Card>
+
+      <WeightGoalCard points={kgPoints.map((p) => ({ date: p.date, kg: p.weight }))} unit={unit} />
 
       <Card>
         <Eyebrow>Registrar peso</Eyebrow>

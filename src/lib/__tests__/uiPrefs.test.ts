@@ -26,3 +26,10 @@ describe("uiPrefs", () => {
     expect(parseUiPrefs(JSON.stringify({ navTabs: ["hoy", "focus"] })).navTabs).toEqual(["hoy", "focus"]);
   });
 });
+
+describe("cards added after an order was saved", () => {
+  it("land next to the card they belong with, not buried at the bottom", () => {
+    const before = ["rings", "session", "streak", "habits", "stats", "verse"];
+    expect(normalizeOrder(before)).toEqual(["rings", "priorities", "session", "streak", "habits", "insights", "stats", "verse"]);
+  });
+});

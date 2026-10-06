@@ -4,11 +4,14 @@ import { Chip } from "@/ui";
 export function ExerciseCard({
   exercise,
   done,
+  stalled,
   onOpen,
   photo,
 }: {
   exercise: ExerciseTarget;
   done: number;
+  /** Several sessions in a row without progress. */
+  stalled?: boolean;
   onOpen: () => void;
   photo: { src: string | null; caption?: string; custom?: boolean };
 }) {
@@ -49,6 +52,11 @@ export function ExerciseCard({
         {complete ? (
           <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-good)] text-[11px] font-bold text-black">
             ✓
+          </span>
+        ) : null}
+        {stalled && !complete ? (
+          <span className="absolute bottom-2 right-2 rounded-full bg-[var(--color-warn)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black" title="Varias sesiones sin mejorar">
+            Estancado
           </span>
         ) : null}
       </div>

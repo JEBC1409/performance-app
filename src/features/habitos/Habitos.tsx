@@ -6,9 +6,12 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db, type HabitDefRecord } from "@/db/db";
 import { useHabitDefs } from "@/hooks/useHabitDefs";
 import { RUTINA_MATUTINA } from "@/data/gym";
-import { Card, Eyebrow, HabitGlyph, FlameGlyph, BarChart } from "@/ui";
+import { Button, Card, Eyebrow, HabitGlyph, FlameGlyph, BarChart } from "@/ui";
+import { showToast } from "@/ui/Toast";
 import { daysInMonth, pad2, todayISO, MESES } from "@/lib/date";
 import { currentStreak } from "@/lib/streak";
+import { useMorningRoutine } from "@/hooks/useMorningRoutine";
+import { GuidedRoutine } from "./GuidedRoutine";
 
 const EMPTY_HABITS: HabitDefRecord[] = [];
 
@@ -20,6 +23,8 @@ export function Habitos() {
   });
 
   const habitDefs = useHabitDefs();
+  const routine = useMorningRoutine();
+  const [guided, setGuided] = useState(false);
   const habitList = habitDefs ?? EMPTY_HABITS;
 
   const year = monthDate.getFullYear();
@@ -184,7 +189,10 @@ export function Habitos() {
       </Card>
 
       <Card>
-        <Eyebrow>Rutina matutina · 7 min en ayunas</Eyebrow>
+        <div className="flex items-center justify-between gap-3">
+          <Eyebrow>Rutina matutina · 7 min en ayunas</Eyebrow>
+          {routine.doneToday ? <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-good)]">Hecha hoy ✓</span> : null}
+        </div>
         <div className="mt-3 flex flex-col divide-y divide-[var(--color-line)]">
           {RUTINA_MATUTINA.map((r) => (
             <div key={r.ex} className="py-2.5 flex items-start justify-between gap-3">
@@ -198,7 +206,20 @@ export function Habitos() {
             </div>
           ))}
         </div>
+        <Button variant="primary" className="mt-3 w-full" onClick={() => setGuided(true)}>
+          {routine.doneToday ? "Hacerla otra vez, guiada" : "Empezar guiada"}
+        </Button>
       </Card>
+
+      <GuidedRoutine
+        open={guided}
+        onClose={() => setGuided(false)}
+        onFinish={async () => {
+          await routine.markDone();
+          setGuided(false);
+          showToast("Rutina matutina registrada");
+        }}
+      />
     </div>
   );
 }

@@ -12,16 +12,21 @@ export const ACCENTS: { key: Accent; label: string; swatch: string }[] = [
   { key: "violet", label: "Violeta", swatch: "#8b5cf6" },
 ];
 
-export type HomeCard = "rings" | "session" | "streak" | "habits" | "stats" | "verse";
+export type HomeCard = "rings" | "priorities" | "session" | "streak" | "habits" | "insights" | "stats" | "verse";
 
 export const HOME_CARDS: { key: HomeCard; label: string }[] = [
   { key: "rings", label: "Anillos del día" },
+  { key: "priorities", label: "Prioridades y cierre del día" },
   { key: "session", label: "Sesión del día" },
   { key: "streak", label: "Racha" },
   { key: "habits", label: "Hábitos de hoy" },
+  { key: "insights", label: "Descubrimientos" },
   { key: "stats", label: "Estadísticas" },
   { key: "verse", label: "Versículo" },
 ];
+
+/** Cards added after people had already saved an order: where they land for them, instead of at the very bottom. */
+const PLACE_AFTER: Partial<Record<HomeCard, HomeCard>> = { priorities: "rings", insights: "habits" };
 
 /** Screens that can sit in the mobile bottom bar (the rest live under "Más"). */
 export type NavKey = "hoy" | "entreno" | "habitos" | "datos" | "horario" | "focus" | "kairos" | "mouredev" | "perfil";
@@ -62,14 +67,21 @@ const KEY = "performance_ui_prefs_v1";
 const DEFAULT_ORDER = HOME_CARDS.map((c) => c.key);
 export const DEFAULT_UI_PREFS: UiPrefs = { accent: "red", theme: "dark", calm: false, homeOrder: DEFAULT_ORDER, navTabs: DEFAULT_NAV };
 
-/** Known cards only, each once, in the saved order; anything new is appended. */
+/** Known cards only, each once, in the saved order; anything new goes next to the
+ * card it belongs with (see PLACE_AFTER) or, failing that, at the end. */
 export function normalizeOrder(saved: unknown): HomeCard[] {
   const known = new Set<string>(DEFAULT_ORDER);
   const out: HomeCard[] = [];
   if (Array.isArray(saved)) {
     for (const k of saved) if (typeof k === "string" && known.has(k) && !out.includes(k as HomeCard)) out.push(k as HomeCard);
   }
-  for (const k of DEFAULT_ORDER) if (!out.includes(k)) out.push(k);
+  for (const k of DEFAULT_ORDER) {
+    if (out.includes(k)) continue;
+    const after = PLACE_AFTER[k];
+    const at = after ? out.indexOf(after) : -1;
+    if (at >= 0) out.splice(at + 1, 0, k);
+    else out.push(k);
+  }
   return out;
 }
 
