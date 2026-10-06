@@ -123,8 +123,9 @@ describe("Entreno", () => {
         createdAt: Date.now(),
       });
     });
+    // Live queries reach the screen a moment after the write commits, so wait for it.
     expect(screen.getByText(GYM_DIAS.A.ex[0].name)).toBeInTheDocument();
-    expect(screen.getByText(`1/${target}`)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText(`1/${target}`)).toBeInTheDocument());
 
     // Logging a set nudges the cycle's live session count, which used to flip
     // `useDefaultGymDay`'s return value mid-session and swap the exercise list
@@ -150,7 +151,8 @@ describe("Entreno", () => {
     expect(screen.getByText(GYM_DIAS.A.ex[0].name)).toBeInTheDocument();
     // Both of today's sets (the original plus the one just added) still count —
     // proof the session wasn't quietly reset to a different day.
-    expect(screen.getByText(/^2 \/ \d+ series$/)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText(/^2 \/ \d+ series$/)).toBeInTheDocument());
+    expect(screen.getByText(/Día A ·/i)).toBeInTheDocument(); // and it is still day A after the wait
   });
 });
 
