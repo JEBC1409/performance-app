@@ -50,10 +50,9 @@ export function ReadingPlanCard({ onOpen }: { onOpen: (abbrev: string, chapter: 
         <div className="panel-surface p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="eyebrow eyebrow-gold">Plan de lectura</div>
-              <div className="mt-1 truncate text-[15px] font-semibold">{def.name}</div>
-              <div className="num mt-0.5 text-[11px] text-[var(--color-muted)]">
-                Día {progress.dayNumber} de {plan.days} · {progress.doneCount}/{progress.total} capítulos
+              <h2 className="card-title">Plan de lectura</h2>
+              <div className="num mt-0.5 truncate text-[12px] text-[var(--color-muted)]">
+                {def.name} · día {progress.dayNumber} de {plan.days} · {progress.doneCount}/{progress.total} capítulos
               </div>
             </div>
             <div className="flex flex-none items-center gap-3 text-[11px] text-[var(--color-muted)]">

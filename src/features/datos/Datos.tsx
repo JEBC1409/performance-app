@@ -42,7 +42,7 @@ export function Datos() {
         <h1 className="font-[var(--font-display)] text-xl mt-1.5">Datos</h1>
       </div>
 
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
+      <div className="no-scrollbar flex gap-1.5 overflow-x-auto pb-1">
         {SUB_TABS.map((t) => (
           <button
             key={t.key}

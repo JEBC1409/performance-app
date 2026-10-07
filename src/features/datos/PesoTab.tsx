@@ -2,7 +2,7 @@ import { EmptyState } from "@/ui/EmptyState";
 import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
-import { Card, Eyebrow, Chip, Button, Field, Input, DateField, BarChart, type BarPoint } from "@/ui";
+import { Card, CardTitle, Chip, Button, Field, Input, DateField, BarChart, type BarPoint } from "@/ui";
 import { LineChart } from "@/ui/LineChart";
 import { evaluateRate } from "@/lib/weightProjection";
 import { todayISO, fmtDateHuman, startOfWeek } from "@/lib/date";
@@ -23,7 +23,7 @@ export function PesoTab() {
   const kgPoints = (rows ?? [])
     .filter((r) => r.weightKg != null)
     .map((r) => ({ date: r.date, weight: r.weightKg as number }));
-  const displayPoints = kgPoints.map((p) => ({ label: p.date, value: fromKg(p.weight, unit) }));
+  const displayPoints = kgPoints.map((p) => ({ label: fmtDateHuman(p.date), value: fromKg(p.weight, unit) }));
   const alert = kgPoints.length >= 2 ? evaluateRate(kgPoints) : null;
   const last = rows && rows.length ? rows[rows.length - 1] : null;
 
@@ -56,12 +56,7 @@ export function PesoTab() {
   return (
     <div className="flex flex-col gap-4">
       <Card>
-        <div className="flex items-center justify-between">
-          <Eyebrow accent>Peso corporal</Eyebrow>
-          <span className="text-[10.5px] text-[var(--color-muted)] num">
-            meta +{fromKg(goal, unit)} {u}/semana
-          </span>
-        </div>
+        <CardTitle right={`ritmo ideal +${fromKg(goal, unit)} ${u}/semana`}>Peso corporal</CardTitle>
         <div className="mt-3 grid grid-cols-1 sidebar:grid-cols-[1.3fr_1fr] gap-4">
           <div>
             <LineChart
@@ -86,7 +81,7 @@ export function PesoTab() {
       <WeightGoalCard points={kgPoints.map((p) => ({ date: p.date, kg: p.weight }))} unit={unit} />
 
       <Card>
-        <Eyebrow>Registrar peso</Eyebrow>
+        <CardTitle>Registrar peso</CardTitle>
         <div className="grid grid-cols-2 gap-2 mt-3">
           <Field label="Fecha">
             <DateField value={date} max={todayISO()} onChange={setDate} size="sm" />
@@ -101,7 +96,9 @@ export function PesoTab() {
       </Card>
 
       <Card padded={false}>
-        <div className="px-4 py-3 border-b border-[var(--color-line)] eyebrow">Registro</div>
+        <div className="px-4 py-3 border-b border-[var(--color-line)]">
+          <CardTitle>Registro</CardTitle>
+        </div>
         <div className="divide-y divide-[var(--color-line)]">
           {(rows ?? [])
             .slice()

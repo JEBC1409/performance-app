@@ -1,12 +1,25 @@
+import { useState } from "react";
 import { useDailyStreak } from "@/hooks/useDailyStreak";
+import { Icon } from "@/ui/Icon";
 import { RankBadge } from "@/ui";
 import { FlameGlyph, FreezeGlyph } from "@/ui/icons";
 import { addDays, startOfWeek, todayISO, DIAS_CORTO } from "@/lib/date";
 
 const FREEZE_COLOR = "#4fa8c9";
+const OPEN_KEY = "performance_streak_open_v1";
+
+function readOpen(): boolean {
+  try {
+    return localStorage.getItem(OPEN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
 
 export function DailyStreakCard() {
   const data = useDailyStreak();
+  // The level bar is detail, not the headline: folded by default to keep Hoy short.
+  const [open, setOpen] = useState(readOpen);
   if (!data) return null;
 
   const today = todayISO();
@@ -68,25 +81,38 @@ export function DailyStreakCard() {
               style={d.frozen ? { borderColor: FREEZE_COLOR, background: `${FREEZE_COLOR}26`, color: FREEZE_COLOR } : undefined}
               title={d.frozen ? "Cubierto con un comodín" : undefined}
             >
-              {d.done ? "✓" : d.frozen ? <FreezeGlyph size={10} /> : d.isFuture ? "" : d.isToday ? "…" : "·"}
+              {d.done ? <Icon name="check" size={13} /> : d.frozen ? <FreezeGlyph size={10} /> : d.isFuture ? "" : d.isToday ? "…" : "·"}
             </div>
             <span className={`text-[8.5px] uppercase ${d.isToday ? "text-[var(--color-red)]" : "text-[var(--color-muted-2)]"}`}>{d.label}</span>
           </div>
         ))}
       </div>
 
-      <div className="mt-3.5">
-        <div className="flex items-center justify-between text-[10.5px]">
+      <div className="mt-3">
+        <button
+          onClick={() => {
+            const next = !open;
+            setOpen(next);
+            try {
+              localStorage.setItem(OPEN_KEY, next ? "1" : "0");
+            } catch {
+              /* not remembered */
+            }
+          }}
+          aria-expanded={open}
+          className="flex w-full items-center justify-between gap-3 text-left text-[11.5px]"
+        >
           <span className="font-semibold" style={{ color: tier.color }}>
             {tier.label}
-            <span className="ml-1.5 font-normal text-[var(--color-muted-2)]">· {data.activeDays} días activos</span>
+            <span className="ml-1.5 font-normal text-[var(--color-muted)]">· {data.activeDays} días activos</span>
           </span>
-          <span className="num text-[var(--color-muted-2)]">
+          <span className="flex items-center gap-1.5 num text-[var(--color-muted)]">
             {next ? `${daysToNext} ${daysToNext === 1 ? "día" : "días"} para ${next.label}` : "rango máximo"}
+            <Icon name="chevron-right" size={13} className={`transition-transform duration-200 ${open ? "rotate-90" : ""}`} />
           </span>
-        </div>
-        {next ? (
-          <div className="mt-1.5 h-1.5 rounded-full bg-[var(--color-surface-2)] overflow-hidden">
+        </button>
+        {open && next ? (
+          <div className="mt-2 h-1.5 rounded-full bg-[var(--color-surface-2)] overflow-hidden">
             <div
               className="h-full rounded-full"
               style={{ width: `${pct * 100}%`, background: `linear-gradient(90deg, ${tier.color}, ${next.color})`, transition: "width 400ms ease-out" }}

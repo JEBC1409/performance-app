@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useWeightGoal } from "@/hooks/useWeightGoal";
-import { Button, Card, DateField, Eyebrow, Field, Input } from "@/ui";
+import { Button, Card, CardTitle, DateField, Field, Input } from "@/ui";
 import { addDays, fmtDateFull, todayISO } from "@/lib/date";
 import { fromKg, toKg, unitLabel } from "@/lib/units";
 import type { Unit } from "@/db/db";
@@ -33,7 +33,7 @@ export function WeightGoalCard({ points, unit }: { points: WeightPoint[]; unit: 
   if (!goal || editing) {
     return (
       <Card>
-        <Eyebrow accent>Meta de peso</Eyebrow>
+        <CardTitle>Meta de peso</CardTitle>
         <p className="mt-2 text-[12.5px] text-[var(--color-muted)]">Pon el peso al que quieres llegar y la fecha. Con tus registros te digo si vas a tiempo.</p>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <Field label={`Peso meta (${u})`}>
@@ -43,7 +43,7 @@ export function WeightGoalCard({ points, unit }: { points: WeightPoint[]; unit: 
             <DateField value={by} min={addDays(todayISO(), 1)} onChange={setBy} size="sm" />
           </Field>
         </div>
-        <Button variant="primary" className="mt-3 w-full" onClick={submit}>
+        <Button variant="outline" className="mt-3 w-full" onClick={submit}>
           Fijar meta
         </Button>
         {editing ? (
@@ -100,7 +100,7 @@ export function WeightGoalCard({ points, unit }: { points: WeightPoint[]; unit: 
   return (
     <Card>
       <div className="flex items-center justify-between">
-        <Eyebrow accent>Meta de peso</Eyebrow>
+        <CardTitle>Meta de peso</CardTitle>
         <div className="flex items-center gap-3 text-[11px] text-[var(--color-muted)]">
           <button onClick={() => setEditing(true)} className="underline">
             Cambiar

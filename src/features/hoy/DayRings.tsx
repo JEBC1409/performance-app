@@ -17,6 +17,7 @@ interface Ring {
 }
 
 const SIZE = 150;
+const SHOWN = 118;
 const C = SIZE / 2;
 const STROKE = 11;
 
@@ -63,9 +64,10 @@ export function DayRings({ habitsDone, habitsTotal, slot }: { habitsDone: number
   ];
 
   return (
-    <div className="panel-surface enter enter-delay-1 flex items-center gap-4 p-4" aria-label={`Anillos del día: ${closed} de 3 cerrados`}>
-      <div className="relative flex-none" style={{ width: SIZE, height: SIZE }}>
-        <svg viewBox={`0 0 ${SIZE} ${SIZE}`} width={SIZE} height={SIZE} className="-rotate-90" aria-hidden>
+    <div className="panel-surface enter enter-delay-1 flex items-center gap-5 px-5 py-4" aria-label={`Anillos del día: ${closed} de 3 cerrados`}>
+      {/* Drawn in a 150-unit box but shown smaller: the rings are a glance, not the page. */}
+      <div className="relative flex-none" style={{ width: SHOWN, height: SHOWN }}>
+        <svg viewBox={`0 0 ${SIZE} ${SIZE}`} width={SHOWN} height={SHOWN} className="-rotate-90" aria-hidden>
           {rings.map((r) => {
             const circ = 2 * Math.PI * r.r;
             return (

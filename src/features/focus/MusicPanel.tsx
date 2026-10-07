@@ -83,7 +83,7 @@ export function MusicPanel() {
   if (!m.config || editing) {
     return (
       <div className="panel-surface p-4">
-        <div className="eyebrow">Música</div>
+        <h2 className="card-title">Música</h2>
         <p className="mt-2 text-[12.5px] text-[var(--color-muted)]">
           Pega el enlace de una lista de YouTube o YouTube Music. Suena aquí mismo y la verás con su nombre en la pantalla completa del cronómetro.
         </p>
@@ -117,7 +117,7 @@ export function MusicPanel() {
   return (
     <div className="panel-surface p-4">
       <div className="flex items-center justify-between">
-        <div className="eyebrow">Música</div>
+        <h2 className="card-title">Música</h2>
         <div className="flex items-center gap-3 text-[11px] text-[var(--color-muted)]">
           <button onClick={() => setEditing(true)} className="underline">
             Cambiar

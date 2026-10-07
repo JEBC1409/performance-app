@@ -122,7 +122,7 @@ export function Hoy({
       >
         {blockHabitDone ? (
           <>
-            <span className="pop">✓</span> {blockHabit.label} hecho
+            <Icon name="check" size={15} className="pop" /> {blockHabit.label} hecho
           </>
         ) : (
           <>Marcar {blockHabit.label}</>
@@ -196,7 +196,8 @@ export function Hoy({
     rings: <DayRings key="rings" habitsDone={habitsCompleted} habitsTotal={habitsTotal} slot={slot} />,
 
     session: (
-      <div key="session" className={`panel-surface enter enter-delay-1 ${slot !== "rest" ? "panel-surface-glow" : ""}`}>
+      // Only the "Ahora" card above carries the accent glow: two glowing cards at once stop saying which one matters.
+      <div key="session" className="panel-surface enter enter-delay-1">
         <div className="px-4 pt-4 pb-3 border-b border-[var(--color-line)]">
           <div className="card-title">Sesión del día</div>
         </div>
@@ -246,8 +247,8 @@ export function Hoy({
       <div key="habits" className="panel-surface enter enter-delay-2">
         <div className="px-4 pt-4 pb-3 border-b border-[var(--color-line)] flex items-center justify-between">
           <div className="card-title">Hábitos de hoy</div>
-          <span className="eyebrow">
-            <span className="text-[var(--color-red)] not-italic">{habitsCompleted}</span>/{habitsTotal}
+          <span className="num text-[11.5px] text-[var(--color-muted)]">
+            <span className="font-semibold text-[var(--color-ink)]">{habitsCompleted}</span>/{habitsTotal}
           </span>
         </div>
         <div className="px-4 py-3 grid grid-cols-2 gap-2">

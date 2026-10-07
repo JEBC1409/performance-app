@@ -1,5 +1,5 @@
 import { useInsights } from "@/hooks/useInsights";
-import { Card, Eyebrow } from "@/ui";
+import { Card, CardTitle } from "@/ui";
 
 /** What your own data says about you. Appears only once there's enough of it to say something true. */
 export function InsightsCard() {
@@ -7,7 +7,7 @@ export function InsightsCard() {
   if (!insights?.length) return null;
   return (
     <Card className="enter">
-      <Eyebrow accent>Descubrimientos</Eyebrow>
+      <CardTitle>Descubrimientos</CardTitle>
       <ul className="mt-3 flex flex-col gap-2.5">
         {insights.map((i) => (
           <li key={i.id} className="flex gap-2.5 text-[13px] leading-snug">

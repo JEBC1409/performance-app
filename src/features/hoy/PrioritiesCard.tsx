@@ -5,7 +5,7 @@ import { usePriorities } from "@/hooks/usePriorities";
 import { useHabitDefs } from "@/hooks/useHabitDefs";
 import { addItem, closeDay, MAX_ITEMS, MAX_TEXT, planFor, progress, removeItem, toggleItem } from "@/lib/priorities";
 import { todayISO } from "@/lib/date";
-import { Button, Card, Eyebrow, Sheet } from "@/ui";
+import { Button, Card, CardTitle, Sheet } from "@/ui";
 import { Icon } from "@/ui/Icon";
 import { haptic } from "@/lib/feedback";
 import { showToast } from "@/ui/Toast";
@@ -46,12 +46,7 @@ export function PrioritiesCard() {
 
   return (
     <Card className="enter enter-delay-1">
-      <div className="flex items-center justify-between">
-        <Eyebrow accent>Prioridades de hoy</Eyebrow>
-        <span className="num text-[11px] text-[var(--color-muted)]">
-          {done}/{Math.max(total, MAX_ITEMS)}
-        </span>
-      </div>
+      <CardTitle right={`${done}/${Math.max(total, MAX_ITEMS)}`}>Prioridades de hoy</CardTitle>
 
       <ul className="mt-3 flex flex-col gap-2">
         {plan.items.map((i) => (
