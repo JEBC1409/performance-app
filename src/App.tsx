@@ -6,6 +6,7 @@ import { Shell } from "@/layout/Shell";
 import { ToastHost } from "@/ui/Toast";
 import { ConfirmHost } from "@/ui/Confirm";
 import { readDeepLink } from "@/lib/deepLink";
+import { startJarvisLink } from "@/lib/jarvisLink";
 import { Guide } from "@/features/onboarding/Guide";
 import { seedIfNeeded } from "@/db/seed";
 import { db } from "@/db/db";
@@ -150,6 +151,15 @@ export default function App() {
       if (!idle) window.clearTimeout(id);
     };
   }, [ready]);
+
+  // Voice link to JARVIS (the desktop assistant): lets it open screens, run the
+  // Focus timer and log sets or habits. Only once signed in and seeded.
+  useEffect(() => {
+    if (!session || !ready) return;
+    return startJarvisLink({ navigate: setTab });
+    // setTab is recreated every render and only reads the current tab to skip a no-op.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, ready]);
 
   function startEntreno(day: GymDay, date: string) {
     setAutoStart({ day, date });
