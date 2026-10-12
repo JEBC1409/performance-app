@@ -84,7 +84,10 @@ describe("Hoy · start a workout", () => {
     const onStart = vi.fn();
     render(<Hoy onStartEntreno={onStart} onNavigate={() => {}} />);
 
-    fireEvent.click(await screen.findByRole("button", { name: /Iniciar/i }));
+    // Exactly "Iniciar": during the gym block of the schedule Hoy also shows an
+    // "Iniciar <día>" shortcut, and a loose match found both (the test used to
+    // fail whenever it ran between 10:00 and 12:20).
+    fireEvent.click(await screen.findByRole("button", { name: /^Iniciar$/i }));
     const dialog = await screen.findByRole("dialog", { name: /Empezar entreno/i });
     fireEvent.click(within(dialog).getByRole("button", { name: /Día B/i }));
     fireEvent.click(within(dialog).getByRole("button", { name: /Comenzar/i }));
