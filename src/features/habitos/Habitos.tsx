@@ -6,7 +6,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db, type HabitDefRecord } from "@/db/db";
 import { useHabitDefs } from "@/hooks/useHabitDefs";
 import { RUTINA_MATUTINA } from "@/data/gym";
-import { Button, Card, Eyebrow, HabitGlyph, FlameGlyph, BarChart } from "@/ui";
+import { Button, Card, PageHeader, HabitGlyph, FlameGlyph, BarChart } from "@/ui";
 import { showToast } from "@/ui/Toast";
 import { daysInMonth, pad2, todayISO, MESES } from "@/lib/date";
 import { currentStreak } from "@/lib/streak";
@@ -61,14 +61,11 @@ export function Habitos() {
 
   return (
     <div className="flex flex-col gap-4 enter">
-      <div>
-        <Eyebrow>Hábitos</Eyebrow>
-        <h1 className="font-[var(--font-display)] text-xl mt-1.5">Hoy</h1>
-      </div>
+      <PageHeader eyebrow="Hábitos" title="Hoy" />
 
       <Card>
         <div className="flex items-center justify-between">
-          <Eyebrow accent>Consistencia del mes</Eyebrow>
+          <h2 className="card-title">Consistencia del mes</h2>
           <span className="text-[10.5px] text-[var(--color-muted)] num">de {habitList.length} hábitos/día</span>
         </div>
         <div className="mt-3">
@@ -190,7 +187,7 @@ export function Habitos() {
 
       <Card>
         <div className="flex items-center justify-between gap-3">
-          <Eyebrow>Rutina matutina · 7 min en ayunas</Eyebrow>
+          <h2 className="card-title">Rutina matutina · 7 min en ayunas</h2>
           {routine.doneToday ? <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-good)]">Hecha hoy ✓</span> : null}
         </div>
         <div className="mt-3 flex flex-col divide-y divide-[var(--color-line)]">

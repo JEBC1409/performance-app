@@ -5,7 +5,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
-import { Card, Eyebrow } from "@/ui";
+import { Card } from "@/ui";
 import { addDays, fmtDateHuman, startOfWeek, todayISO } from "@/lib/date";
 import { fromKg, unitLabel } from "@/lib/units";
 import { delta, weekStats } from "@/lib/weeklySummary";
@@ -161,7 +161,7 @@ function Hero({ cur, prev }: { cur: WeekStats; prev: WeekStats }) {
     <div className="panel-surface panel-surface-glow p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <Eyebrow accent>Días activos</Eyebrow>
+          <h2 className="card-title">Días activos</h2>
           <div className="mt-2 flex items-baseline gap-1.5">
             <span className="num font-[var(--font-display)] text-[40px] font-light leading-none">{cur.activeDays}</span>
             <span className="num text-[15px] text-[var(--color-muted-2)]">/ 7</span>
@@ -197,7 +197,7 @@ function Habits({ cur, prev }: { cur: WeekStats; prev: WeekStats }) {
   return (
     <Card>
       <div className="flex items-center justify-between">
-        <Eyebrow>Hábitos</Eyebrow>
+        <h2 className="card-title">Hábitos</h2>
         {cur.habitPct != null ? (
           <span className="num text-[12px] font-semibold">
             {Math.round(cur.habitPct * 100)}%

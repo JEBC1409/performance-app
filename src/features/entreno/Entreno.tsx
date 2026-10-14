@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
 import { GYM_DAY_ORDER, GYM_DIAS, CARDIO_NOTA, targetSetsForDay } from "@/data/gym";
-import { Tabs, Eyebrow, Card, Sheet, DateField, Button } from "@/ui";
+import { Tabs, PageHeader, Card, Sheet, DateField, Button } from "@/ui";
 import { showToast } from "@/ui/Toast";
 import { todayISO, fmtDateHuman } from "@/lib/date";
 import { buildDailySummary } from "@/lib/dailySummary";
@@ -177,19 +177,17 @@ export function Entreno({
 
   return (
     <div className="flex flex-col gap-4 enter" {...swipe}>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <Eyebrow>Entreno</Eyebrow>
-          <h1 className="font-[var(--font-display)] text-xl mt-1.5">
-            Día {day} · {GYM_DIAS[day].nombre}
-          </h1>
-          <div className="text-[12px] text-[var(--color-muted)] mt-1">{GYM_DIAS[day].grupo}</div>
-        </div>
-        <label className="flex-none flex flex-col items-end gap-1">
-          <span className="text-[10.5px] text-[var(--color-muted)] uppercase tracking-wide">Fecha</span>
-          <DateField value={sessionDate} max={today} onChange={setSessionDate} size="sm" />
-        </label>
-      </div>
+      <PageHeader
+        eyebrow="Entreno"
+        title={`Día ${day} · ${GYM_DIAS[day].nombre}`}
+        subtitle={GYM_DIAS[day].grupo}
+        right={
+          <label className="flex flex-col items-end gap-1">
+            <span className="text-[10.5px] text-[var(--color-muted)] uppercase tracking-wide">Fecha</span>
+            <DateField value={sessionDate} max={today} onChange={setSessionDate} size="sm" />
+          </label>
+        }
+      />
 
       <Tabs
         items={GYM_DAY_ORDER.map((d) => ({ key: d, label: `Día ${d}` }))}
@@ -236,7 +234,7 @@ export function Entreno({
       ) : null}
 
       <Card>
-        <Eyebrow>Cardio</Eyebrow>
+        <h2 className="card-title">Cardio</h2>
         <p className="text-[12.5px] text-[var(--color-muted)] mt-1.5">{CARDIO_NOTA}</p>
       </Card>
 

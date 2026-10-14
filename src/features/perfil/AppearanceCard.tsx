@@ -1,5 +1,5 @@
 import { Icon } from "@/ui/Icon";
-import { Card, Eyebrow } from "@/ui";
+import { Card } from "@/ui";
 import { useUiPrefs } from "@/hooks/useUiPrefs";
 import { ACCENTS, DEFAULT_NAV, DEFAULT_UI_PREFS, HOME_CARDS, NAV_SLOTS, NAV_TABS, setUiPrefs } from "@/lib/uiPrefs";
 import type { NavKey } from "@/lib/uiPrefs";
@@ -31,7 +31,7 @@ export function AppearanceCard() {
 
   return (
     <Card>
-      <Eyebrow accent>Apariencia</Eyebrow>
+      <h2 className="card-title">Apariencia</h2>
 
       <div className="mt-3">
         <div className="mb-2 text-[11.5px] text-[var(--color-muted)]">Color de acento</div>

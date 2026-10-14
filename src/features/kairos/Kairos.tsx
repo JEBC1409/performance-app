@@ -6,7 +6,7 @@ import type { SavedVerseRecord } from "@/db/db";
 import { useBible } from "@/hooks/useBible";
 import { BIBLE_BOOKS } from "@/data/bible/books";
 import { getChapter, chapterCount } from "@/data/bible/loader";
-import { Eyebrow, Card, Sheet, Field, Input, Button, FlameGlyph } from "@/ui";
+import { Eyebrow, PageHeader, Card, Sheet, Field, Input, Button, FlameGlyph } from "@/ui";
 import { Icon } from "@/ui/Icon";
 import { Section } from "@/ui/Section";
 import { confirmAction } from "@/lib/confirm";
@@ -200,10 +200,7 @@ export function Kairos() {
       />
 
       <div className="flex flex-col gap-4 enter">
-        <div>
-          <Eyebrow gold>Oración</Eyebrow>
-          <h1 className="font-[var(--font-display)] text-xl mt-1.5">Biblia · Reina-Valera 1909</h1>
-        </div>
+        <PageHeader gold eyebrow="Oración" title="Biblia · Reina-Valera 1909" />
 
         <div className="glass-track flex gap-1 p-1 rounded-full">
           <button

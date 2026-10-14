@@ -3,7 +3,7 @@ import { HORARIO, HORARIO_NOTE, HORARIO_GOAL, BLOCK_COLOR, BLOCK_LABEL, type Blo
 import { BlockChip } from "./BlockChip";
 import { DayTimeline } from "./DayTimeline";
 import { DIAS_CORTO, jsDowToIndex } from "@/lib/date";
-import { Card, Eyebrow } from "@/ui";
+import { Card, PageHeader } from "@/ui";
 import { ScheduleNotifyCard } from "./ScheduleNotifyCard";
 import { useConfigVersion } from "@/hooks/useConfigVersion";
 import { useState } from "react";
@@ -32,20 +32,20 @@ export function Horario() {
 
   return (
     <div className="flex flex-col gap-4 enter">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <Eyebrow accent>Horario</Eyebrow>
-          <h1 className="font-[var(--font-display)] text-2xl mt-1.5">Semana</h1>
-          <div className="text-[12.5px] text-[var(--color-muted)] mt-1.5">{HORARIO_NOTE}</div>
-        </div>
-        <button
-          onClick={() => setEditing((e) => !e)}
-          aria-pressed={editing}
-          className={`mt-1 flex-none rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] ${editing ? "glass-on" : "glass text-[var(--color-muted)]"}`}
-        >
-          {editing ? "Listo" : "Editar"}
-        </button>
-      </div>
+      <PageHeader
+        eyebrow="Horario"
+        title="Semana"
+        subtitle={HORARIO_NOTE}
+        right={
+          <button
+            onClick={() => setEditing((e) => !e)}
+            aria-pressed={editing}
+            className={`mt-1 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] ${editing ? "glass-on" : "glass text-[var(--color-muted)]"}`}
+          >
+            {editing ? "Listo" : "Editar"}
+          </button>
+        }
+      />
       {editing ? <p className="-mt-2 text-[12px] leading-snug text-[var(--color-muted)]">Toca un bloque para cambiarlo, una celda vacía para llenarla, o una hora para editarla. Se guarda solo.</p> : null}
 
       <div className="sidebar:hidden">

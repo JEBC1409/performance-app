@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eyebrow } from "@/ui";
+import { PageHeader } from "@/ui";
 import { PesoTab } from "./PesoTab";
 import { UnoRMTab } from "./UnoRMTab";
 import { SuenoTab } from "./SuenoTab";
@@ -37,10 +37,7 @@ export function Datos() {
 
   return (
     <div className="flex flex-col gap-4 enter">
-      <div>
-        <Eyebrow>Progreso</Eyebrow>
-        <h1 className="font-[var(--font-display)] text-xl mt-1.5">Datos</h1>
-      </div>
+      <PageHeader eyebrow="Progreso" title="Datos" />
 
       <div className="no-scrollbar flex gap-1.5 overflow-x-auto pb-1">
         {SUB_TABS.map((t) => (

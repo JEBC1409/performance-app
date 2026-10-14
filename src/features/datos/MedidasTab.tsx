@@ -2,7 +2,7 @@ import { EmptyState } from "@/ui/EmptyState";
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
-import { Card, Eyebrow, Field, Input, Button, DateField } from "@/ui";
+import { Card, Field, Input, Button, DateField } from "@/ui";
 import { todayISO, fmtDateHuman } from "@/lib/date";
 import { showToast } from "@/ui/Toast";
 
@@ -44,7 +44,7 @@ export function MedidasTab() {
   return (
     <div className="flex flex-col gap-4">
       <Card>
-        <Eyebrow>Registrar medidas</Eyebrow>
+        <h2 className="card-title">Registrar medidas</h2>
         <div className="grid grid-cols-3 gap-2 mt-3">
           <Field label="Fecha">
             <DateField value={date} max={todayISO()} onChange={setDate} size="sm" />

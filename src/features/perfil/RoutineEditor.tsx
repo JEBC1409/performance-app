@@ -1,7 +1,7 @@
 import { Icon } from "@/ui/Icon";
 import { confirmAction } from "@/lib/confirm";
 import { useState } from "react";
-import { Button, Card, Eyebrow, Field, Input, Select, Stepper } from "@/ui";
+import { Button, Card, Field, Input, Select, Stepper } from "@/ui";
 import { showToast } from "@/ui/Toast";
 import { GYM_DAY_ORDER, currentRoutineConfig, defaultRoutine, sanitizeRoutine } from "@/data/gym";
 import type { ExerciseTarget, RoutineConfig } from "@/data/gym";
@@ -183,7 +183,7 @@ export function RoutineEditor() {
     <Card>
       <div className="flex items-center justify-between gap-3">
         <div>
-          <Eyebrow accent>Mi rutina</Eyebrow>
+          <h2 className="card-title">Mi rutina</h2>
           <p className="mt-1.5 text-[12px] leading-snug text-[var(--color-muted)]">Ejercicios, series, repeticiones y pesos de cada día. Los cambios se guardan en tu cuenta.</p>
         </div>
         {!editing ? (

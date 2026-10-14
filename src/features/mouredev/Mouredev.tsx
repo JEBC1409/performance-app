@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
-import { Card, Eyebrow, Stat, Button, BarChart, type BarPoint } from "@/ui";
+import { Card, PageHeader, Stat, Button, BarChart, type BarPoint } from "@/ui";
 import { num } from "@/lib/date";
 import { MOUREDEV_TARGET_LABEL, MOUREDEV_GOAL_HOURS_PER_WEEK } from "@/data/mouredev";
 
@@ -62,11 +62,7 @@ export function Mouredev() {
       </div>
 
       <div className="flex flex-col gap-4 enter">
-        <div>
-          <Eyebrow>MoureDev</Eyebrow>
-          <h1 className="font-[var(--font-display)] text-xl mt-1.5">Ruta Python</h1>
-          <div className="text-[11.5px] text-[var(--color-muted)] mt-1">{MOUREDEV_TARGET_LABEL} · ~{MOUREDEV_GOAL_HOURS_PER_WEEK}h/semana</div>
-        </div>
+        <PageHeader eyebrow="MoureDev" title="Ruta Python" subtitle={`${MOUREDEV_TARGET_LABEL} · ~${MOUREDEV_GOAL_HOURS_PER_WEEK}h/semana`} />
 
         <div className="grid grid-cols-2 gap-2.5">
           <Stat label="Horas totales" value={totalHours} sub={`de ~${MOUREDEV_GOAL_HOURS_PER_WEEK}h/semana`} accent />
@@ -75,7 +71,7 @@ export function Mouredev() {
 
         {hourPoints.length ? (
           <Card>
-            <Eyebrow accent>Horas por semana</Eyebrow>
+            <h2 className="card-title">Horas por semana</h2>
             <div className="mt-3">
               <BarChart points={hourPoints} height={100} goalLine={MOUREDEV_GOAL_HOURS_PER_WEEK} unit="horas registradas" />
             </div>
@@ -83,7 +79,7 @@ export function Mouredev() {
         ) : null}
 
         <Card>
-          <Eyebrow accent>Herramientas para el desarrollador</Eyebrow>
+          <h2 className="card-title">Herramientas para el desarrollador</h2>
           <div className="mt-3 flex flex-wrap gap-2">
             {DEV_TOOLS.map((t) => (
               <a

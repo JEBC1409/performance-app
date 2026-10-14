@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
-import { Card, Eyebrow, Field, Input, Button, DateField } from "@/ui";
+import { Card, Field, Input, Button, DateField } from "@/ui";
 import { BarChart, type BarPoint } from "@/ui/BarChart";
 import { SUENO, SLEEP_GOAL_HOURS } from "@/data/horario";
 import { todayISO, fmtDateHuman } from "@/lib/date";
@@ -31,14 +31,14 @@ export function SuenoTab() {
   return (
     <div className="flex flex-col gap-4">
       <Card>
-        <Eyebrow accent>Sueño vs meta</Eyebrow>
+        <h2 className="card-title">Sueño vs meta</h2>
         <div className="mt-3">
           <BarChart points={points} goalLine={SLEEP_GOAL_HOURS} unit="horas por noche · meta 7h30" />
         </div>
       </Card>
 
       <Card>
-        <Eyebrow>Registrar sueño</Eyebrow>
+        <h2 className="card-title">Registrar sueño</h2>
         <div className="grid grid-cols-2 gap-2 mt-3">
           <Field label="Fecha">
             <DateField value={date} max={todayISO()} onChange={setDate} size="sm" />

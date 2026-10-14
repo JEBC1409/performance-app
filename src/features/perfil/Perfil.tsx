@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS, type Unit } from "@/db/db";
-import { Card, Eyebrow, Field, Input, Select, Button, Chip, Stat } from "@/ui";
+import { Card, PageHeader, Field, Input, Select, Button, Chip, Stat } from "@/ui";
 import { showToast } from "@/ui/Toast";
 import { setCycleSlot, useCycleSlot } from "@/hooks/useCycle";
 import { exportBackup, importBackup } from "@/lib/jsonBackup";
@@ -114,10 +114,7 @@ export function Perfil() {
 
   return (
     <div className="flex flex-col gap-4 enter">
-      <div>
-        <Eyebrow>Perfil</Eyebrow>
-        <h1 className="font-[var(--font-display)] text-xl mt-1.5">Configuración</h1>
-      </div>
+      <PageHeader eyebrow="Perfil" title="Configuración" />
 
       <Card className="panel-surface-glow">
         <div className="flex items-center gap-4">
@@ -163,8 +160,7 @@ export function Perfil() {
       <div className="flex flex-col gap-3">
         <Section id="ajustes" title="Ajustes" summary={`${unitLabel(unit)} · descanso ${settings?.defaultRestSec ?? DEFAULT_SETTINGS.defaultRestSec}s · dormir ${settings?.sleepTime ?? DEFAULT_SETTINGS.sleepTime}`} defaultOpen>
         <Card>
-          <Eyebrow>Preferencias</Eyebrow>
-          <div className="grid grid-cols-2 gap-2.5 mt-3">
+          <div className="grid grid-cols-2 gap-2.5">
             <Field label="Unidad de peso">
               <Select value={unit} onChange={(e) => patch({ unit: e.target.value as Unit })}>
                 <option value="kg">Kilogramos (kg)</option>
@@ -203,7 +199,7 @@ export function Perfil() {
         <Section id="entreno" title="Entrenamiento" summary="Tu rutina, series y pesos, y las reglas Heavy Duty">
         <RoutineEditor />
         <Card>
-          <Eyebrow>Reglas Heavy Duty</Eyebrow>
+          <h2 className="card-title">Reglas Heavy Duty</h2>
           <ul className="mt-2.5 flex flex-col gap-2">
             {HEAVY_DUTY_RULES.map((rule) => (
               <li key={rule} className="text-[12.5px] text-[var(--color-muted)] flex gap-2">
@@ -220,7 +216,7 @@ export function Perfil() {
         <HabitManager />
         <Card>
           <div className="flex items-center justify-between">
-            <Eyebrow accent>Recordatorios</Eyebrow>
+            <h2 className="card-title">Recordatorios</h2>
             {permission === "granted" ? (
               <Chip tone="good">Activos</Chip>
             ) : permission === "denied" ? (
@@ -262,7 +258,7 @@ export function Perfil() {
         <Section id="cuenta" title="Cuenta y datos" summary={session?.user.email ?? "Tu cuenta y tus copias de seguridad"}>
         <Card>
           <div className="flex items-center justify-between">
-            <Eyebrow accent>Cuenta</Eyebrow>
+            <h2 className="card-title">Cuenta</h2>
             <Chip tone="good">Conectado</Chip>
           </div>
           <p className="text-[13px] mt-2">{session?.user.email}</p>
@@ -275,7 +271,7 @@ export function Perfil() {
         </Card>
 
         <Card>
-          <Eyebrow accent>Ciclo actual</Eyebrow>
+          <h2 className="card-title">Ciclo actual</h2>
           <div className="mt-2 flex items-center gap-2">
             <Chip tone="accent">{slot === "rest" ? "Descanso" : `Día ${slot}`}</Chip>
             <span className="text-[11.5px] text-[var(--color-muted)]">A → B → C → descanso → repetir</span>
@@ -300,7 +296,7 @@ export function Perfil() {
         </Card>
 
         <Card>
-          <Eyebrow>Datos</Eyebrow>
+          <h2 className="card-title">Datos</h2>
           <div className="flex flex-col gap-2 mt-3">
             <Button onClick={exportBackup}>Exportar todo (.json)</Button>
             <Button onClick={() => fileRef.current?.click()}>Importar backup (.json)</Button>

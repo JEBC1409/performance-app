@@ -44,7 +44,7 @@ export function ReadingPlanCard({ onOpen }: { onOpen: (abbrev: string, chapter: 
             <span className="block text-[13.5px] font-semibold">Plan de lectura</span>
             <span className="block text-[11.5px] text-[var(--color-muted)]">Elige un libro y te digo qué leer cada día.</span>
           </span>
-          <span className="flex-none text-[11px] font-semibold uppercase tracking-wide text-[var(--color-red)]">Elegir →</span>
+          <span className="flex-none text-[11px] font-semibold uppercase tracking-wide text-[var(--color-gold)]">Elegir →</span>
         </button>
       ) : (
         <div className="panel-surface p-4">

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Card, Eyebrow } from "@/ui";
+import { Button, Card } from "@/ui";
 import { showToast } from "@/ui/Toast";
 import { useNotifyPrefs } from "@/hooks/useScheduleNotifications";
 import { fmtMin, nextReminder, notificationsSupported, sendNotification, setNotifyPrefs } from "@/lib/scheduleNotify";
@@ -71,7 +71,7 @@ export function ScheduleNotifyCard() {
     <Card>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <Eyebrow accent>Avisos del horario</Eyebrow>
+          <h2 className="card-title">Avisos del horario</h2>
           <p className="mt-1.5 text-[12.5px] leading-snug text-[var(--color-muted)]">Una notificación cuando empieza cada bloque que te toca hoy, para que no dependa de acordarte.</p>
         </div>
         <button

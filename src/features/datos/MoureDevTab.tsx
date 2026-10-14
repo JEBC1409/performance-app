@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
-import { Card, Eyebrow, Stat } from "@/ui";
+import { Card, Stat } from "@/ui";
 import { LineChart } from "@/ui/LineChart";
 import { num } from "@/lib/date";
 import { MOUREDEV_GOAL_HOURS_PER_WEEK } from "@/data/mouredev";
@@ -29,7 +29,7 @@ export function MoureDevTab() {
         <Stat label="Semanas completas" value={`${doneWeeks} / ${weeks?.length ?? 24}`} />
       </div>
       <Card>
-        <Eyebrow accent>Horas acumuladas</Eyebrow>
+        <h2 className="card-title">Horas acumuladas</h2>
         <div className="mt-3">
           <LineChart points={points} lastValueLabel={`${totalHours}h`} />
         </div>

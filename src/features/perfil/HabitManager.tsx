@@ -3,7 +3,7 @@ import { db, type HabitDefRecord } from "@/db/db";
 import { useHabitDefs } from "@/hooks/useHabitDefs";
 import { HABIT_ICONS } from "@/data/habits";
 import { uniqueHabitKey } from "@/lib/habitSlug";
-import { Card, Eyebrow, HabitGlyph, Button } from "@/ui";
+import { Card, HabitGlyph, Button } from "@/ui";
 import { showToast } from "@/ui/Toast";
 
 /** Add / rename / remove the habits tracked on Hoy and Hábitos — these used
@@ -54,7 +54,7 @@ export function HabitManager() {
 
   return (
     <Card>
-      <Eyebrow accent>Hábitos</Eyebrow>
+      <h2 className="card-title">Hábitos</h2>
       <p className="text-[12px] text-[var(--color-muted)] mt-1.5">
         Agrega, renombra o quita los hábitos que sigues cada día — pueden cambiar de un mes a otro.
       </p>

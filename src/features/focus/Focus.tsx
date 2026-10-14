@@ -6,7 +6,7 @@ import { holdScreenAwake } from "@/lib/wakeLock";
 import type { ReactNode } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
-import { Eyebrow, Button } from "@/ui";
+import { PageHeader, Button } from "@/ui";
 import { ErrorBoundary } from "@/ui/ErrorBoundary";
 import { showToast } from "@/ui/Toast";
 import { todayISO } from "@/lib/date";
@@ -244,10 +244,7 @@ function FocusView() {
   return (
     <div className="flex flex-col gap-5 enter">
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <Eyebrow accent>Focus</Eyebrow>
-          <h1 className="font-[var(--font-display)] text-[26px] leading-tight mt-1.5 tracking-tight">Una tarea. Un bloque.</h1>
-        </div>
+        <PageHeader eyebrow="Focus" title="Una tarea. Un bloque." />
         <button
           onClick={() => setSoundOn(!soundOn)}
           aria-pressed={soundOn}
