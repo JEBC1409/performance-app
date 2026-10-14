@@ -27,6 +27,7 @@ export const EXERCISE_MUSCLE_GROUP: Record<string, MuscleGroup> = {
   "Press militar mancuernas sentado": "hombro",
   "Laterales mancuerna": "hombro",
   "Fondos en paralelas": "brazo",
+  "Fondos en máquina": "brazo",
   "Extensión trícep cuerda": "brazo",
   "Extensiones de piernas": "pierna",
   "Sentadilla libre / Prensa": "pierna",

@@ -21,6 +21,13 @@ describe("routine exercises", () => {
     expect(names).not.toContain("Curl martillo");
   });
 
+  it("push day uses machine dips, not parallel-bar dips", () => {
+    const names = allExerciseNames();
+    expect(names).toContain("Fondos en máquina");
+    expect(names).not.toContain("Fondos en paralelas");
+    expect(exerciseImageUrl("Fondos en máquina")).toMatch(/Dip_Machine\/0\.jpg$/);
+  });
+
   it("resolves the second-frame syntax", () => {
     expect(exerciseImageUrl("Remo unilateral en Hammer")).toMatch(/Leverage_Iso_Row\/1\.jpg$/);
     expect(exerciseImageUrl("Curl en máquina")).toMatch(/Machine_Bicep_Curl\/0\.jpg$/);

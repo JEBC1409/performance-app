@@ -25,6 +25,7 @@ const EXERCISE_IMAGE_ID: Record<string, string> = {
   "Press militar mancuernas sentado": "Seated_Dumbbell_Press",
   "Laterales mancuerna": "Side_Lateral_Raise",
   "Fondos en paralelas": "Parallel_Bar_Dip",
+  "Fondos en máquina": "Dip_Machine",
   "Extensión trícep cuerda": "Triceps_Pushdown_-_Rope_Attachment",
   "Extensiones de piernas": "Leg_Extensions",
   "Sentadilla libre / Prensa": "Barbell_Squat",

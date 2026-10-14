@@ -70,7 +70,7 @@ const DEFAULT_GYM_DIAS: Record<GymDay, GymDayDef> = {
       { name: "Pec deck", series: 3, repsLabel: "10-12", toFailureLast: true, note: "Squeeze 1s en contracción", startKg: 66 },
       { name: "Press militar mancuernas sentado", series: 3, repsLabel: "8-10", toFailureLast: true, startKg: 22 },
       { name: "Laterales mancuerna", series: 4, repsLabel: "12-15", toFailureLast: true, dropset: true, note: "V-TAPER: dropset 50% al fallo en la última", startKg: 12, loadNote: "dropset a 10 kg" },
-      { name: "Fondos en paralelas", series: 3, repsLabel: "al fallo", toFailureLast: true, startReps: 8, loadNote: "peso corporal · haces 6-8" },
+      { name: "Fondos en máquina", series: 3, repsLabel: "8-12", toFailureLast: true, startKg: 40 },
       { name: "Extensión trícep cuerda", series: 3, repsLabel: "12-15", toFailureLast: true, startKg: 28 },
     ],
   },
@@ -161,11 +161,13 @@ export function sanitizeRoutine(raw: unknown): RoutineConfig | null {
 }
 
 /** Replaces one exercise with another in a saved routine, wherever it appears.
- * The old starting weight is dropped on purpose — it was for the old movement,
- * and a machine's kilos mean nothing on a cable — and `startKg` (if given) takes
- * its place so the weight controls have somewhere to start. Returns the same
+ * The old starting weight and load note are dropped on purpose — they were for
+ * the old movement, and a machine's kilos mean nothing on a cable — and `startKg`
+ * (if given) takes their place so the weight controls have somewhere to start;
+ * `repsLabel` replaces the rep target when the new movement trains differently. Returns the same
  * object when the exercise isn't in it. */
-export function renameExercise(cfg: RoutineConfig, from: string, to: string, startKg?: number): RoutineConfig {
+export function renameExercise(cfg: RoutineConfig, from: string, to: string, patch: { startKg?: number; repsLabel?: string } = {}): RoutineConfig {
+  const { startKg, repsLabel } = patch;
   const has = (name: string) => GYM_DAY_ORDER.some((d) => cfg[d].ex.some((e) => e.name === name));
   if (has(to)) {
     // Already swapped (maybe before the starting weight existed): just give it one.
@@ -180,8 +182,8 @@ export function renameExercise(cfg: RoutineConfig, from: string, to: string, sta
   for (const d of GYM_DAY_ORDER) {
     out[d].ex = out[d].ex.map((e) => {
       if (e.name !== from) return e;
-      const { startKg: _kg, startReps: _reps, startAsOf: _asOf, group: _group, ...rest } = e;
-      return startKg != null ? { ...rest, name: to, startKg } : { ...rest, name: to };
+      const { startKg: _kg, startReps: _reps, startAsOf: _asOf, group: _group, loadNote: _note, ...rest } = e;
+      return { ...rest, name: to, ...(repsLabel ? { repsLabel } : {}), ...(startKg != null ? { startKg } : {}) };
     });
   }
   return out;
@@ -190,7 +192,10 @@ export function renameExercise(cfg: RoutineConfig, from: string, to: string, sta
 /** Exercises swapped out of the built-in routine: people who already saved a
  * routine of their own get the swap applied to it once, so it doesn't stay
  * pinned to the old movement. */
-export const ROUTINE_SWAPS: { from: string; to: string; startKg?: number }[] = [{ from: "Curl en máquina", to: "Curl martillo en polea con cuerda", startKg: 20 }];
+export const ROUTINE_SWAPS: { from: string; to: string; startKg?: number; repsLabel?: string }[] = [
+  { from: "Curl en máquina", to: "Curl martillo en polea con cuerda", startKg: 20 },
+  { from: "Fondos en paralelas", to: "Fondos en máquina", startKg: 40, repsLabel: "8-12" },
+];
 
 /** Makes a routine the live one (mutating GYM_DIAS in place). */
 export function applyRoutine(cfg: RoutineConfig): void {

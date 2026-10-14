@@ -59,7 +59,7 @@ describe("swapped exercises", () => {
     expect(names).toContain(NEW);
     expect(names).not.toContain(OLD);
     expect(out.A.ex.find((e) => e.name === NEW)?.startKg).toBeUndefined();
-    expect(renameExercise(cfg, OLD, NEW, 20).A.ex.find((e) => e.name === NEW)?.startKg).toBe(20);
+    expect(renameExercise(cfg, OLD, NEW, { startKg: 20 }).A.ex.find((e) => e.name === NEW)?.startKg).toBe(20);
     expect(out.A.ex).toHaveLength(cfg.A.ex.length);
     expect(cfg.A.ex.find((e) => e.name === OLD)?.startKg).toBe(40); // input untouched
   });
@@ -67,7 +67,7 @@ describe("swapped exercises", () => {
   it("returns the same object when there is nothing to swap or the target already exists", () => {
     const cfg = defaultRoutine();
     expect(renameExercise(cfg, OLD, NEW)).toBe(cfg);
-    expect(renameExercise(cfg, OLD, NEW, 20)).toBe(cfg); // already has its weight
+    expect(renameExercise(cfg, OLD, NEW, { startKg: 20 })).toBe(cfg); // already has its weight
     const both = withOld();
     both.B.ex.push({ name: NEW, series: 3, repsLabel: "10-12" });
     expect(renameExercise(both, OLD, NEW)).toBe(both);
@@ -76,7 +76,7 @@ describe("swapped exercises", () => {
   it("gives a weight to a swapped curl that was saved without one", () => {
     const cfg = defaultRoutine();
     cfg.A.ex = cfg.A.ex.map((e) => (e.name === NEW ? { name: e.name, series: e.series, repsLabel: e.repsLabel } : e));
-    const out = renameExercise(cfg, OLD, NEW, 20);
+    const out = renameExercise(cfg, OLD, NEW, { startKg: 20 });
     expect(out.A.ex.find((e) => e.name === NEW)?.startKg).toBe(20);
     expect(cfg.A.ex.find((e) => e.name === NEW)?.startKg).toBeUndefined();
   });
@@ -93,6 +93,19 @@ describe("swapped exercises", () => {
     expect(saved.A.ex.map((e) => e.name)).not.toContain(OLD);
     // and the weight controls get a starting point instead of opening empty
     expect(GYM_DIAS.A.ex.find((e) => e.name === NEW)?.startKg).toBe(20);
+  });
+});
+
+describe("swapped exercises · dips", () => {
+  it("a routine saved with parallel-bar dips moves to machine dips with a weight and rep range", () => {
+    const cfg = defaultRoutine();
+    cfg.B.ex = cfg.B.ex.map((e) => (e.name === "Fondos en máquina" ? { name: "Fondos en paralelas", series: 3, repsLabel: "al fallo", startReps: 8, loadNote: "peso corporal · haces 6-8" } : e));
+    applyStoredConfig([{ key: "routine", value: cfg, updatedAt: 1 }]);
+    const dips = GYM_DIAS.B.ex.find((e) => e.name === "Fondos en máquina");
+    expect(dips).toMatchObject({ startKg: 40, repsLabel: "8-12" });
+    expect(dips?.startReps).toBeUndefined();
+    expect(dips?.loadNote).toBeUndefined();
+    expect(GYM_DIAS.B.ex.some((e) => e.name === "Fondos en paralelas")).toBe(false);
   });
 });
 

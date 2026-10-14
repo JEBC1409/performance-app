@@ -59,7 +59,7 @@ export function applyStoredConfig(rows: AppConfigRecord[]): void {
   if (stored) {
     // A routine saved before an exercise was swapped out of the default gets the
     // swap once, and is written back so every device converges on it.
-    const swapped = ROUTINE_SWAPS.reduce((cfg, s) => renameExercise(cfg, s.from, s.to, s.startKg), stored);
+    const swapped = ROUTINE_SWAPS.reduce((cfg, s) => renameExercise(cfg, s.from, s.to, { startKg: s.startKg, repsLabel: s.repsLabel }), stored);
     if (swapped !== stored) {
       routine = swapped;
       saveRoutine(swapped).catch((err) => console.error("Could not save the updated routine", err));
