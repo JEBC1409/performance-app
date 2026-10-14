@@ -19,7 +19,6 @@ import { ExerciseCard } from "./ExerciseCard";
 import { ExercisePhotoEditor } from "./ExercisePhoto";
 import { resolvePhoto, useExercisePhotos } from "./photos";
 import { ExerciseLogForm, type LogSetPayload } from "./ExerciseLogForm";
-import { RestTimer } from "./RestTimer";
 import { useRestTimer } from "./useRestTimer";
 import { useLiveQuery } from "dexie-react-hooks";
 import type { ExerciseTarget } from "@/data/gym";
@@ -237,8 +236,6 @@ export function Entreno({
         <h2 className="card-title">Cardio</h2>
         <p className="text-[12.5px] text-[var(--color-muted)] mt-1.5">{CARDIO_NOTA}</p>
       </Card>
-
-      <RestTimer timer={timer} />
 
       {gymOpen ? (
         <GymMode day={day} date={sessionDate} exercises={GYM_DIAS[day].ex} sessionSets={sessionSets} timer={timer} onLogSet={logSet} onClose={() => setGymOpen(false)} />

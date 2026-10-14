@@ -12,6 +12,9 @@ import { seedIfNeeded } from "@/db/seed";
 import { db } from "@/db/db";
 import { useReminders } from "@/hooks/useReminders";
 import { useFocusWatcher } from "@/hooks/useFocusTimer";
+import { useRestWatcher } from "@/hooks/useRestWatcher";
+import { RestTimer } from "@/features/entreno/RestTimer";
+import { useRestTimer } from "@/features/entreno/useRestTimer";
 import { useScheduleNotifications } from "@/hooks/useScheduleNotifications";
 import { useAuth } from "@/hooks/useAuth";
 import { Login } from "@/features/auth/Login";
@@ -106,6 +109,12 @@ function useLandingRedirect(shouldRedirect: boolean) {
   }, [shouldRedirect]);
 }
 
+/** The rest countdown, on whichever screen you are: it keeps running when you leave Entreno. */
+function RestPill() {
+  const timer = useRestTimer();
+  return <RestTimer timer={timer} />;
+}
+
 export default function App() {
   const { session, loading: authLoading } = useAuth();
   const [ready, setReady] = useState(false);
@@ -136,6 +145,7 @@ export default function App() {
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   useReminders(settings);
   useFocusWatcher();
+  useRestWatcher();
   useScheduleNotifications();
   useLandingRedirect(!authLoading && !session);
 
@@ -208,6 +218,9 @@ export default function App() {
       </ErrorBoundary>
       <ErrorBoundary fallback={() => null}>
         <FocusMiniBar visible={tab !== "focus"} onOpen={() => setTab("focus")} />
+      </ErrorBoundary>
+      <ErrorBoundary fallback={() => null}>
+        <RestPill />
       </ErrorBoundary>
       <ErrorBoundary fallback={() => null}>
         <MusicHost />

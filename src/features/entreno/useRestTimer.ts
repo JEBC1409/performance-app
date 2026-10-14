@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
+import { useNow } from "@/hooks/useFocusTimer";
+import { addRest, getRestState, restRemaining, skipRest, startRest, subscribeRest } from "@/lib/restTimer";
 
 export interface RestTimerState {
   running: boolean;
@@ -6,45 +8,34 @@ export interface RestTimerState {
   total: number;
 }
 
+const ASKED_KEY = "performance_rest_notif_asked_v1";
+
+/** Asks once for permission to notify, so the end of a rest can reach you while
+ * the app is in the background. Called from a tap (logging a set). */
+function askNotificationsOnce(): void {
+  try {
+    if (typeof Notification === "undefined" || Notification.permission !== "default" || localStorage.getItem(ASKED_KEY)) return;
+    localStorage.setItem(ASKED_KEY, "1");
+    Notification.requestPermission().catch(() => {});
+  } catch {
+    /* optional */
+  }
+}
+
+/** The rest between sets. The state lives in lib/restTimer (an end time, not a
+ * countdown), so it's the same wherever it's read and keeps its place while the
+ * app is hidden or on another screen. */
 export function useRestTimer() {
-  const [state, setState] = useState<RestTimerState>({ running: false, remaining: 0, total: 0 });
-  const intervalRef = useRef<number | null>(null);
+  const state = useSyncExternalStore(subscribeRest, getRestState, getRestState);
+  const now = useNow(state.endAt != null);
+  const remaining = restRemaining(state, now);
 
-  const clear = useCallback(() => {
-    if (intervalRef.current !== null) {
-      window.clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
+  const start = useCallback((seconds: number) => {
+    askNotificationsOnce();
+    startRest(seconds);
   }, []);
+  const addTime = useCallback((seconds: number) => addRest(seconds), []);
+  const skip = useCallback(() => skipRest(), []);
 
-  useEffect(() => clear, [clear]);
-
-  const start = useCallback(
-    (seconds: number) => {
-      clear();
-      setState({ running: true, remaining: seconds, total: seconds });
-      intervalRef.current = window.setInterval(() => {
-        setState((s) => {
-          if (s.remaining <= 1) {
-            clear();
-            if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate([200, 80, 200]);
-            return { ...s, remaining: 0, running: false };
-          }
-          return { ...s, remaining: s.remaining - 1 };
-        });
-      }, 1000);
-    },
-    [clear],
-  );
-
-  const addTime = useCallback((seconds: number) => {
-    setState((s) => ({ ...s, remaining: s.remaining + seconds, total: s.total + seconds, running: s.remaining + seconds > 0 }));
-  }, []);
-
-  const skip = useCallback(() => {
-    clear();
-    setState((s) => ({ ...s, remaining: 0, running: false }));
-  }, [clear]);
-
-  return { ...state, start, addTime, skip };
+  return { running: remaining > 0, remaining, total: state.total, start, addTime, skip };
 }
