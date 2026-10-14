@@ -54,7 +54,7 @@ const DEFAULT_GYM_DIAS: Record<GymDay, GymDayDef> = {
       { name: "Face pulls", series: 3, repsLabel: "15-20", toFailureLast: true, note: "Deltoides posterior", startKg: 17.5 },
       { name: "Curl barra Z", series: 3, repsLabel: "10-12", toFailureLast: true, startKg: 10, loadNote: "por lado" },
       { name: "Curl sentado inclinado", series: 3, repsLabel: "10-12", toFailureLast: true, startKg: 14 },
-      { name: "Curl martillo en polea con cuerda", series: 3, repsLabel: "10-12", toFailureLast: true, note: "Agarre neutro, codos pegados" },
+      { name: "Curl martillo en polea con cuerda", series: 3, repsLabel: "10-12", toFailureLast: true, note: "Agarre neutro, codos pegados", startKg: 20 },
       { name: "Laterales con mancuerna", series: 3, repsLabel: "12-15", toFailureLast: true, note: "V-TAPER: peso liviano", startKg: 12 },
     ],
   },
@@ -161,18 +161,27 @@ export function sanitizeRoutine(raw: unknown): RoutineConfig | null {
 }
 
 /** Replaces one exercise with another in a saved routine, wherever it appears.
- * The starting weight is dropped on purpose — it was for the old movement, and a
- * machine's kilos mean nothing on a cable. Returns the same object when the
- * exercise isn't in it. */
-export function renameExercise(cfg: RoutineConfig, from: string, to: string): RoutineConfig {
+ * The old starting weight is dropped on purpose — it was for the old movement,
+ * and a machine's kilos mean nothing on a cable — and `startKg` (if given) takes
+ * its place so the weight controls have somewhere to start. Returns the same
+ * object when the exercise isn't in it. */
+export function renameExercise(cfg: RoutineConfig, from: string, to: string, startKg?: number): RoutineConfig {
   const has = (name: string) => GYM_DAY_ORDER.some((d) => cfg[d].ex.some((e) => e.name === name));
-  if (!has(from) || has(to)) return cfg;
+  if (has(to)) {
+    // Already swapped (maybe before the starting weight existed): just give it one.
+    const bare = GYM_DAY_ORDER.some((d) => cfg[d].ex.some((e) => e.name === to && e.startKg == null && e.startReps == null));
+    if (startKg == null || !bare) return cfg;
+    const filled = clone(cfg);
+    for (const d of GYM_DAY_ORDER) filled[d].ex = filled[d].ex.map((e) => (e.name === to && e.startKg == null && e.startReps == null ? { ...e, startKg } : e));
+    return filled;
+  }
+  if (!has(from)) return cfg;
   const out = clone(cfg);
   for (const d of GYM_DAY_ORDER) {
     out[d].ex = out[d].ex.map((e) => {
       if (e.name !== from) return e;
       const { startKg: _kg, startReps: _reps, startAsOf: _asOf, group: _group, ...rest } = e;
-      return { ...rest, name: to };
+      return startKg != null ? { ...rest, name: to, startKg } : { ...rest, name: to };
     });
   }
   return out;
@@ -181,7 +190,7 @@ export function renameExercise(cfg: RoutineConfig, from: string, to: string): Ro
 /** Exercises swapped out of the built-in routine: people who already saved a
  * routine of their own get the swap applied to it once, so it doesn't stay
  * pinned to the old movement. */
-export const ROUTINE_SWAPS: { from: string; to: string }[] = [{ from: "Curl en máquina", to: "Curl martillo en polea con cuerda" }];
+export const ROUTINE_SWAPS: { from: string; to: string; startKg?: number }[] = [{ from: "Curl en máquina", to: "Curl martillo en polea con cuerda", startKg: 20 }];
 
 /** Makes a routine the live one (mutating GYM_DIAS in place). */
 export function applyRoutine(cfg: RoutineConfig): void {

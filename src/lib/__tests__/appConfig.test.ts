@@ -59,6 +59,7 @@ describe("swapped exercises", () => {
     expect(names).toContain(NEW);
     expect(names).not.toContain(OLD);
     expect(out.A.ex.find((e) => e.name === NEW)?.startKg).toBeUndefined();
+    expect(renameExercise(cfg, OLD, NEW, 20).A.ex.find((e) => e.name === NEW)?.startKg).toBe(20);
     expect(out.A.ex).toHaveLength(cfg.A.ex.length);
     expect(cfg.A.ex.find((e) => e.name === OLD)?.startKg).toBe(40); // input untouched
   });
@@ -66,9 +67,18 @@ describe("swapped exercises", () => {
   it("returns the same object when there is nothing to swap or the target already exists", () => {
     const cfg = defaultRoutine();
     expect(renameExercise(cfg, OLD, NEW)).toBe(cfg);
+    expect(renameExercise(cfg, OLD, NEW, 20)).toBe(cfg); // already has its weight
     const both = withOld();
     both.B.ex.push({ name: NEW, series: 3, repsLabel: "10-12" });
     expect(renameExercise(both, OLD, NEW)).toBe(both);
+  });
+
+  it("gives a weight to a swapped curl that was saved without one", () => {
+    const cfg = defaultRoutine();
+    cfg.A.ex = cfg.A.ex.map((e) => (e.name === NEW ? { name: e.name, series: e.series, repsLabel: e.repsLabel } : e));
+    const out = renameExercise(cfg, OLD, NEW, 20);
+    expect(out.A.ex.find((e) => e.name === NEW)?.startKg).toBe(20);
+    expect(cfg.A.ex.find((e) => e.name === NEW)?.startKg).toBeUndefined();
   });
 
   it("a routine saved with the old curl is moved to the new one and written back once", async () => {
@@ -81,6 +91,8 @@ describe("swapped exercises", () => {
     const saved = row?.value as { A: { ex: { name: string }[] } };
     expect(saved.A.ex.map((e) => e.name)).toContain(NEW);
     expect(saved.A.ex.map((e) => e.name)).not.toContain(OLD);
+    // and the weight controls get a starting point instead of opening empty
+    expect(GYM_DIAS.A.ex.find((e) => e.name === NEW)?.startKg).toBe(20);
   });
 });
 
