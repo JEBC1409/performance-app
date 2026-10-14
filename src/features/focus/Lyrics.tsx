@@ -4,7 +4,11 @@ import { activeLineIndex } from "@/lib/lyrics";
 import type { LyricLine } from "@/lib/lyrics";
 import type { LyricsStatus } from "@/hooks/useLyrics";
 
-const MASK = "linear-gradient(to bottom, transparent 0%, black 22%, black 78%, transparent 100%)";
+const MASK = "linear-gradient(to bottom, transparent 0%, black 12%, black 78%, transparent 100%)";
+
+// Where the lyrics sit on the timer screen: beside the song on a wide screen,
+// on a row of their own below it on a tablet, under it on a phone.
+const PLACE = "w-full max-w-[640px] flex-none max-md:h-[29vh] max-md:min-h-[200px] md:order-last md:basis-full lg:order-none lg:min-w-0 lg:flex-1 lg:basis-0";
 // After you scroll by hand, the lyrics stay where you put them for a moment.
 const MANUAL_HOLD_MS = 3500;
 
@@ -50,7 +54,7 @@ export function Lyrics({ lines, status, playing }: { lines: LyricLine[]; status:
   if (status !== "found") {
     const text = MESSAGES[status];
     return text ? (
-      <p role="status" className="px-2 py-6 text-center text-[12.5px] text-[var(--color-muted)]">
+      <p role="status" className={`${PLACE} px-3 py-6 text-left text-[18px] font-semibold text-[var(--color-muted)] lg:text-[22px]`}>
         {text}
       </p>
     ) : null;
@@ -66,11 +70,11 @@ export function Lyrics({ lines, status, playing }: { lines: LyricLine[]; status:
       onWheel={hold}
       onTouchMove={hold}
       aria-label="Letra"
-      className="no-scrollbar relative h-[230px] w-full overflow-y-auto overscroll-contain md:h-[320px]"
+      className={`${PLACE} no-scrollbar relative overflow-y-auto overscroll-contain md:h-[360px] lg:h-[min(74vh,700px)]`}
       style={{ maskImage: MASK, WebkitMaskImage: MASK }}
     >
-      <div aria-hidden className="h-[45%]" />
-      <ul className="flex flex-col gap-1 px-1 text-center">
+      <div aria-hidden className="h-[16%]" />
+      <ul className="flex flex-col gap-1.5 px-3 text-left">
         {lines.map((l, i) => {
           const dist = Math.abs(i - active);
           const on = i === active;
@@ -86,12 +90,14 @@ export function Lyrics({ lines, status, playing }: { lines: LyricLine[]; status:
                   setActive(i);
                 }}
                 aria-current={on ? "true" : undefined}
-                className="w-full rounded-xl px-2 py-1.5 text-[19px] font-semibold leading-snug text-[var(--color-ink)]"
+                className="block w-full origin-left rounded-xl py-1.5 text-left text-[25px] font-bold leading-[1.18] tracking-tight text-[var(--color-ink)] lg:text-[34px]"
                 style={{
-                  opacity: on ? 1 : dist === 1 ? 0.5 : 0.28,
-                  transform: `scale(${on ? 1 : 0.9})`,
-                  transition: "opacity 300ms ease-out, transform 300ms ease-out",
-                  textShadow: on && playing ? "0 0 22px rgb(var(--accent-rgb) / 0.45)" : undefined,
+                  opacity: on ? 1 : dist === 1 ? 0.5 : 0.26,
+                  transform: `scale(${on ? 1 : 0.86})`,
+                  // Lines further from the one being sung go soft, as in Apple Music.
+                  filter: !on && dist >= 2 && dist <= 8 ? `blur(${Math.min(dist - 1, 3) * 0.6}px)` : undefined,
+                  transition: "opacity 350ms ease-out, transform 350ms ease-out, filter 350ms ease-out",
+                  textShadow: on && playing ? "0 0 28px rgb(var(--accent-rgb) / 0.4)" : undefined,
                 }}
               >
                 {l.text || <span aria-label="Instrumental">♪</span>}
@@ -100,7 +106,7 @@ export function Lyrics({ lines, status, playing }: { lines: LyricLine[]; status:
           );
         })}
       </ul>
-      <div aria-hidden className="h-[45%]" />
+      <div aria-hidden className="h-[42%]" />
     </div>
   );
 }

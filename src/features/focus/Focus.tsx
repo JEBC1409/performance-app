@@ -16,6 +16,7 @@ import { getPip, pipSupport, subscribePip, togglePip } from "@/lib/focusPip";
 import { isSoundOn, setSoundOn, subscribeSound, unlockAudio } from "@/lib/focusSound";
 import { getMusicState, subscribeMusic } from "@/lib/focusMusic";
 import { MusicPanel, MusicZen } from "./MusicPanel";
+import { useLyricsPref } from "@/lib/lyricsPref";
 
 const SIZE = 300;
 const C = SIZE / 2;
@@ -165,6 +166,8 @@ function FocusView() {
   const pip = useSyncExternalStore(subscribePip, getPip, getPip);
   const pipAvailable = pipSupport() !== null;
   const musicOn = !!useSyncExternalStore(subscribeMusic, getMusicState, getMusicState).config;
+  const lyricsPref = useLyricsPref();
+  const lyricsOn = musicOn && lyricsPref;
   // Full-screen "zen" view while a block runs: just the dial and the task.
   const [immersive, setImmersive] = useState(false);
   const zen = immersive && timer.status !== "idle";
@@ -466,11 +469,11 @@ function FocusView() {
 
       {zen
         ? createPortal(
-            <div className="fixed inset-0 z-[68] overflow-y-auto bg-[var(--color-bg)] px-6" role="dialog" aria-modal aria-label="Focus en pantalla completa" style={{ paddingTop: "calc(1rem + env(safe-area-inset-top))", paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}>
+            <div className="fixed inset-0 z-[68] overflow-y-auto bg-[var(--color-bg)] px-6 lg:px-12" role="dialog" aria-modal aria-label="Focus en pantalla completa" style={{ paddingTop: "calc(1rem + env(safe-area-inset-top))", paddingBottom: `calc(${lyricsOn ? "1rem" : "2rem"} + env(safe-area-inset-bottom))` }}>
               <div className="ambient-bg" aria-hidden>
                 <div className="ambient-glow" />
               </div>
-              <div className="relative mx-auto flex min-h-full w-full max-w-[940px] flex-col items-center justify-between gap-6">
+              <div className={`relative mx-auto flex min-h-full w-full max-w-[940px] flex-col items-center justify-between ${lyricsOn ? "gap-3 md:gap-6" : "gap-6"} ${musicOn ? "lg:max-w-[1320px]" : ""}`}>
                 <div className="flex w-full justify-end">
                   <button onClick={() => setImmersive(false)} aria-label="Salir de pantalla completa" className="glass hit flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-muted)]">
                     <Icon name="close" size={16} />
@@ -478,14 +481,14 @@ function FocusView() {
                 </div>
 
                 {/* With music: clock on one side, player on the other (stacked on a phone). */}
-                <div className={`flex w-full flex-col items-center gap-8 ${musicOn ? "md:flex-row md:justify-center md:gap-20" : ""}`}>
+                <div className={`flex w-full flex-col items-center ${lyricsOn ? "gap-4" : "gap-8"} ${musicOn ? "md:flex-row md:flex-wrap md:items-center md:justify-center md:gap-x-14 md:gap-y-6 lg:flex-nowrap lg:gap-x-16" : ""}`}>
                   <div className="flex flex-col items-center gap-6 text-center">
                     <div>
                       <div className={`eyebrow ${isBreak ? "" : "eyebrow-accent"}`}>{stateLabel}</div>
                       <div className="mt-2 max-w-[340px] font-[var(--font-display)] text-[22px] leading-snug">{isBreak ? "Aléjate de la pantalla un momento" : timer.task}</div>
                     </div>
                     {/* With music the clock shrinks a little on a phone so the player fits without much scrolling. */}
-                    <div className={musicOn ? "-my-6 scale-[0.82] md:my-0 md:scale-100" : ""} style={musicOn ? undefined : { transform: "scale(1.2)", margin: "1.5rem 0" }}>
+                    <div className={musicOn ? (lyricsOn ? "-my-[75px] scale-[0.5] md:my-0 md:scale-100" : "-my-6 scale-[0.82] md:my-0 md:scale-100") : ""} style={musicOn ? undefined : { transform: "scale(1.2)", margin: "1.5rem 0" }}>
                       <Dial progress={progress} isBreak={isBreak} live={timer.status === "running"}>
                         <div className="num font-[var(--font-display)] text-[62px] font-light leading-none tracking-tight">{fmtClock(left)}</div>
                         <div className="mt-3 text-[10.5px] font-medium uppercase tracking-[0.22em] text-[var(--color-muted)]">{isBreak ? "respira" : `bloque de ${timer.focusMin} min`}</div>
@@ -510,7 +513,7 @@ function FocusView() {
                   <button
                     onClick={paused ? resumeFocus : pauseFocus}
                     aria-label={paused ? "Reanudar" : "Pausar"}
-                    className={`tap-target flex h-20 w-20 items-center justify-center rounded-full text-white ${isBreak ? "glass" : "glass-on"}`}
+                    className={`tap-target flex ${lyricsOn ? "h-16 w-16 md:h-20 md:w-20" : "h-20 w-20"} items-center justify-center rounded-full text-white ${isBreak ? "glass" : "glass-on"}`}
                     style={isBreak ? { background: "linear-gradient(165deg, rgba(90,235,150,0.5) 0%, rgba(47,174,102,0.42) 55%, rgba(20,110,60,0.5) 100%)", borderColor: "rgba(120,240,170,0.5)" } : undefined}
                   >
                     {paused ? <PlayIcon /> : <PauseIcon />}

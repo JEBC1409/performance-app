@@ -1,18 +1,10 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useLyrics } from "@/hooks/useLyrics";
+import { setLyricsPref, useLyricsPref } from "@/lib/lyricsPref";
 import { Lyrics } from "./Lyrics";
 import { clearMusic, getMusicState, nextMusic, playMusic, prevMusic, registerMusicSlot, saveMusicConfig, setMusicSync, subscribeMusic, toggleMusic } from "@/lib/focusMusic";
 import type { MusicState } from "@/lib/focusMusic";
 import { showToast } from "@/ui/Toast";
-
-const LYRICS_KEY = "performance_focus_lyrics_v1";
-function readLyricsPref(): boolean {
-  try {
-    return localStorage.getItem(LYRICS_KEY) !== "0";
-  } catch {
-    return true;
-  }
-}
 
 function useMusic() {
   return useSyncExternalStore(subscribeMusic, getMusicState, getMusicState);
@@ -185,18 +177,8 @@ export function MusicZen() {
   const m = useMusic();
   const slotRef = useRef<HTMLDivElement>(null);
   const showSlot = !!m.config && m.started;
-  const [lyricsOn, setLyricsOn] = useState(readLyricsPref);
+  const lyricsOn = useLyricsPref();
   const lyrics = useLyrics(m.videoId, m.title, m.author, lyricsOn && showSlot);
-
-  function toggleLyrics() {
-    const next = !lyricsOn;
-    setLyricsOn(next);
-    try {
-      localStorage.setItem(LYRICS_KEY, next ? "1" : "0");
-    } catch {
-      /* it just won't be remembered */
-    }
-  }
 
   useEffect(() => {
     const el = slotRef.current;
@@ -212,26 +194,38 @@ export function MusicZen() {
       </button>
     );
   }
+  // Two siblings for the timer screen's row: the song card, and the lyrics
+  // beside it (below it when there isn't the width). On a phone, with lyrics on,
+  // the card shrinks to one row so the lyrics get the screen.
+  const compact = lyricsOn;
   return (
-    <div className="flex w-full max-w-[340px] flex-col items-center gap-4 md:max-w-[420px]">
-    <div className="flex w-full max-w-[340px] flex-col items-center gap-3 rounded-[28px] border border-[var(--color-line-strong)] bg-[rgb(var(--fg-rgb)/0.03)] p-3">
-      {/* The player itself is laid over this box by MusicHost (it has to stay
-          visible); 16:9 so the video fills it with no bars of its own. */}
-      <div ref={slotRef} className="aspect-video w-full rounded-2xl bg-black" />
-      <div className="w-full min-w-0 px-1 text-center">
-        <div className="truncate text-[15px] font-semibold leading-tight">{m.title || waitingText(m)}</div>
-        <div className="mt-0.5 truncate text-[12px] text-[var(--color-muted)]">{m.error ?? m.author}</div>
-      </div>
-      <Controls playing={m.playing} big />
-      <button
-        onClick={toggleLyrics}
-        aria-pressed={lyricsOn}
-        className={`rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] ${lyricsOn ? "glass-on text-white" : "glass text-[var(--color-muted)]"}`}
+    <>
+      <div
+        className={`flex w-full max-w-[340px] flex-none flex-col items-center gap-3 rounded-[28px] border border-[var(--color-line-strong)] bg-[rgb(var(--fg-rgb)/0.03)] p-3 ${
+          compact ? "max-md:max-w-none max-md:flex-row max-md:gap-3 max-md:rounded-2xl max-md:p-2.5" : ""
+        }`}
       >
-        Letra
-      </button>
-    </div>
-    {lyricsOn ? <Lyrics key={m.videoId} lines={lyrics.lines} status={lyrics.status} playing={m.playing} /> : null}
-    </div>
+        {/* The player itself is laid over this box by MusicHost (it has to stay
+            visible); 16:9 so the video fills it with no bars of its own. */}
+        <div ref={slotRef} className={`aspect-video w-full rounded-2xl bg-black ${compact ? "max-md:w-[38%] max-md:flex-none" : ""}`} />
+        <div className={`flex w-full min-w-0 flex-col items-center gap-3 ${compact ? "max-md:flex-1 max-md:items-start max-md:gap-2" : ""}`}>
+          <div className={`w-full min-w-0 px-1 text-center ${compact ? "max-md:px-0 max-md:text-left" : ""}`}>
+            <div className="truncate text-[15px] font-semibold leading-tight">{m.title || waitingText(m)}</div>
+            <div className="mt-0.5 truncate text-[12px] text-[var(--color-muted)]">{m.error ?? m.author}</div>
+          </div>
+          <div className={`flex flex-col items-center gap-3 ${compact ? "max-md:flex-row max-md:flex-wrap max-md:gap-2" : ""}`}>
+            <Controls playing={m.playing} big={!compact} />
+            <button
+              onClick={() => setLyricsPref(!lyricsOn)}
+              aria-pressed={lyricsOn}
+              className={`rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] ${lyricsOn ? "glass-on text-white" : "glass text-[var(--color-muted)]"} ${compact ? "max-md:px-3 max-md:py-1 max-md:text-[10px]" : ""}`}
+            >
+              Letra
+            </button>
+          </div>
+        </div>
+      </div>
+      {lyricsOn ? <Lyrics key={m.videoId} lines={lyrics.lines} status={lyrics.status} playing={m.playing} /> : null}
+    </>
   );
 }
