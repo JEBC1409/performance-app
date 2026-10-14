@@ -1,7 +1,7 @@
 import { liveQuery } from "dexie";
 import { db } from "@/db/db";
 import type { AppConfigRecord } from "@/db/db";
-import { applyRoutine, defaultRoutine, sanitizeRoutine } from "@/data/gym";
+import { ROUTINE_SWAPS, applyRoutine, defaultRoutine, renameExercise, sanitizeRoutine } from "@/data/gym";
 import type { RoutineConfig } from "@/data/gym";
 import { applyHorario, defaultHorario, sanitizeHorario } from "@/data/horario";
 import type { HorarioConfig } from "@/data/horario";
@@ -54,7 +54,17 @@ export function saveHorario(cfg: HorarioConfig): Promise<unknown> {
 export function applyStoredConfig(rows: AppConfigRecord[]): void {
   const byKey = new Map(rows.map((r) => [r.key, r]));
 
-  const routine = sanitizeRoutine(byKey.get(CONFIG_ROUTINE)?.value) ?? defaultRoutine();
+  const stored = sanitizeRoutine(byKey.get(CONFIG_ROUTINE)?.value);
+  let routine = stored ?? defaultRoutine();
+  if (stored) {
+    // A routine saved before an exercise was swapped out of the default gets the
+    // swap once, and is written back so every device converges on it.
+    const swapped = ROUTINE_SWAPS.reduce((cfg, s) => renameExercise(cfg, s.from, s.to), stored);
+    if (swapped !== stored) {
+      routine = swapped;
+      saveRoutine(swapped).catch((err) => console.error("Could not save the updated routine", err));
+    }
+  }
   const routineJson = JSON.stringify(routine);
   let changed = false;
   if (routineJson !== lastRoutine) {

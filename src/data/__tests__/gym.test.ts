@@ -11,11 +11,12 @@ describe("routine exercises", () => {
     }
   });
 
-  it("pull day uses cable pullover and the two new curls, not the old ones", () => {
+  it("pull day uses cable pullover, the incline curl and the cable hammer curl, not the old ones", () => {
     const names = allExerciseNames();
     expect(names).toContain("Pullover en polea");
     expect(names).toContain("Curl sentado inclinado");
-    expect(names).toContain("Curl en máquina");
+    expect(names).toContain("Curl martillo en polea con cuerda");
+    expect(names).not.toContain("Curl en máquina");
     expect(names).not.toContain("Pullover en banco");
     expect(names).not.toContain("Curl martillo");
   });
@@ -23,5 +24,6 @@ describe("routine exercises", () => {
   it("resolves the second-frame syntax", () => {
     expect(exerciseImageUrl("Remo unilateral en Hammer")).toMatch(/Leverage_Iso_Row\/1\.jpg$/);
     expect(exerciseImageUrl("Curl en máquina")).toMatch(/Machine_Bicep_Curl\/0\.jpg$/);
+    expect(exerciseImageUrl("Curl martillo en polea con cuerda")).toMatch(/Cable_Hammer_Curls_-_Rope_Attachment\/0\.jpg$/);
   });
 });

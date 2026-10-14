@@ -1,5 +1,7 @@
+import "fake-indexeddb/auto";
 import { afterEach, describe, expect, it } from "vitest";
-import { GYM_DIAS, applyRoutine, currentRoutineConfig, defaultRoutine, sanitizeRoutine } from "@/data/gym";
+import { db } from "@/db/db";
+import { GYM_DIAS, applyRoutine, currentRoutineConfig, defaultRoutine, renameExercise, sanitizeRoutine } from "@/data/gym";
 import { HORARIO, HORARIO_TIMES, applyHorario, defaultHorario, labelStartMin, sanitizeHorario } from "@/data/horario";
 import { groupForExercise } from "@/data/muscleGroups";
 import { applyStoredConfig } from "../appConfig";
@@ -38,6 +40,47 @@ describe("routine config", () => {
     expect(ref[ref.length - 1].name).toBe("Dominadas lastradas");
     expect(groupForExercise("Dominadas lastradas")).toBe("espalda");
     expect(currentRoutineConfig().A.ex).toHaveLength(cfg.A.ex.length);
+  });
+});
+
+describe("swapped exercises", () => {
+  const OLD = "Curl en máquina";
+  const NEW = "Curl martillo en polea con cuerda";
+  const withOld = () => {
+    const cfg = defaultRoutine();
+    cfg.A.ex = cfg.A.ex.map((e) => (e.name === NEW ? { ...e, name: OLD, startKg: 40 } : e));
+    return cfg;
+  };
+
+  it("renameExercise swaps the name, drops the old starting load and leaves the rest alone", () => {
+    const cfg = withOld();
+    const out = renameExercise(cfg, OLD, NEW);
+    const names = out.A.ex.map((e) => e.name);
+    expect(names).toContain(NEW);
+    expect(names).not.toContain(OLD);
+    expect(out.A.ex.find((e) => e.name === NEW)?.startKg).toBeUndefined();
+    expect(out.A.ex).toHaveLength(cfg.A.ex.length);
+    expect(cfg.A.ex.find((e) => e.name === OLD)?.startKg).toBe(40); // input untouched
+  });
+
+  it("returns the same object when there is nothing to swap or the target already exists", () => {
+    const cfg = defaultRoutine();
+    expect(renameExercise(cfg, OLD, NEW)).toBe(cfg);
+    const both = withOld();
+    both.B.ex.push({ name: NEW, series: 3, repsLabel: "10-12" });
+    expect(renameExercise(both, OLD, NEW)).toBe(both);
+  });
+
+  it("a routine saved with the old curl is moved to the new one and written back once", async () => {
+    await db.appConfig.clear();
+    applyStoredConfig([{ key: "routine", value: withOld(), updatedAt: 1 }]);
+    const names = GYM_DIAS.A.ex.map((e) => e.name);
+    expect(names).toContain(NEW);
+    expect(names).not.toContain(OLD);
+    const row = await db.appConfig.get("routine");
+    const saved = row?.value as { A: { ex: { name: string }[] } };
+    expect(saved.A.ex.map((e) => e.name)).toContain(NEW);
+    expect(saved.A.ex.map((e) => e.name)).not.toContain(OLD);
   });
 });
 

@@ -16,6 +16,7 @@ const EXERCISE_IMAGE_ID: Record<string, string> = {
   "Curl barra Z": "EZ-Bar_Curl",
   "Curl sentado inclinado": "Incline_Dumbbell_Curl",
   "Curl en máquina": "Machine_Bicep_Curl",
+  "Curl martillo en polea con cuerda": "Cable_Hammer_Curls_-_Rope_Attachment",
   "Laterales con mancuerna": "Side_Lateral_Raise",
   "Aperturas mancuerna inclinado": "Incline_Dumbbell_Flyes",
   "Press inclinado mancuernas": "Incline_Dumbbell_Press",

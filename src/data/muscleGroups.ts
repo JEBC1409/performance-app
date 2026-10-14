@@ -18,6 +18,7 @@ export const EXERCISE_MUSCLE_GROUP: Record<string, MuscleGroup> = {
   "Curl barra Z": "brazo",
   "Curl sentado inclinado": "brazo",
   "Curl en máquina": "brazo",
+  "Curl martillo en polea con cuerda": "brazo",
   "Laterales con mancuerna": "hombro",
   "Aperturas mancuerna inclinado": "pecho",
   "Press inclinado mancuernas": "pecho",
