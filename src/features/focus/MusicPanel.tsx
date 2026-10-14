@@ -1,7 +1,18 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useLyrics } from "@/hooks/useLyrics";
+import { Lyrics } from "./Lyrics";
 import { clearMusic, getMusicState, nextMusic, playMusic, prevMusic, registerMusicSlot, saveMusicConfig, setMusicSync, subscribeMusic, toggleMusic } from "@/lib/focusMusic";
 import type { MusicState } from "@/lib/focusMusic";
 import { showToast } from "@/ui/Toast";
+
+const LYRICS_KEY = "performance_focus_lyrics_v1";
+function readLyricsPref(): boolean {
+  try {
+    return localStorage.getItem(LYRICS_KEY) !== "0";
+  } catch {
+    return true;
+  }
+}
 
 function useMusic() {
   return useSyncExternalStore(subscribeMusic, getMusicState, getMusicState);
@@ -174,6 +185,18 @@ export function MusicZen() {
   const m = useMusic();
   const slotRef = useRef<HTMLDivElement>(null);
   const showSlot = !!m.config && m.started;
+  const [lyricsOn, setLyricsOn] = useState(readLyricsPref);
+  const lyrics = useLyrics(m.videoId, m.title, m.author, lyricsOn && showSlot);
+
+  function toggleLyrics() {
+    const next = !lyricsOn;
+    setLyricsOn(next);
+    try {
+      localStorage.setItem(LYRICS_KEY, next ? "1" : "0");
+    } catch {
+      /* it just won't be remembered */
+    }
+  }
 
   useEffect(() => {
     const el = slotRef.current;
@@ -190,6 +213,7 @@ export function MusicZen() {
     );
   }
   return (
+    <div className="flex w-full max-w-[340px] flex-col items-center gap-4 md:max-w-[420px]">
     <div className="flex w-full max-w-[340px] flex-col items-center gap-3 rounded-[28px] border border-[var(--color-line-strong)] bg-[rgb(var(--fg-rgb)/0.03)] p-3">
       {/* The player itself is laid over this box by MusicHost (it has to stay
           visible); 16:9 so the video fills it with no bars of its own. */}
@@ -199,6 +223,15 @@ export function MusicZen() {
         <div className="mt-0.5 truncate text-[12px] text-[var(--color-muted)]">{m.error ?? m.author}</div>
       </div>
       <Controls playing={m.playing} big />
+      <button
+        onClick={toggleLyrics}
+        aria-pressed={lyricsOn}
+        className={`rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] ${lyricsOn ? "glass-on text-white" : "glass text-[var(--color-muted)]"}`}
+      >
+        Letra
+      </button>
+    </div>
+    {lyricsOn ? <Lyrics key={m.videoId} lines={lyrics.lines} status={lyrics.status} playing={m.playing} /> : null}
     </div>
   );
 }

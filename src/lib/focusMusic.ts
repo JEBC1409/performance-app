@@ -47,6 +47,9 @@ interface YTPlayer {
   setLoop(loop: boolean): void;
   getVideoData(): { title?: string; author?: string; video_id?: string };
   getPlayerState(): number;
+  getCurrentTime(): number;
+  getDuration(): number;
+  seekTo(seconds: number, allowSeekAhead: boolean): void;
   destroy(): void;
 }
 interface YTNamespace {
@@ -304,6 +307,21 @@ export function nextMusic(): void {
 
 export function prevMusic(): void {
   if (player && ready) player.previousVideo();
+}
+
+/** Where the song is right now, in seconds, and how long it is (0 when unknown).
+ * Read on demand — it changes too fast to live in the store. */
+export function getMusicTime(): { t: number; duration: number } {
+  if (!player || !ready) return { t: 0, duration: 0 };
+  try {
+    return { t: player.getCurrentTime() || 0, duration: player.getDuration() || 0 };
+  } catch {
+    return { t: 0, duration: 0 };
+  }
+}
+
+export function seekMusic(seconds: number): void {
+  if (player && ready) player.seekTo(Math.max(0, seconds), true);
 }
 
 // ── configuration ────────────────────────────────────────────────────────
