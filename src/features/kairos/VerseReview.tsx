@@ -1,26 +1,45 @@
-import { useMemo, useState } from "react";
-import type { SavedVerseRecord } from "@/db/db";
+import { useState } from "react";
+import { BIBLE_BOOKS } from "@/data/bible/books";
+import { getChapter } from "@/data/bible/loader";
+import { useBible } from "@/hooks/useBible";
 import { useVerseReview } from "@/hooks/useVerseReview";
 import { todayISO } from "@/lib/date";
-import { verseKey } from "@/lib/bibleHighlights";
 import { dueKeys } from "@/lib/verseReview";
 import { Card, CardTitle } from "@/ui";
 
+interface Passage {
+  bookName: string;
+  chapter: number;
+  verse: number;
+  text: string;
+}
+
+/** "jo.3.16" → the passage and its text, straight from the Bible (so a verse can
+ * be memorised without having been saved). Null while the Bible loads or if it doesn't exist. */
+function passageFor(key: string, bible: ReturnType<typeof useBible>["bible"]): Passage | null {
+  if (!bible) return null;
+  const [abbrev, c, v] = key.split(".");
+  const chapter = Number(c);
+  const verse = Number(v);
+  const text = getChapter(bible, abbrev, chapter)[verse - 1];
+  const bookName = BIBLE_BOOKS.find((b) => b.abbrev === abbrev)?.name;
+  return text && bookName ? { bookName, chapter, verse, text } : null;
+}
+
 /** Today's verses to recall: see the reference, say it from memory, check, and
  * grade yourself. Verses you know come back later and later. */
-export function VerseReview({ saved }: { saved: SavedVerseRecord[] }) {
+export function VerseReview() {
   const { state, grade } = useVerseReview();
+  const { bible } = useBible();
   const today = todayISO();
   const [revealed, setRevealed] = useState(false);
 
-  const byKey = useMemo(() => new Map(saved.map((v) => [verseKey(v.abbrev, v.chapter, v.verse), v])), [saved]);
-  // Only verses still saved can be shown; the rest are skipped.
-  const due = dueKeys(state, today).filter((k) => byKey.has(k));
   const learning = Object.keys(state).length;
   if (!learning) return null;
 
-  const key = due[0];
-  const verse = key ? byKey.get(key) : undefined;
+  const due = dueKeys(state, today);
+  const key = due.find((k) => passageFor(k, bible)) ?? null;
+  const passage = key ? passageFor(key, bible) : null;
 
   async function answer(knew: boolean) {
     if (!key) return;
@@ -31,14 +50,14 @@ export function VerseReview({ saved }: { saved: SavedVerseRecord[] }) {
   return (
     <Card className="panel-surface-glow">
       <CardTitle right={due.length ? `${due.length} por repasar` : `${learning} memorizando`}>Repaso de versículos</CardTitle>
-      {verse ? (
+      {passage ? (
         <div className="mt-3">
           <div className="num text-[12px] font-semibold uppercase tracking-wide text-[var(--color-gold)]">
-            {verse.bookName} {verse.chapter}:{verse.verse}
+            {passage.bookName} {passage.chapter}:{passage.verse}
           </div>
           {revealed ? (
             <>
-              <p className="mt-2 text-[15px] leading-relaxed">{verse.text}</p>
+              <p className="mt-2 text-[15px] leading-relaxed">{passage.text}</p>
               <p className="mt-3 text-[11.5px] text-[var(--color-muted)]">¿Lo dijiste bien?</p>
               <div className="mt-2 flex gap-2">
                 <button onClick={() => void answer(true)} className="glass-on tap-target flex-1 rounded-full py-2.5 text-[12px] font-semibold uppercase tracking-wide">
@@ -58,6 +77,8 @@ export function VerseReview({ saved }: { saved: SavedVerseRecord[] }) {
             </>
           )}
         </div>
+      ) : due.length && !bible ? (
+        <p className="mt-2 text-[13px] text-[var(--color-muted)]">Cargando…</p>
       ) : (
         <p className="mt-2 text-[13px] text-[var(--color-good)]">Listo por hoy ✓</p>
       )}

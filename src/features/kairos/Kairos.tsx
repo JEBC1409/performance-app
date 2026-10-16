@@ -432,6 +432,7 @@ export function Kairos() {
           )
         ) : (
           <div className="flex flex-col gap-3">
+            <VerseReview />
             <Field label="Buscar">
               <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Texto, nota o libro…" className="w-full" />
             </Field>
@@ -448,7 +449,6 @@ export function Kairos() {
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-                <VerseReview saved={saved ?? []} />
                 {groupedSaved.map((g) => (
                   <Section
                     key={g.abbrev}
