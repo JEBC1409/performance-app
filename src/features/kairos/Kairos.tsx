@@ -8,6 +8,10 @@ import { useNarrator } from "@/hooks/useNarrator";
 import { useBibleHighlights } from "@/hooks/useBibleHighlights";
 import { HIGHLIGHT_COLORS, colorRgb, verseKey } from "@/lib/bibleHighlights";
 import { MIN_QUERY_CHARS, searchBible } from "@/lib/bibleSearch";
+import { useVerseReview } from "@/hooks/useVerseReview";
+import { dueKeys } from "@/lib/verseReview";
+import { shareVerse } from "@/lib/verseImage";
+import { VerseReview } from "./VerseReview";
 import { BIBLE_BOOKS } from "@/data/bible/books";
 import { getChapter, chapterCount } from "@/data/bible/loader";
 import { Eyebrow, PageHeader, Card, Sheet, Field, Input, Button, FlameGlyph } from "@/ui";
@@ -50,6 +54,7 @@ export function Kairos() {
   const [bibleQuery, setBibleQuery] = useState("");
   const deferredBibleQuery = useDeferredValue(bibleQuery);
   const { highlights, set: setHighlight } = useBibleHighlights();
+  const review = useVerseReview();
 
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const bookmark = settings?.readingProgress ?? null;
@@ -255,6 +260,7 @@ export function Kairos() {
             className={`tap-target flex-1 rounded-full py-2 text-[12px] font-semibold uppercase tracking-wide ${view === "guardados" ? "glass-on" : "glass-flat text-[var(--color-muted)]"}`}
           >
             Guardados ({saved?.length ?? 0})
+            {dueKeys(review.state, todayISO()).length ? <span className="ml-1.5 inline-block h-2 w-2 rounded-full bg-[var(--color-gold)]" aria-label="Tienes versículos por repasar" /> : null}
           </button>
         </div>
 
@@ -442,6 +448,7 @@ export function Kairos() {
               </div>
             ) : (
               <div className="flex flex-col gap-3">
+                <VerseReview saved={saved ?? []} />
                 {groupedSaved.map((g) => (
                   <Section
                     key={g.abbrev}
@@ -491,6 +498,28 @@ export function Kairos() {
                     />
                   );
                 })}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  onClick={() => {
+                    const key = verseKey(abbrev, chapter, pickedVerse.verse);
+                    void (key in review.state ? review.stop(key) : review.start(key, todayISO()));
+                    showToast(key in review.state ? "Quitado del repaso" : "A memorizar — te lo recuerdo en Guardados");
+                  }}
+                  className="glass tap-target rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-muted)]"
+                >
+                  {verseKey(abbrev, chapter, pickedVerse.verse) in review.state ? "Dejar de memorizar" : "Memorizar"}
+                </button>
+                <button
+                  onClick={async () => {
+                    const r = await shareVerse(`${bookName} ${chapter}:${pickedVerse.verse}`, pickedVerse.text);
+                    if (r === "downloaded") showToast("Imagen guardada");
+                    else if (r === "failed") showToast("No se pudo crear la imagen");
+                  }}
+                  className="glass tap-target rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-muted)]"
+                >
+                  Compartir imagen
+                </button>
               </div>
               {narrator.supported ? (
                 <button
