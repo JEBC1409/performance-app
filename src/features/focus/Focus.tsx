@@ -16,6 +16,8 @@ import { getPip, pipSupport, subscribePip, togglePip } from "@/lib/focusPip";
 import { isSoundOn, setSoundOn, subscribeSound, unlockAudio } from "@/lib/focusSound";
 import { getMusicState, subscribeMusic } from "@/lib/focusMusic";
 import { MusicPanel, MusicZen } from "./MusicPanel";
+import { MusicLists } from "./MusicLists";
+import { useMusicLists } from "@/lib/musicLists";
 import { isMouredevTask } from "@/lib/mouredevFocus";
 import { useLyricsPref } from "@/lib/lyricsPref";
 
@@ -166,7 +168,9 @@ function FocusView() {
   const soundOn = useSyncExternalStore(subscribeSound, isSoundOn, isSoundOn);
   const pip = useSyncExternalStore(subscribePip, getPip, getPip);
   const pipAvailable = pipSupport() !== null;
-  const musicOn = !!useSyncExternalStore(subscribeMusic, getMusicState, getMusicState).config;
+  const musicState = useSyncExternalStore(subscribeMusic, getMusicState, getMusicState);
+  const musicOn = !!musicState.config;
+  const savedLists = useMusicLists();
   const lyricsPref = useLyricsPref();
   const lyricsOn = musicOn && lyricsPref;
   // Full-screen "zen" view while a block runs: just the dial and the task.
@@ -398,6 +402,13 @@ function FocusView() {
                     {r}
                   </button>
                 ))}
+              </div>
+            ) : null}
+
+            {savedLists.length ? (
+              <div className="mt-4 text-left">
+                {/* With "sonar solo durante el bloque" on, choosing only selects: it starts with the block. */}
+                <MusicLists current={musicState.config?.url ?? null} playOnSelect={!musicState.config?.sync} allowNone compact />
               </div>
             ) : null}
 

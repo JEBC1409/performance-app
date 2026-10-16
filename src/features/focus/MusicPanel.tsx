@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useLyrics } from "@/hooks/useLyrics";
 import { setLyricsPref, useLyricsPref } from "@/lib/lyricsPref";
-import { removeList, saveList, useMusicLists } from "@/lib/musicLists";
 import { OFFSET_STEP, formatOffset, setLyricsOffset, useLyricsOffset } from "@/lib/lyricsOffset";
 import { Lyrics } from "./Lyrics";
+import { MusicLists } from "./MusicLists";
 import { clearMusic, getMusicState, nextMusic, playMusic, prevMusic, registerMusicSlot, saveMusicConfig, setMusicSync, subscribeMusic, toggleMusic } from "@/lib/focusMusic";
 import type { MusicState } from "@/lib/focusMusic";
 import { showToast } from "@/ui/Toast";
@@ -74,9 +74,6 @@ export function MusicPanel() {
   const m = useMusic();
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState("");
-  const lists = useMusicLists();
-  const [naming, setNaming] = useState(false);
-  const [listName, setListName] = useState("");
 
   function connect() {
     if (!saveMusicConfig(text)) {
@@ -117,6 +114,9 @@ export function MusicPanel() {
         <p className="mt-3 text-[11px] leading-snug text-[var(--color-muted-2)]">
           Mejor con listas propias o de álbum; las mezclas automáticas de YouTube a veces no se dejan reproducir fuera de YouTube.
         </p>
+        <div className="mt-4 border-t border-[var(--color-line)] pt-4">
+          <MusicLists current={m.config?.url ?? null} />
+        </div>
       </div>
     );
   }
@@ -173,63 +173,8 @@ export function MusicPanel() {
         </span>
       </button>
 
-      <div className="mt-3">
-        <div className="mb-2 text-[11px] uppercase tracking-wide text-[var(--color-muted)]">Mis listas</div>
-        <div className="flex flex-wrap items-center gap-2">
-          {lists.map((l) => {
-            const active = l.url === m.config!.url;
-            return (
-              <span key={l.url} className={`flex items-center rounded-full ${active ? "glass-on" : "glass"}`}>
-                <button
-                  onClick={() => {
-                    if (!active && saveMusicConfig(l.url)) playMusic();
-                  }}
-                  aria-pressed={active}
-                  className={`max-w-[10rem] truncate rounded-full py-1.5 pl-3 pr-2 text-[12px] font-semibold ${active ? "" : "text-[var(--color-muted)]"}`}
-                >
-                  {l.name}
-                </button>
-                <button onClick={() => removeList(l.url)} aria-label={`Quitar la lista ${l.name}`} className="hit mr-1 flex h-6 w-6 items-center justify-center rounded-full text-[13px] opacity-70">
-                  ×
-                </button>
-              </span>
-            );
-          })}
-          {!lists.some((l) => l.url === m.config!.url) && !naming ? (
-            <button onClick={() => setNaming(true)} className="glass rounded-full px-3 py-1.5 text-[12px] font-semibold text-[var(--color-muted)]">
-              + Guardar esta lista
-            </button>
-          ) : null}
-        </div>
-        {naming ? (
-          <div className="mt-2 flex gap-2">
-            <input
-              value={listName}
-              onChange={(e) => setListName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && saveList(listName, m.config!.url)) {
-                  setNaming(false);
-                  setListName("");
-                }
-              }}
-              maxLength={24}
-              placeholder="Nombre (Estudio, Gimnasio…)"
-              aria-label="Nombre de la lista"
-              className="min-w-0 flex-1 rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-red)]"
-            />
-            <button
-              onClick={() => {
-                if (saveList(listName, m.config!.url)) {
-                  setNaming(false);
-                  setListName("");
-                } else showToast("Ponle un nombre");
-              }}
-              className="btn-primary tap-target flex-none rounded-full px-4 text-[12px] font-semibold uppercase tracking-wide text-white"
-            >
-              Guardar
-            </button>
-          </div>
-        ) : null}
+      <div className="mt-4">
+        <MusicLists current={m.config.url} />
       </div>
     </div>
   );
