@@ -1,7 +1,7 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/db/db";
 import { addDays, startOfWeek, todayISO } from "@/lib/date";
 import { weekStats } from "@/lib/weeklySummary";
+import { loadWeekInput } from "@/lib/weekData";
 import type { WeekInput } from "@/lib/weeklySummary";
 import { weekTip } from "@/lib/weekTip";
 import { hintDatosTab } from "@/features/datos/tabHint";
@@ -15,19 +15,7 @@ export function WeekSummaryCard({ onOpenDatos }: { onOpenDatos: () => void }) {
   const showing = dow === 0 || dow === 1;
   const weekStart = dow === 1 ? addDays(startOfWeek(today), -7) : startOfWeek(today);
 
-  const data = useLiveQuery(async (): Promise<WeekInput | null> => {
-    if (!showing) return null;
-    const [sets, focus, habitDays, habitDefs, weights, sleep, moure] = await Promise.all([
-      db.sets.toArray(),
-      db.focusSessions.toArray(),
-      db.habitDays.toArray(),
-      db.habitDefs.orderBy("order").toArray(),
-      db.weights.toArray(),
-      db.sleep.toArray(),
-      db.moureWeeks.toArray(),
-    ]);
-    return { sets, focus, habitDays, habitDefs, weights, sleep, moure };
-  }, [showing]);
+  const data = useLiveQuery(async (): Promise<WeekInput | null> => (showing ? loadWeekInput(weekStart) : null), [showing, weekStart]);
   if (!showing || !data) return null;
 
   const cur = weekStats(data, weekStart, today);

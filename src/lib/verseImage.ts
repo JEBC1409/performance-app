@@ -2,8 +2,8 @@ import { readAccentRgb } from "./uiPrefs";
 
 /** A verse as a picture to share: portrait card in the app's colours. */
 
-export const IMAGE_W = 1080;
-export const IMAGE_H = 1350;
+const IMAGE_W = 1080;
+const IMAGE_H = 1350;
 
 /** Greedy word wrap to `maxWidth` using `measure` for the width of a string. */
 export function wrapText(text: string, maxWidth: number, measure: (s: string) => number): string[] {

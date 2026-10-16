@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { computeDailyScores, currentDailyStreak, totalActiveDays, totalPoints, type DayScore } from "@/lib/dailyScore";
+import { activeDaysCount, computeDailyScores, currentDailyStreak, totalPoints, type DayScore } from "@/lib/dailyScore";
+import { todayISO } from "@/lib/date";
 import { streakRankProgress } from "@/lib/streakRank";
 
 export interface DailyStreakData {
@@ -14,9 +16,17 @@ export interface DailyStreakData {
 }
 
 export function useDailyStreak(): DailyStreakData | undefined {
-  return useLiveQuery(async () => {
-    const [scores, activeDays] = await Promise.all([computeDailyScores(), totalActiveDays()]);
-    const points = totalPoints(scores);
+  const today = todayISO();
+  // Three small live queries instead of one that re-reads the whole history on
+  // every write: the 28-day window, the count of earlier active days (untouched
+  // by anything you log today), and today's own.
+  const scores = useLiveQuery(() => computeDailyScores(), [today]);
+  const before = useLiveQuery(() => activeDaysCount("before", today), [today]);
+  const from = useLiveQuery(() => activeDaysCount("from", today), [today]);
+
+  return useMemo(() => {
+    if (!scores || before === undefined || from === undefined) return undefined;
+    const activeDays = before + from;
     const { days, frozenDates, freezesUsedThisMonth, freezesAvailable } = currentDailyStreak(scores);
     return {
       scores,
@@ -24,9 +34,9 @@ export function useDailyStreak(): DailyStreakData | undefined {
       frozenDates,
       freezesUsedThisMonth,
       freezesAvailable,
-      points,
+      points: totalPoints(scores),
       activeDays,
       progress: streakRankProgress(activeDays),
     };
-  }, []);
+  }, [scores, before, from]);
 }

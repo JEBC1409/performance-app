@@ -180,7 +180,7 @@ export async function sendNotification(title: string, body: string, opts: { tag:
   }
 }
 
-export function reminderContent(e: ScheduleEvent, lead: Lead, next: ScheduleEvent | undefined): { title: string; body: string; important: boolean } {
+function reminderContent(e: ScheduleEvent, lead: Lead, next: ScheduleEvent | undefined): { title: string; body: string; important: boolean } {
   const important = e.cell.key === true;
   const title = lead > 0 ? `En ${lead} min: ${e.cell.text}` : `Toca: ${e.cell.text}`;
   const parts: string[] = [];

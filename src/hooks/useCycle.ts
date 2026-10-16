@@ -17,9 +17,22 @@ async function readOffset(): Promise<number> {
   return typeof row?.value === "number" ? row.value : 0;
 }
 
+/** Distinct (day, workout) sessions in a range of dates. */
+async function sessionsIn(range: "before" | "from", today: string): Promise<number> {
+  const w = db.sets.where("date");
+  const rows = await (range === "before" ? w.below(today) : w.aboveOrEqual(today)).toArray();
+  return new Set(rows.map((r) => `${r.date}__${r.day}`)).size;
+}
+
 export function useCycleSlot(): CycleSlot {
-  const state = useLiveQuery(async () => ({ sessions: await countSessions(), offset: await readOffset() }), []);
-  return nextCycleSlot(state?.sessions ?? 0, state?.offset ?? 0);
+  const today = todayISO();
+  // Past sessions are counted once and left alone: logging a set today touches
+  // only the "from" range, so it no longer re-reads the whole training history.
+  const before = useLiveQuery(() => sessionsIn("before", today), [today]);
+  const from = useLiveQuery(() => sessionsIn("from", today), [today]);
+  const offset = useLiveQuery(readOffset, []);
+  const ready = before !== undefined && from !== undefined && offset !== undefined;
+  return nextCycleSlot(ready ? before + from : 0, offset ?? 0);
 }
 
 /** Says "the cycle is on this day now" (e.g. "today is B"), and it stays that way. */

@@ -14,7 +14,7 @@ export interface StreakTier {
  * HabitStreak name/pace their streak tiers: early levels come within days,
  * the top ones only after real sustained use (Duolingo's own milestones
  * sit at 7/30/100/365 days; HabitStreak runs Beginner → Habit Master). */
-export const STREAK_TIERS: StreakTier[] = [
+const STREAK_TIERS: StreakTier[] = [
   { key: "principiante", label: "Principiante", color: "#8a8f98", sides: 3, minDays: 0 },
   { key: "novato", label: "Novato", color: "#6fae52", sides: 4, minDays: 5 },
   { key: "aprendiz", label: "Aprendiz", color: "#4fa8c9", sides: 5, minDays: 15 },

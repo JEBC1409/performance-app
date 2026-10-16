@@ -195,11 +195,11 @@ export function groupStrengthPct(sets: SetRecord[], group: MuscleGroup, bodyweig
  * not rounded to an integer, since a strength ratio's ceiling is a small
  * float (e.g. 1.85) where rounding would collapse almost every threshold
  * to 0 or 1. */
-export function tierThresholds(capacity: number): number[] {
+function tierThresholds(capacity: number): number[] {
   return TIER_START_FRACTIONS.map((f) => f * capacity);
 }
 
-export function nextRankTier(tier: RankTier): RankTier | null {
+function nextRankTier(tier: RankTier): RankTier | null {
   const i = RANK_TIERS.findIndex((t) => t.key === tier.key);
   return i >= 0 && i < RANK_TIERS.length - 1 ? RANK_TIERS[i + 1] : null;
 }

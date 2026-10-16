@@ -9,7 +9,7 @@ export const MUSCLE_GROUP_LABEL: Record<MuscleGroup, string> = {
   core: "Core",
 };
 
-export const EXERCISE_MUSCLE_GROUP: Record<string, MuscleGroup> = {
+const EXERCISE_MUSCLE_GROUP: Record<string, MuscleGroup> = {
   "Pullover en polea": "espalda",
   "Jalón al pecho agarre ancho": "espalda",
   "Remo en máquina Hammer": "espalda",

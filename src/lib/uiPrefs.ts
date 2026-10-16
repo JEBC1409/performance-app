@@ -130,7 +130,7 @@ export function subscribeUiPrefs(cb: () => void): () => void {
 let autoListener = false;
 
 /** "auto" follows the system's light/dark setting. */
-export function resolveTheme(theme: Theme): "dark" | "light" {
+function resolveTheme(theme: Theme): "dark" | "light" {
   if (theme !== "auto") return theme;
   return typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
 }

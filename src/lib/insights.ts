@@ -23,7 +23,7 @@ export interface Insight {
 
 export const WINDOW_DAYS = 90;
 const MIN_PER_GROUP = 6;
-export const GOOD_SLEEP_H = 7;
+const GOOD_SLEEP_H = 7;
 
 const avg = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
 const pct = (n: number) => `${Math.round(n)} %`;

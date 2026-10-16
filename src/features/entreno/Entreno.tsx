@@ -79,7 +79,10 @@ export function Entreno({
   const restShort = useUiPrefs().restShort;
   const today = todayISO();
   const sessionSets = useSessionSets(day, sessionDate);
-  const allSets = useLiveQuery(() => db.sets.toArray(), []);
+  // Everything logged before this session's date — all that stall, progress and
+  // review checks look at. A range query, so logging a set today doesn't re-read
+  // (or recompute over) the whole history.
+  const allSets = useLiveQuery(() => db.sets.where("date").below(sessionDate).toArray(), [sessionDate]);
   // Exercises of this day whose last few sessions (before this one) never beat what came before.
   const stalls = useMemo(() => {
     const out = new Map<string, Stall>();
@@ -137,7 +140,7 @@ export function Entreno({
 
   async function logSet(exerciseName: string, payload: LogSetPayload) {
     const existing = sessionSets.filter((s) => s.exercise === exerciseName).length;
-    const record = personalRecord((allSets ?? []).filter((s) => s.exercise === exerciseName), { weight: payload.weight, reps: payload.reps });
+    const record = personalRecord([...(allSets ?? []), ...sessionSets].filter((s) => s.exercise === exerciseName), { weight: payload.weight, reps: payload.reps });
     await db.sets.add({
       date: sessionDate,
       day,

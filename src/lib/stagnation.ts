@@ -17,7 +17,7 @@ export interface SessionScore {
 }
 
 /** Sessions needed with no improvement before we say so. */
-export const STALL_WINDOW = 3;
+const STALL_WINDOW = 3;
 /** Beating the earlier best by less than this isn't progress. */
 const MIN_GAIN = 0.005;
 

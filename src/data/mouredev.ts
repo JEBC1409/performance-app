@@ -8,7 +8,7 @@ export interface MoureWeekSeed {
 }
 
 export const MOUREDEV_GOAL_HOURS_PER_WEEK = 15;
-export const MOUREDEV_TOTAL_WEEKS = 24;
+const MOUREDEV_TOTAL_WEEKS = 24;
 export const MOUREDEV_TARGET_LABEL = "MoureDev → Bancolombia 2027";
 
 export function seedMouredev(): MoureWeekSeed[] {

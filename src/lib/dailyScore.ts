@@ -1,7 +1,7 @@
 import { db, type HabitDayRecord } from "@/db/db";
 import { addDays, todayISO } from "./date";
 
-export const STREAK_WINDOW_DAYS = 28;
+const STREAK_WINDOW_DAYS = 28;
 
 export interface DayScore {
   date: string;
@@ -55,7 +55,7 @@ export async function computeDailyScores(days: number = STREAK_WINDOW_DAYS): Pro
  * or Streaks' "grace days": a streak that punishes one bad day too harshly
  * just trains people to give up on it instead of restarting it. Applied
  * automatically, no need to spend/equip anything. */
-export const STREAK_FREEZES_PER_MONTH = 2;
+const STREAK_FREEZES_PER_MONTH = 2;
 
 export interface StreakResult {
   days: number;
@@ -107,18 +107,27 @@ export function totalPoints(scores: DayScore[]): number {
  * a rank that feels like a real long-term milestone instead of resetting
  * with the 28-day scoring window. */
 export async function totalActiveDays(): Promise<number> {
-  const [sets, habitDays, weights, sleeps, focus] = await Promise.all([
-    db.sets.toArray(),
-    db.habitDays.toArray(),
-    db.weights.toArray(),
-    db.sleep.toArray(),
-    db.focusSessions.toArray(),
+  const today = todayISO();
+  const [before, from] = await Promise.all([activeDaysCount("before", today), activeDaysCount("from", today)]);
+  return before + from;
+}
+
+/** Distinct active days either strictly before `today` or from it on. The two
+ * ranges never overlap, so their counts add up — and they're read separately so
+ * that logging something today (which only touches "from") doesn't make the app
+ * recount the whole past, which is by far most of the history. Reads only the
+ * date index (distinct values), not every row. */
+export async function activeDaysCount(range: "before" | "from", today: string): Promise<number> {
+  const before = range === "before";
+  const keys = (c: { uniqueKeys(): Promise<unknown[]> }) => c.uniqueKeys() as Promise<string[]>;
+  const [sets, weights, sleeps, focus, habitDays] = await Promise.all([
+    keys(before ? db.sets.where("date").below(today) : db.sets.where("date").aboveOrEqual(today)),
+    keys(before ? db.weights.where("date").below(today) : db.weights.where("date").aboveOrEqual(today)),
+    keys(before ? db.sleep.where("date").below(today) : db.sleep.where("date").aboveOrEqual(today)),
+    keys(before ? db.focusSessions.where("date").below(today) : db.focusSessions.where("date").aboveOrEqual(today)),
+    before ? db.habitDays.where("date").below(today).toArray() : db.habitDays.where("date").aboveOrEqual(today).toArray(),
   ]);
-  const active = new Set<string>();
-  sets.forEach((s) => active.add(s.date));
-  weights.forEach((w) => active.add(w.date));
-  sleeps.forEach((s) => active.add(s.date));
-  focus.forEach((f) => active.add(f.date));
+  const active = new Set<string>([...sets, ...weights, ...sleeps, ...focus]);
   habitDays.forEach((h) => {
     if (habitsDoneFor(h) > 0) active.add(h.date);
   });

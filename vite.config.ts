@@ -11,6 +11,9 @@ export default defineConfig({
       includeAssets: ["icons/*.png"],
       workbox: {
         globPatterns: ["**/*.{js,css,html,png,svg,woff2}"],
+        // The Excel reader (~500 KB) is only used by the one-off import in Perfil: not
+        // worth downloading on install, cached the first time it is actually used.
+        globIgnores: ["**/xlsx-*.js"],
         // The 4 MB Bible isn't downloaded on install anymore (that made the first
         // visit heavy); it is cached the first time you read or open Hoy, then
         // works offline.
@@ -19,6 +22,11 @@ export default defineConfig({
             urlPattern: ({ url }: { url: URL }) => url.pathname === "/bible/rvr1909.json",
             handler: "CacheFirst",
             options: { cacheName: "bible-v1", expiration: { maxEntries: 2 } },
+          },
+          {
+            urlPattern: ({ url }: { url: URL }) => url.pathname.startsWith("/assets/xlsx-") && url.pathname.endsWith(".js"),
+            handler: "CacheFirst",
+            options: { cacheName: "xlsx-v1", expiration: { maxEntries: 2 } },
           },
         ],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,

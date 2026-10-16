@@ -9,7 +9,8 @@ import { Card } from "@/ui";
 import { addDays, fmtDateHuman, startOfWeek, todayISO } from "@/lib/date";
 import { fromKg, unitLabel } from "@/lib/units";
 import { delta, weekStats } from "@/lib/weeklySummary";
-import type { Delta, WeekInput, WeekStats } from "@/lib/weeklySummary";
+import { loadWeekInput } from "@/lib/weekData";
+import type { Delta, WeekStats } from "@/lib/weeklySummary";
 
 const DAY_LETTERS = ["L", "M", "M", "J", "V", "S", "D"];
 const fmt1 = (n: number) => String(Math.round(n * 10) / 10);
@@ -56,18 +57,7 @@ export function SemanaTab() {
   const currentWeek = startOfWeek(today);
   const [weekStart, setWeekStart] = useState(currentWeek);
 
-  const data = useLiveQuery(async (): Promise<WeekInput> => {
-    const [sets, focus, habitDays, habitDefs, weights, sleep, moure] = await Promise.all([
-      db.sets.toArray(),
-      db.focusSessions.toArray(),
-      db.habitDays.toArray(),
-      db.habitDefs.orderBy("order").toArray(),
-      db.weights.toArray(),
-      db.sleep.toArray(),
-      db.moureWeeks.toArray(),
-    ]);
-    return { sets, focus, habitDays, habitDefs, weights, sleep, moure };
-  }, []);
+  const data = useLiveQuery(() => loadWeekInput(weekStart), [weekStart]);
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const unit = settings?.unit ?? DEFAULT_SETTINGS.unit;
 

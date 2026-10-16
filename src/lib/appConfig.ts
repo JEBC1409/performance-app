@@ -14,7 +14,7 @@ import { getUiPrefs, parseUiPrefs, setUiPrefs, subscribeUiPrefs } from "./uiPref
 
 export const CONFIG_ROUTINE = "routine";
 export const CONFIG_HORARIO = "horario";
-export const CONFIG_UI = "ui_prefs";
+const CONFIG_UI = "ui_prefs";
 
 let version = 0;
 const listeners = new Set<() => void>();

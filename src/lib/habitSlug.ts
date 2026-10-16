@@ -2,7 +2,7 @@
  * identity, generated once at creation. HabitDayRecord.done entries
  * reference this key, not the label, so renaming a habit later doesn't
  * disconnect it from days already marked done under the old name. */
-export function slugifyHabit(label: string): string {
+function slugifyHabit(label: string): string {
   const withoutAccents = label.normalize("NFD").replace(/\p{Diacritic}/gu, "");
   const slug = withoutAccents
     .toLowerCase()

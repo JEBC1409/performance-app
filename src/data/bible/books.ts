@@ -73,7 +73,3 @@ export const BIBLE_BOOKS: BibleBookMeta[] = [
   { abbrev: "jd", name: "Judas", testament: "NT" },
   { abbrev: "re", name: "Apocalipsis", testament: "NT" },
 ];
-
-export function bookName(abbrev: string): string {
-  return BIBLE_BOOKS.find((b) => b.abbrev === abbrev)?.name ?? abbrev;
-}

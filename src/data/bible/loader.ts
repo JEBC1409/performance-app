@@ -62,14 +62,6 @@ function verseOfDayIndex(date: Date): number {
   return dayOfYear % VERSE_OF_DAY_REFS.length;
 }
 
-export function verseOfDay(bible: RawBibleBook[], date: Date = new Date()): VerseRef | null {
-  const ref = VERSE_OF_DAY_REFS[verseOfDayIndex(date)];
-  const text = getChapter(bible, ref.abbrev, ref.chapter)[ref.verse - 1];
-  if (!text) return null;
-  const name = BIBLE_BOOKS.find((b) => b.abbrev === ref.abbrev)?.name ?? ref.abbrev;
-  return { abbrev: ref.abbrev, bookName: name, chapter: ref.chapter, verse: ref.verse, text };
-}
-
 /** The verse of the day from public/bible/verse-of-day.json — the same 15
  * verses, in the same order, as VERSE_OF_DAY_REFS, pre-extracted (2 KB). Hoy
  * used to download and parse the whole 4 MB Bible just to show one verse. */

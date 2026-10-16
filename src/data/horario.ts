@@ -257,7 +257,7 @@ export function defaultHorario(): HorarioConfig {
 }
 
 /** Rebuild one weekday's rows from its segments (gaps become empty "—" rows). */
-export function columnFromSegs(segs: HorarioSeg[], rows: number): HorarioCell[] {
+function columnFromSegs(segs: HorarioSeg[], rows: number): HorarioCell[] {
   return column(segs.map((sg) => [sg.from, sg.to, { ...sg.cell } as HorarioCell] as Seg), rows);
 }
 

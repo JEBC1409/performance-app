@@ -46,7 +46,7 @@ export function sanitizePriorities(value: unknown): PrioritiesState {
   return out;
 }
 
-export const emptyPlan = (): DayPlan => ({ items: [] });
+const emptyPlan = (): DayPlan => ({ items: [] });
 export const planFor = (state: PrioritiesState, date: string): DayPlan => state[date] ?? emptyPlan();
 
 function put(state: PrioritiesState, date: string, plan: DayPlan): PrioritiesState {

@@ -5,13 +5,13 @@ export const MESES = [
 export const DIAS_SEMANA = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
 export const DIAS = ["LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO", "DOMINGO"];
 export const DIAS_CORTO = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-export const MESES_CORTO = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+const MESES_CORTO = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
 
 export function pad2(n: number): string {
   return n < 10 ? `0${n}` : `${n}`;
 }
 
-export function toISODate(d: Date): string {
+function toISODate(d: Date): string {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
 
@@ -50,14 +50,6 @@ export function daysInMonth(y: number, m: number): number {
   return new Date(y, m + 1, 0).getDate();
 }
 
-/** ISO week number (Mon-based) relative to a fixed start date, 0-indexed week count since start. */
-export function weeksSince(startISO: string, targetISO: string): number {
-  const start = parseISODate(startISO);
-  const target = parseISODate(targetISO);
-  const ms = target.getTime() - start.getTime();
-  return Math.floor(ms / (7 * 24 * 60 * 60 * 1000));
-}
-
 export function startOfWeek(iso: string): string {
   const idx = jsDowToIndex(parseISODate(iso).getDay());
   return addDays(iso, -idx);
@@ -72,10 +64,4 @@ export function fmtRelativeTime(epochMs: number): string {
   if (diffHr < 24) return `hace ${diffHr} h`;
   const diffDay = Math.floor(diffHr / 24);
   return `hace ${diffDay} d`;
-}
-
-export function num(v: unknown): number | null {
-  if (v === null || v === undefined || v === "") return null;
-  const n = typeof v === "number" ? v : parseFloat(String(v));
-  return Number.isNaN(n) ? null : n;
 }
