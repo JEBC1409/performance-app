@@ -1,10 +1,12 @@
 import type { ExerciseTarget } from "@/data/gym";
+import type { Suggestion } from "@/lib/progression";
 import { Chip } from "@/ui";
 
 export function ExerciseCard({
   exercise,
   done,
   stalled,
+  ready,
   onOpen,
   photo,
 }: {
@@ -12,6 +14,8 @@ export function ExerciseCard({
   done: number;
   /** Several sessions in a row without progress. */
   stalled?: boolean;
+  /** Last session topped the rep range: the suggestion to add weight. */
+  ready?: Suggestion;
   onOpen: () => void;
   photo: { src: string | null; caption?: string; custom?: boolean };
 }) {
@@ -57,6 +61,14 @@ export function ExerciseCard({
         {stalled && !complete ? (
           <span className="absolute bottom-2 right-2 rounded-full bg-[var(--color-warn)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black" title="Varias sesiones sin mejorar">
             Estancado
+          </span>
+        ) : null}
+        {ready && !stalled && !complete ? (
+          <span
+            className="absolute bottom-2 right-2 rounded-full bg-[var(--color-good)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black"
+            title={ready.reason}
+          >
+            {ready.weight != null ? `Sube a ${ready.weight} kg` : "Sube reps"}
           </span>
         ) : null}
       </div>

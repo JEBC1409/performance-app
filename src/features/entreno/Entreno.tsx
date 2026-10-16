@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
-import { GYM_DAY_ORDER, GYM_DIAS, CARDIO_NOTA, targetSetsForDay } from "@/data/gym";
+import { GYM_DAY_ORDER, GYM_DIAS, CARDIO_NOTA, startDate, targetSetsForDay } from "@/data/gym";
 import { Tabs, PageHeader, Card, Sheet, DateField, Button } from "@/ui";
 import { showToast } from "@/ui/Toast";
 import { todayISO, fmtDateHuman } from "@/lib/date";
@@ -8,6 +8,10 @@ import { buildDailySummary } from "@/lib/dailySummary";
 import { slotAfter, type GymDay } from "@/lib/cycle";
 import { reviewSession } from "@/lib/sessionReview";
 import { detectStall, sessionScores } from "@/lib/stagnation";
+import { readyToIncrease } from "@/lib/readyUp";
+import { personalRecord } from "@/lib/records";
+import { celebrate, haptic } from "@/lib/feedback";
+import type { Suggestion } from "@/lib/progression";
 import type { Stall } from "@/lib/stagnation";
 import { SessionReviewSheet } from "./SessionReviewSheet";
 import { GymMode } from "./GymMode";
@@ -89,6 +93,22 @@ export function Entreno({
     }
     return out;
   }, [allSets, day, sessionDate]);
+  // Exercises whose last session already topped the rep range on every working set: time to add weight.
+  const readyUps = useMemo(() => {
+    const out = new Map<string, Suggestion>();
+    if (!allSets) return out;
+    const byExercise = new Map<string, typeof allSets>();
+    for (const s of allSets) {
+      const list = byExercise.get(s.exercise);
+      if (list) list.push(s);
+      else byExercise.set(s.exercise, [s]);
+    }
+    for (const ex of GYM_DIAS[day].ex) {
+      const r = readyToIncrease(ex.repsLabel, byExercise.get(ex.name) ?? [], sessionDate, ex.startKg != null || ex.startReps != null ? startDate(ex) : undefined);
+      if (r) out.set(ex.name, r);
+    }
+    return out;
+  }, [allSets, day, sessionDate]);
   const review = useMemo(
     () => (reviewOpen && allSets && sessionSets.length ? reviewSession(day, sessionDate, sessionSets, allSets) : null),
     [reviewOpen, allSets, sessionSets, day, sessionDate],
@@ -114,6 +134,7 @@ export function Entreno({
 
   async function logSet(exerciseName: string, payload: LogSetPayload) {
     const existing = sessionSets.filter((s) => s.exercise === exerciseName).length;
+    const record = personalRecord((allSets ?? []).filter((s) => s.exercise === exerciseName), { weight: payload.weight, reps: payload.reps });
     await db.sets.add({
       date: sessionDate,
       day,
@@ -126,7 +147,12 @@ export function Entreno({
       note: payload.note,
       createdAt: Date.now(),
     });
-    showToast("Serie guardada");
+    if (record) {
+      const what = record.kind === "1rm" ? `${payload.weight} kg × ${payload.reps} (1RM est. ${record.estimate} kg)` : `${payload.reps} reps`;
+      showToast(`🏆 Récord en ${exerciseName}: ${what}`);
+      celebrate();
+      haptic([30, 40, 30]);
+    } else showToast("Serie guardada");
     timer.start(restSec);
     // Finishing the last series opens the session review, once per session.
     const autoKey = `performance_review_auto_${sessionDate}_${day}`;
@@ -213,7 +239,7 @@ export function Entreno({
       <div className="grid grid-cols-2 sidebar:grid-cols-3 gap-3">
         {GYM_DIAS[day].ex.map((ex) => {
           const doneCount = sessionSets.filter((s) => s.exercise === ex.name).length;
-          return <ExerciseCard key={ex.name} exercise={ex} done={doneCount} stalled={stalls.has(ex.name)} onOpen={() => setOpenExercise(ex)} photo={resolvePhoto(ex.name, photos.get(ex.name))} />;
+          return <ExerciseCard key={ex.name} exercise={ex} done={doneCount} stalled={stalls.has(ex.name)} ready={readyUps.get(ex.name)} onOpen={() => setOpenExercise(ex)} photo={resolvePhoto(ex.name, photos.get(ex.name))} />;
         })}
       </div>
 
