@@ -16,6 +16,7 @@ import { getPip, pipSupport, subscribePip, togglePip } from "@/lib/focusPip";
 import { isSoundOn, setSoundOn, subscribeSound, unlockAudio } from "@/lib/focusSound";
 import { getMusicState, subscribeMusic } from "@/lib/focusMusic";
 import { MusicPanel, MusicZen } from "./MusicPanel";
+import { isMouredevTask } from "@/lib/mouredevFocus";
 import { useLyricsPref } from "@/lib/lyricsPref";
 
 const SIZE = 300;
@@ -186,10 +187,16 @@ function FocusView() {
 
   const today = todayISO();
   const sessions = useLiveQuery(() => db.focusSessions.where("date").equals(today).toArray(), [today]);
+  // Recent tasks, plus a MoureDev one (blocks named after it count toward that route).
   const recent = useLiveQuery(async () => {
     const rows = await db.focusSessions.orderBy("createdAt").reverse().limit(40).toArray();
     return [...new Set(rows.map((r) => r.task))].slice(0, 5);
   }, []);
+  const taskChips = useMemo(() => {
+    const chips = [...(recent ?? [])];
+    if (!chips.some((c) => isMouredevTask(c))) chips.push("MoureDev");
+    return chips;
+  }, [recent]);
 
   const todaySessions = useMemo(() => [...(sessions ?? [])].sort((a, b) => b.createdAt - a.createdAt), [sessions]);
   const todayMinutes = todaySessions.reduce((a, s) => a + s.minutes, 0);
@@ -380,9 +387,9 @@ function FocusView() {
               />
             </label>
 
-            {recent && recent.length ? (
+            {taskChips.length ? (
               <div className="mt-3 flex flex-wrap justify-center gap-1.5">
-                {recent.map((r) => (
+                {taskChips.map((r) => (
                   <button
                     key={r}
                     onClick={() => setTask(r)}

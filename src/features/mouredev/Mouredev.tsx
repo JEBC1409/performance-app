@@ -1,8 +1,7 @@
 import { useMemo } from "react";
-import { useLiveQuery } from "dexie-react-hooks";
+import { useMoureWeeks } from "@/hooks/useMoureWeeks";
 import { db } from "@/db/db";
 import { Card, PageHeader, Stat, Button, BarChart, type BarPoint } from "@/ui";
-import { num } from "@/lib/date";
 import { MOUREDEV_TARGET_LABEL, MOUREDEV_GOAL_HOURS_PER_WEEK } from "@/data/mouredev";
 
 const DEV_TOOLS = [
@@ -17,16 +16,16 @@ const DEV_TOOLS = [
 ];
 
 export function Mouredev() {
-  const weeks = useLiveQuery(() => db.moureWeeks.orderBy("week").toArray(), []);
+  const weeks = useMoureWeeks();
 
-  const totalHours = (weeks ?? []).reduce((a, r) => a + (num(r.hours) ?? 0), 0);
+  const totalHours = Math.round((weeks ?? []).reduce((a, r) => a + r.effectiveHours, 0) * 10) / 10;
   const doneWeeks = (weeks ?? []).filter((w) => w.done).length;
 
   const hourPoints: BarPoint[] = useMemo(
     () =>
       (weeks ?? [])
-        .filter((w) => w.hours != null)
-        .map((w) => ({ label: `S${w.week}`, value: w.hours!, highlight: w.done })),
+        .filter((w) => w.effectiveHours > 0)
+        .map((w) => ({ label: `S${w.week}`, value: w.effectiveHours, highlight: w.done })),
     [weeks]
   );
 
@@ -64,6 +63,9 @@ export function Mouredev() {
       <div className="flex flex-col gap-4 enter">
         <PageHeader eyebrow="MoureDev" title="Ruta Python" subtitle={`${MOUREDEV_TARGET_LABEL} · ~${MOUREDEV_GOAL_HOURS_PER_WEEK}h/semana`} />
 
+        <p className="-mt-1 text-[11.5px] leading-snug text-[var(--color-muted)]">
+          Los bloques de Focus cuyo nombre diga “MoureDev” o “Python” suman solos a su semana (según la fecha de cada fila). Cada semana cuenta lo mayor entre lo que anotas y lo que mide Focus.
+        </p>
         <div className="grid grid-cols-2 gap-2.5">
           <Stat label="Horas totales" value={totalHours} sub={`de ~${MOUREDEV_GOAL_HOURS_PER_WEEK}h/semana`} accent />
           <Stat label="Semanas completas" value={`${doneWeeks} / ${weeks?.length ?? 24}`} />
@@ -129,6 +131,7 @@ export function Mouredev() {
                       />
                     </td>
                     <td className="px-1 py-1.5">
+                      {w.focusHours > 0 ? <div className="num px-1.5 pt-0.5 text-[10px] text-[var(--color-gold)]" title="Medido por Focus">Focus {w.focusHours} h</div> : null}
                       <input
                         defaultValue={w.hours ?? ""}
                         onBlur={(e) => patch(w.week, { hours: e.target.value ? parseFloat(e.target.value) : null })}

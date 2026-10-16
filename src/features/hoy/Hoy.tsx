@@ -13,8 +13,9 @@ import { useUiPrefs } from "@/hooks/useUiPrefs";
 import { useConfigVersion } from "@/hooks/useConfigVersion";
 import type { HomeCard } from "@/lib/uiPrefs";
 import { useHabitDefs } from "@/hooks/useHabitDefs";
+import { useMoureWeeks } from "@/hooks/useMoureWeeks";
 import { GYM_DAY_ORDER, GYM_DIAS } from "@/data/gym";
-import { todayISO, num, DIAS, jsDowToIndex } from "@/lib/date";
+import { todayISO, DIAS, jsDowToIndex } from "@/lib/date";
 import { currentBlockInfo } from "@/lib/scheduleBlock";
 import { hintDatosTab } from "@/features/datos/tabHint";
 import { habitForBlock, toggleHabitDay } from "@/lib/habits";
@@ -57,10 +58,8 @@ export function Hoy({
   );
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const unit = settings?.unit ?? DEFAULT_SETTINGS.unit;
-  const moureHours = useLiveQuery(async () => {
-    const rows = await db.moureWeeks.toArray();
-    return rows.reduce((a, r) => a + (num(r.hours) ?? 0), 0);
-  }, []);
+  const moureWeeks = useMoureWeeks();
+  const moureHours = moureWeeks ? Math.round(moureWeeks.reduce((a, r) => a + r.effectiveHours, 0) * 10) / 10 : undefined;
   const verse = useVerseOfDay();
 
   const info = currentBlockInfo();
