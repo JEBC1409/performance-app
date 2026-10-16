@@ -22,7 +22,7 @@ const MESSAGES: Record<Exclude<LyricsStatus, "found">, string> = {
 /** Time-synced lyrics, Apple Music style: the line being sung is big and bright,
  * the rest fade away, and the list glides to keep the current line centred.
  * Tap a line to jump the song there. Remount (key) per song to start at the top. */
-export function Lyrics({ lines, status, playing }: { lines: LyricLine[]; status: LyricsStatus; playing: boolean }) {
+export function Lyrics({ lines, status, playing, offset = 0 }: { lines: LyricLine[]; status: LyricsStatus; playing: boolean; offset?: number }) {
   const boxRef = useRef<HTMLDivElement>(null);
   const lineRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const heldUntil = useRef(0);
@@ -34,13 +34,13 @@ export function Lyrics({ lines, status, playing }: { lines: LyricLine[]; status:
     const tick = () => {
       if (document.hidden) return;
       // A small lead so the line lights up as it's about to be sung, not after.
-      const next = activeLineIndex(lines, getMusicTime().t + 0.25);
+      const next = activeLineIndex(lines, getMusicTime().t + 0.25 + offset);
       setActive((cur) => (cur === next ? cur : next));
     };
     tick();
     const id = window.setInterval(tick, 200);
     return () => window.clearInterval(id);
-  }, [lines, status]);
+  }, [lines, status, offset]);
 
   // Keep the current line centred.
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useLyrics } from "@/hooks/useLyrics";
 import { setLyricsPref, useLyricsPref } from "@/lib/lyricsPref";
+import { OFFSET_STEP, formatOffset, setLyricsOffset, useLyricsOffset } from "@/lib/lyricsOffset";
 import { Lyrics } from "./Lyrics";
 import { clearMusic, getMusicState, nextMusic, playMusic, prevMusic, registerMusicSlot, saveMusicConfig, setMusicSync, subscribeMusic, toggleMusic } from "@/lib/focusMusic";
 import type { MusicState } from "@/lib/focusMusic";
@@ -179,6 +180,7 @@ export function MusicZen() {
   const showSlot = !!m.config && m.started;
   const lyricsOn = useLyricsPref();
   const lyrics = useLyrics(m.videoId, m.title, m.author, lyricsOn && showSlot);
+  const offset = useLyricsOffset(m.videoId);
 
   useEffect(() => {
     const el = slotRef.current;
@@ -215,6 +217,19 @@ export function MusicZen() {
           </div>
           <div className={`flex flex-col items-center gap-3 ${compact ? "max-md:flex-row max-md:flex-wrap max-md:gap-2" : ""}`}>
             <Controls playing={m.playing} big={!compact} />
+            {lyricsOn && lyrics.status === "found" ? (
+              <div role="group" aria-label="Ajustar el tiempo de la letra" className="glass flex items-center rounded-full">
+                <button onClick={() => setLyricsOffset(m.videoId, offset - OFFSET_STEP)} aria-label="Letra más tarde" className="hit flex h-8 w-8 items-center justify-center text-[15px] text-[var(--color-muted)]">
+                  −
+                </button>
+                <button onClick={() => setLyricsOffset(m.videoId, 0)} aria-label="Restablecer el tiempo de la letra" title="Restablecer" className="num min-w-[3.6rem] px-1 text-center text-[11px] font-semibold text-[var(--color-ink)]">
+                  {formatOffset(offset)}
+                </button>
+                <button onClick={() => setLyricsOffset(m.videoId, offset + OFFSET_STEP)} aria-label="Letra más temprano" className="hit flex h-8 w-8 items-center justify-center text-[15px] text-[var(--color-muted)]">
+                  +
+                </button>
+              </div>
+            ) : null}
             <button
               onClick={() => setLyricsPref(!lyricsOn)}
               aria-pressed={lyricsOn}
@@ -225,7 +240,7 @@ export function MusicZen() {
           </div>
         </div>
       </div>
-      {lyricsOn ? <Lyrics key={m.videoId} lines={lyrics.lines} status={lyrics.status} playing={m.playing} /> : null}
+      {lyricsOn ? <Lyrics key={m.videoId} lines={lyrics.lines} status={lyrics.status} playing={m.playing} offset={offset} /> : null}
     </>
   );
 }

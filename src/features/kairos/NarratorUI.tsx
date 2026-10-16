@@ -103,6 +103,8 @@ export function NarratorBar({ narrator, where, onVoice }: { narrator: Narrator; 
   );
 }
 
+const sleepMinutesLeft = (at: number) => Math.max(1, Math.ceil((at - Date.now()) / 60_000));
+
 /** Choose the voice and how it sounds. A voice is picked by ear: tapping one says a sample. */
 export function VoiceSheet({ narrator, open, onClose }: { narrator: Narrator; open: boolean; onClose: () => void }) {
   const { prefs, voices } = narrator;
@@ -164,6 +166,20 @@ export function VoiceSheet({ narrator, open, onClose }: { narrator: Narrator; op
             className="mt-2 w-full accent-[var(--color-red)]"
           />
         </label>
+        <div>
+          <div className="text-[12px] font-semibold">Apagar la lectura en</div>
+          <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Apagado automático">
+            {[null, 15, 30, 60].map((m) => {
+              const on = narrator.sleepMin === m;
+              return (
+                <button key={m ?? "off"} onClick={() => narrator.setSleep(m)} aria-pressed={on} className={`num rounded-full px-4 py-2 text-[12px] font-semibold ${on ? "glass-on" : "glass text-[var(--color-muted)]"}`}>
+                  {m == null ? "Sin límite" : `${m} min`}
+                </button>
+              );
+            })}
+          </div>
+          {narrator.sleepAt != null ? <p className="mt-2 text-[11.5px] text-[var(--color-muted)]">Se apaga en unos {sleepMinutesLeft(narrator.sleepAt)} min, al terminar el versículo.</p> : null}
+        </div>
         <button onClick={() => narrator.preview(prefs.voiceURI)} className="glass tap-target rounded-full px-5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.1em]">
           Probar la voz
         </button>

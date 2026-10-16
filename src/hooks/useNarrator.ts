@@ -28,6 +28,9 @@ export function useNarrator(verses: string[], resetKey: string, onFinish?: () =>
   const voicesRef = useRef(voices);
   const finishRef = useRef(onFinish);
   const token = useRef(0);
+  // Sleep timer: when it passes, the voice stops at the end of the verse being read.
+  const sleepRef = useRef<number | null>(null);
+  const [sleep, setSleepState] = useState<{ at: number; min: number } | null>(null);
   // speakFrom calls itself when a verse ends; through a ref, so it isn't read while still being defined.
   const speakRef = useRef<(i: number) => void>(() => undefined);
   const index = useRef(0);
@@ -77,7 +80,16 @@ export function useNarrator(verses: string[], resetKey: string, onFinish?: () =>
         u.rate = p.rate;
         u.pitch = p.pitch;
         u.onend = () => {
-          if (token.current === mine) speakRef.current(i + 1);
+          if (token.current !== mine) return;
+          if (sleepRef.current != null && Date.now() >= sleepRef.current) {
+            sleepRef.current = null;
+            setSleepState(null);
+            token.current++;
+            index.current = 0;
+            set("idle", -1);
+            return;
+          }
+          speakRef.current(i + 1);
         };
         u.onerror = (e) => {
           if (token.current !== mine || e.error === "interrupted" || e.error === "canceled") return;
@@ -127,6 +139,13 @@ export function useNarrator(verses: string[], resetKey: string, onFinish?: () =>
     [],
   );
 
+  /** Stops the reading after this many minutes (null = no limit). */
+  const setSleep = useCallback((minutes: number | null) => {
+    const at = minutes == null ? null : Date.now() + minutes * 60_000;
+    sleepRef.current = at;
+    setSleepState(at == null || minutes == null ? null : { at, min: minutes });
+  }, []);
+
   const setPrefs = useCallback((patch: Partial<NarratorPrefs>) => {
     setPrefsState((p) => {
       const merged = { ...p, ...patch };
@@ -169,5 +188,8 @@ export function useNarrator(verses: string[], resetKey: string, onFinish?: () =>
     next,
     prev,
     preview,
+    sleepAt: sleep?.at ?? null,
+    sleepMin: sleep?.min ?? null,
+    setSleep,
   };
 }

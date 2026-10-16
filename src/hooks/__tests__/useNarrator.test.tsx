@@ -124,4 +124,24 @@ describe("useNarrator", () => {
     expect(result.current.status).toBe("idle");
     expect(cancel).toHaveBeenCalled();
   });
+
+  it("sleep timer: after the time passes, it stops at the end of the verse and does not go on", () => {
+    const { result } = renderHook(() => useNarrator(VERSES, "jo:1"));
+    act(() => result.current.play(0));
+    flush();
+    act(() => result.current.setSleep(15));
+    expect(result.current.sleepMin).toBe(15);
+
+    // within the time: carries on
+    act(() => spoken[0].onend?.());
+    flush();
+    expect(result.current.current).toBe(1);
+
+    act(() => void vi.advanceTimersByTime(16 * 60_000));
+    act(() => spoken[1].onend?.());
+    flush();
+    expect(result.current.status).toBe("idle");
+    expect(result.current.sleepAt).toBeNull();
+    expect(spoken).toHaveLength(2);
+  });
 });

@@ -56,4 +56,15 @@ describe("Lyrics", () => {
     rerender(<Lyrics lines={[]} status="error" playing />);
     expect(screen.getByRole("status")).toHaveTextContent(/No pude cargar/i);
   });
+
+  it("a positive offset lights the lines up earlier", () => {
+    const { rerender } = render(<Lyrics lines={LINES} status="found" playing offset={0} />);
+    now = 8;
+    act(() => void vi.advanceTimersByTime(250));
+    expect(screen.getByRole("button", { name: "primera" })).toHaveAttribute("aria-current", "true");
+
+    rerender(<Lyrics lines={LINES} status="found" playing offset={2} />);
+    act(() => void vi.advanceTimersByTime(250));
+    expect(screen.getByRole("button", { name: "segunda" })).toHaveAttribute("aria-current", "true");
+  });
 });
