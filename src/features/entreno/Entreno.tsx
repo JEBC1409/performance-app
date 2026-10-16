@@ -10,6 +10,8 @@ import { reviewSession } from "@/lib/sessionReview";
 import { detectStall, sessionScores } from "@/lib/stagnation";
 import { readyToIncrease } from "@/lib/readyUp";
 import { personalRecord } from "@/lib/records";
+import { restSecondsFor } from "@/lib/restFor";
+import { useUiPrefs } from "@/hooks/useUiPrefs";
 import { celebrate, haptic } from "@/lib/feedback";
 import type { Suggestion } from "@/lib/progression";
 import type { Stall } from "@/lib/stagnation";
@@ -74,6 +76,7 @@ export function Entreno({
   const photos = useExercisePhotos();
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const restSec = settings?.defaultRestSec ?? DEFAULT_SETTINGS.defaultRestSec;
+  const restShort = useUiPrefs().restShort;
   const today = todayISO();
   const sessionSets = useSessionSets(day, sessionDate);
   const allSets = useLiveQuery(() => db.sets.toArray(), []);
@@ -153,7 +156,7 @@ export function Entreno({
       celebrate();
       haptic([30, 40, 30]);
     } else showToast("Serie guardada");
-    timer.start(restSec);
+    timer.start(restSecondsFor(exerciseName, restSec, restShort));
     // Finishing the last series opens the session review, once per session.
     const autoKey = `performance_review_auto_${sessionDate}_${day}`;
     if (sessionSets.length + 1 >= target && !readFlag(autoKey)) {

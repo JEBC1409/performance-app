@@ -2,6 +2,8 @@ import { useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS, type Unit } from "@/db/db";
 import { Card, PageHeader, Field, Input, Select, Button, Chip, Stat } from "@/ui";
+import { useUiPrefs } from "@/hooks/useUiPrefs";
+import { setUiPrefs } from "@/lib/uiPrefs";
 import { showToast } from "@/ui/Toast";
 import { setCycleSlot, useCycleSlot } from "@/hooks/useCycle";
 import { exportBackup, importBackup } from "@/lib/jsonBackup";
@@ -27,6 +29,7 @@ const HEAVY_DUTY_RULES = [
 ];
 
 export function Perfil() {
+  const uiPrefs = useUiPrefs();
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const slot = useCycleSlot();
   const { session } = useAuth();
@@ -191,6 +194,21 @@ export function Perfil() {
             <Field label="Hora de dormir">
               <Input type="time" defaultValue={settings?.sleepTime ?? DEFAULT_SETTINGS.sleepTime} onBlur={(e) => patch({ sleepTime: e.target.value })} />
             </Field>
+          </div>
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <div>
+              <div className="text-[13px] font-semibold">Descanso corto en aislamiento</div>
+              <div className="text-[11.5px] leading-snug text-[var(--color-muted)]">Después de curls, laterales, extensiones… descansas 90 s como máximo. En los compuestos queda tu descanso de arriba.</div>
+            </div>
+            <button
+              onClick={() => setUiPrefs({ restShort: !uiPrefs.restShort })}
+              role="switch"
+              aria-checked={uiPrefs.restShort}
+              aria-label="Descanso corto en aislamiento"
+              className={`relative h-7 w-12 flex-none rounded-full ${uiPrefs.restShort ? "glass-on" : "glass"}`}
+            >
+              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${uiPrefs.restShort ? "left-[26px]" : "left-0.5"}`} />
+            </button>
           </div>
         </Card>
 
