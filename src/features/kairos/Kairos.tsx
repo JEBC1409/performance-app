@@ -1,10 +1,13 @@
 import { Skeleton } from "@/ui/Skeleton";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
 import type { SavedVerseRecord } from "@/db/db";
 import { useBible } from "@/hooks/useBible";
 import { useNarrator } from "@/hooks/useNarrator";
+import { useBibleHighlights } from "@/hooks/useBibleHighlights";
+import { HIGHLIGHT_COLORS, colorRgb, verseKey } from "@/lib/bibleHighlights";
+import { MIN_QUERY_CHARS, searchBible } from "@/lib/bibleSearch";
 import { BIBLE_BOOKS } from "@/data/bible/books";
 import { getChapter, chapterCount } from "@/data/bible/loader";
 import { Eyebrow, PageHeader, Card, Sheet, Field, Input, Button, FlameGlyph } from "@/ui";
@@ -44,6 +47,9 @@ export function Kairos() {
   const [note, setNote] = useState("");
   const [query, setQuery] = useState("");
   const [scrollToVerse, setScrollToVerse] = useState<number | null>(null);
+  const [bibleQuery, setBibleQuery] = useState("");
+  const deferredBibleQuery = useDeferredValue(bibleQuery);
+  const { highlights, set: setHighlight } = useBibleHighlights();
 
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const bookmark = settings?.readingProgress ?? null;
@@ -80,6 +86,7 @@ export function Kairos() {
   const chapters = bible ? chapterCount(bible, abbrev) : 0;
   const verses = bible ? getChapter(bible, abbrev, chapter) : [];
   const bookName = BIBLE_BOOKS.find((b) => b.abbrev === abbrev)?.name ?? abbrev;
+  const searchResult = useMemo(() => (bible && deferredBibleQuery.trim().length >= MIN_QUERY_CHARS ? searchBible(bible, deferredBibleQuery) : null), [bible, deferredBibleQuery]);
   const bookmarkBookName = bookmark ? (BIBLE_BOOKS.find((b) => b.abbrev === bookmark.abbrev)?.name ?? bookmark.abbrev) : null;
   const isAtBookmark = !!bookmark && bookmark.abbrev === abbrev && bookmark.chapter === chapter;
 
@@ -288,6 +295,51 @@ export function Kairos() {
                 </button>
               ) : null}
 
+              <div>
+                <input
+                  type="search"
+                  value={bibleQuery}
+                  onChange={(e) => setBibleQuery(e.target.value)}
+                  placeholder="Buscar en la Biblia (ej. “fe”, “no temas”)"
+                  aria-label="Buscar en la Biblia"
+                  className="w-full rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-3.5 py-2.5 text-[13px] outline-none focus:border-[var(--color-red)]"
+                />
+                {searchResult ? (
+                  <div className="mt-2 rounded-2xl border border-[var(--color-line-strong)] p-2" role="region" aria-label="Resultados de la búsqueda">
+                    {searchResult.total === 0 ? (
+                      <p className="px-2 py-3 text-[12.5px] text-[var(--color-muted)]">No encontré versículos con eso.</p>
+                    ) : (
+                      <>
+                        <div className="num px-2 pb-1.5 pt-1 text-[11px] uppercase tracking-wide text-[var(--color-muted)]">
+                          {searchResult.total} {searchResult.total === 1 ? "versículo" : "versículos"}
+                          {searchResult.total > searchResult.hits.length ? ` · mostrando ${searchResult.hits.length}` : ""}
+                        </div>
+                        <ul className="flex max-h-[320px] flex-col divide-y divide-[var(--color-line)] overflow-y-auto">
+                          {searchResult.hits.map((h) => (
+                            <li key={`${h.abbrev}.${h.chapter}.${h.verse}`}>
+                              <button
+                                onClick={() => {
+                                  setAbbrev(h.abbrev);
+                                  setChapter(h.chapter);
+                                  setScrollToVerse(h.verse);
+                                  setBibleQuery("");
+                                }}
+                                className="w-full px-2 py-2.5 text-left"
+                              >
+                                <span className="num text-[11px] font-semibold uppercase tracking-wide text-[var(--color-gold)]">
+                                  {h.bookName} {h.chapter}:{h.verse}
+                                </span>
+                                <span className="mt-0.5 block text-[13px] leading-snug text-[rgb(var(--fg-rgb)/0.85)]">{h.text}</span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Libro">
                   <BookPicker
@@ -339,6 +391,7 @@ export function Kairos() {
                   {verses.map((text, i) => {
                     const vNum = i + 1;
                     const isSpoken = narratorStatus !== "idle" && spokenIdx === i;
+                    const tint = highlights[verseKey(abbrev, chapter, vNum)];
                     const noted = notedVerses.has(vNum);
                     const isBookmarked = bookmark?.abbrev === abbrev && bookmark?.chapter === chapter && bookmark?.verse === vNum;
                     return (
@@ -346,7 +399,8 @@ export function Kairos() {
                         key={i}
                         id={`kairos-verse-${vNum}`}
                         onClick={() => setPickedVerse({ verse: vNum, text })}
-                        className={`group flex items-start gap-3 py-3 text-left first:pt-0 last:pb-0 ${isBookmarked ? "-mx-2 rounded-xl px-2 bg-[rgb(var(--accent-rgb)/0.07)]" : ""} ${isSpoken ? "-mx-2 rounded-xl px-2 bg-[rgb(var(--accent-rgb)/0.16)]" : ""}`}
+                        className={`group flex items-start gap-3 py-3 text-left first:pt-0 last:pb-0 ${isBookmarked ? "-mx-2 rounded-xl px-2 bg-[rgb(var(--accent-rgb)/0.07)]" : ""} ${isSpoken ? "-mx-2 rounded-xl px-2 bg-[rgb(var(--accent-rgb)/0.16)]" : ""} ${tint && !isSpoken && !isBookmarked ? "-mx-2 rounded-xl px-2" : ""}`}
+                        style={tint && !isSpoken ? { backgroundColor: `rgb(${colorRgb(tint)} / 0.18)` } : undefined}
                       >
                         <span className="relative num mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-[var(--color-surface-2)] text-[10.5px] font-bold text-[var(--color-red)] transition-colors group-hover:bg-[var(--color-red)] group-hover:text-white">
                           {vNum}
@@ -422,6 +476,22 @@ export function Kairos() {
                 </button>
               </div>
               <p className="text-[13.5px] mt-3 leading-relaxed">{pickedVerse.text}</p>
+              <div className="mt-3 flex items-center gap-2" role="group" aria-label="Resaltar versículo">
+                <span className="mr-1 text-[11px] uppercase tracking-wide text-[var(--color-muted)]">Resaltar</span>
+                {HIGHLIGHT_COLORS.map((c) => {
+                  const on = highlights[verseKey(abbrev, chapter, pickedVerse.verse)] === c.key;
+                  return (
+                    <button
+                      key={c.key}
+                      onClick={() => void setHighlight(verseKey(abbrev, chapter, pickedVerse.verse), on ? null : c.key)}
+                      aria-label={`${c.label}${on ? " (quitar)" : ""}`}
+                      aria-pressed={on}
+                      className="hit h-7 w-7 rounded-full border-2"
+                      style={{ backgroundColor: `rgb(${c.rgb} / 0.55)`, borderColor: on ? `rgb(${c.rgb})` : "transparent" }}
+                    />
+                  );
+                })}
+              </div>
               {narrator.supported ? (
                 <button
                   onClick={() => {
