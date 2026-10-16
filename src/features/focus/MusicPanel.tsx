@@ -4,6 +4,7 @@ import { setLyricsPref, useLyricsPref } from "@/lib/lyricsPref";
 import { OFFSET_STEP, formatOffset, setLyricsOffset, useLyricsOffset } from "@/lib/lyricsOffset";
 import { Lyrics } from "./Lyrics";
 import { MusicLists } from "./MusicLists";
+import { useMusicLists } from "@/lib/musicLists";
 import { clearMusic, getMusicState, nextMusic, playMusic, prevMusic, registerMusicSlot, saveMusicConfig, setMusicSync, subscribeMusic, toggleMusic } from "@/lib/focusMusic";
 import type { MusicState } from "@/lib/focusMusic";
 import { showToast } from "@/ui/Toast";
@@ -189,6 +190,7 @@ export function MusicZen() {
   const lyricsOn = useLyricsPref();
   const lyrics = useLyrics(m.videoId, m.title, m.author, lyricsOn && showSlot);
   const offset = useLyricsOffset(m.videoId);
+  const lists = useMusicLists();
 
   useEffect(() => {
     const el = slotRef.current;
@@ -246,6 +248,26 @@ export function MusicZen() {
               Letra
             </button>
           </div>
+          {/* Switch the music without leaving the timer: your lists as a row you can scroll. */}
+          {lists.length > 1 ? (
+            <div role="group" aria-label="Cambiar de lista" className="no-scrollbar flex w-full max-w-full gap-1.5 overflow-x-auto pb-0.5">
+              {lists.map((l) => {
+                const active = l.url === m.config?.url;
+                return (
+                  <button
+                    key={l.url}
+                    onClick={() => {
+                      if (!active && saveMusicConfig(l.url)) playMusic();
+                    }}
+                    aria-pressed={active}
+                    className={`max-w-[9rem] flex-none truncate rounded-full px-3 py-1 text-[11px] font-semibold ${active ? "glass-on text-white" : "glass text-[var(--color-muted)]"}`}
+                  >
+                    {l.name}
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
       </div>
       {lyricsOn ? <Lyrics key={m.videoId} lines={lyrics.lines} status={lyrics.status} playing={m.playing} offset={offset} /> : null}
