@@ -9,6 +9,7 @@ import { DailyStreakCard } from "./DailyStreakCard";
 import { DayRings } from "./DayRings";
 import { PrioritiesCard } from "./PrioritiesCard";
 import { InsightsCard } from "./InsightsCard";
+import { DeloadCard } from "./DeloadCard";
 import { useUiPrefs } from "@/hooks/useUiPrefs";
 import { useConfigVersion } from "@/hooks/useConfigVersion";
 import type { HomeCard } from "@/lib/uiPrefs";
@@ -238,7 +239,12 @@ export function Hoy({
 
     priorities: <PrioritiesCard key="priorities" />,
 
-    insights: <InsightsCard key="insights" />,
+    insights: (
+      <div key="insights" className="flex flex-col gap-4 empty:hidden">
+        <DeloadCard />
+        <InsightsCard />
+      </div>
+    ),
 
     streak: <DailyStreakCard key="streak" />,
 
