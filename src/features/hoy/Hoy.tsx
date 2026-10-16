@@ -10,6 +10,7 @@ import { DayRings } from "./DayRings";
 import { PrioritiesCard } from "./PrioritiesCard";
 import { InsightsCard } from "./InsightsCard";
 import { DeloadCard } from "./DeloadCard";
+import { WeekSummaryCard } from "./WeekSummaryCard";
 import { useUiPrefs } from "@/hooks/useUiPrefs";
 import { useConfigVersion } from "@/hooks/useConfigVersion";
 import type { HomeCard } from "@/lib/uiPrefs";
@@ -18,7 +19,6 @@ import { useMoureWeeks } from "@/hooks/useMoureWeeks";
 import { GYM_DAY_ORDER, GYM_DIAS } from "@/data/gym";
 import { todayISO, DIAS, jsDowToIndex } from "@/lib/date";
 import { currentBlockInfo } from "@/lib/scheduleBlock";
-import { hintDatosTab } from "@/features/datos/tabHint";
 import { habitForBlock, toggleHabitDay } from "@/lib/habits";
 import { celebrate, haptic } from "@/lib/feedback";
 import { HORARIO } from "@/data/horario";
@@ -174,23 +174,7 @@ export function Hoy({
     </div>
   );
 
-  const sundayCard =
-    new Date().getDay() === 0 ? (
-      <button
-        onClick={() => {
-          hintDatosTab("semana");
-          onNavigate("datos");
-        }}
-        className="panel-surface panel-surface-glow enter flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left"
-      >
-        <div>
-          <div className="eyebrow eyebrow-accent">Domingo</div>
-          <div className="mt-1 font-[var(--font-display)] text-[14px] tracking-[0.04em]">Tu resumen de la semana</div>
-          <div className="mt-0.5 text-[11px] text-[var(--color-muted)]">Entrenos, Focus, hábitos, sueño y peso contra la semana anterior.</div>
-        </div>
-        <Icon name="arrow-right" size={18} className="flex-none text-[var(--color-red)]" />
-      </button>
-    ) : null;
+  const sundayCard = <WeekSummaryCard onOpenDatos={() => onNavigate("datos")} />;
 
   const cards: Record<HomeCard, ReactNode> = {
     rings: <DayRings key="rings" habitsDone={habitsCompleted} habitsTotal={habitsTotal} slot={slot} />,

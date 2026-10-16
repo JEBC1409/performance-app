@@ -31,7 +31,7 @@ describe("VerseReview", () => {
     fireEvent.click(screen.getByRole("button", { name: /Lo sabía/i }));
     await waitFor(async () => {
       const row = await db.appConfig.get("verse_review");
-      const v = (row?.value as Record<string, { step: number; due: string }>)["jo.3.16"];
+      const v = (row!.value as Record<string, { step: number; due: string }>)["jo.3.16"];
       expect(v.step).toBe(1);
       expect(v.due > "2000-01-01").toBe(true);
     });
