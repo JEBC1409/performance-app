@@ -6,6 +6,7 @@ import { pauseFocus, remainingSeconds, resumeFocus, stopFocus } from "@/lib/focu
 import type { FocusTimerState } from "@/lib/focusTimer";
 import { readAccentRgb } from "@/lib/uiPrefs";
 import { fmtClock, useFocusTimer, useNow } from "@/hooks/useFocusTimer";
+import { useCurrentLyric } from "@/hooks/useCurrentLyric";
 
 const FONT = "'Space Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif";
 
@@ -34,6 +35,7 @@ function MiniTimer({ timer, now }: { timer: FocusTimerState; now: number }) {
   const left = Math.min(remainingSeconds(timer, now), timer.totalSec);
   const progress = timer.totalSec > 0 ? 1 - left / timer.totalSec : 0;
   const label = isBreak ? "Descanso" : paused ? "En pausa" : "Enfocado";
+  const lyric = useCurrentLyric();
 
   return (
     <div
@@ -61,6 +63,15 @@ function MiniTimer({ timer, now }: { timer: FocusTimerState; now: number }) {
       <div style={{ textAlign: "center", fontSize: "min(26cqw, 30cqh)", fontWeight: 300, lineHeight: 1, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
         {fmtClock(left)}
       </div>
+
+      {lyric ? (
+        <div
+          title={lyric}
+          style={{ textAlign: "center", fontSize: 13, fontWeight: 600, color: "rgb(var(--fg-rgb)/0.85)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minHeight: 18 }}
+        >
+          {lyric}
+        </div>
+      ) : null}
 
       <div>
         <div style={{ height: 3, borderRadius: 3, background: "rgb(var(--fg-rgb)/0.1)", overflow: "hidden" }}>
