@@ -10,6 +10,8 @@ export interface InsightData {
   /** Dates with at least one logged set. */
   trained: string[];
   habitDays: { date: string; done: string[] }[];
+  /** How you felt each day, 1-5 (optional: only once you've started logging it). */
+  mood?: { date: string; value: number }[];
 }
 
 export interface Insight {
@@ -110,6 +112,27 @@ export function computeInsights(data: InsightData, today: string): Insight[] {
     if (best.total >= 8 && overall > 0 && best.avg >= overall * 1.5) {
       const name = DIAS_SEMANA[best.i === 6 ? 0 : best.i + 1];
       out.push({ id: "best-focus-day", strength: best.avg / overall, text: `El ${name} es tu mejor día de Focus: ${Math.round(best.avg)} min de media.` });
+    }
+  }
+
+  // Mood ↔ sleep and training (needs enough logged days on both sides of each comparison).
+  const moodByDate = new Map<string, number>();
+  for (const m of data.mood ?? []) if (window.has(m.date)) moodByDate.set(m.date, m.value);
+  if (moodByDate.size >= MIN_PER_GROUP * 2) {
+    const one = (n: number) => (Math.round(n * 10) / 10).toString().replace(".", ",");
+    const moodGood = [...moodByDate].filter(([d]) => (sleepByDate.get(d) ?? 0) >= GOOD_SLEEP_H).map(([, v]) => v);
+    const moodShort = [...moodByDate].filter(([d]) => sleepByDate.has(d) && (sleepByDate.get(d) as number) < GOOD_SLEEP_H).map(([, v]) => v);
+    if (moodGood.length >= MIN_PER_GROUP && moodShort.length >= MIN_PER_GROUP) {
+      const a = avg(moodGood);
+      const b = avg(moodShort);
+      if (a - b >= 0.5) out.push({ id: "sleep-mood", strength: 1 + (a - b), text: `Tu ánimo es mejor los días que duermes ${GOOD_SLEEP_H} h o más: ${one(a)} contra ${one(b)} (de 5).` });
+    }
+    const moodTrain = [...moodByDate].filter(([d]) => trained.has(d)).map(([, v]) => v);
+    const moodRest = [...moodByDate].filter(([d]) => !trained.has(d)).map(([, v]) => v);
+    if (moodTrain.length >= MIN_PER_GROUP && moodRest.length >= MIN_PER_GROUP) {
+      const a = avg(moodTrain);
+      const b = avg(moodRest);
+      if (a - b >= 0.5) out.push({ id: "train-mood", strength: 1 + (a - b), text: `Los días que entrenas te sientes mejor: ${one(a)} contra ${one(b)} los días de descanso (de 5).` });
     }
   }
 

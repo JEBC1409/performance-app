@@ -10,6 +10,7 @@ import { DayRings } from "./DayRings";
 import { PrioritiesCard } from "./PrioritiesCard";
 import { InsightsCard } from "./InsightsCard";
 import { DeloadCard } from "./DeloadCard";
+import { MoodCard } from "./MoodCard";
 import { WeekSummaryCard } from "./WeekSummaryCard";
 import { useUiPrefs } from "@/hooks/useUiPrefs";
 import { useConfigVersion } from "@/hooks/useConfigVersion";
@@ -225,6 +226,7 @@ export function Hoy({
 
     insights: (
       <div key="insights" className="flex flex-col gap-4 empty:hidden">
+        <MoodCard />
         <DeloadCard />
         <InsightsCard />
       </div>
