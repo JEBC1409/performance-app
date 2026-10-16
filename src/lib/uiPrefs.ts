@@ -63,11 +63,13 @@ export interface UiPrefs {
   navTabs: NavKey[];
   /** Rest only 90 s after isolation exercises (compounds keep the usual rest). */
   restShort: boolean;
+  /** Bedtime reminder follows tomorrow's wake-up in the schedule instead of a fixed hour. */
+  autoSleep: boolean;
 }
 
 const KEY = "performance_ui_prefs_v1";
 const DEFAULT_ORDER = HOME_CARDS.map((c) => c.key);
-export const DEFAULT_UI_PREFS: UiPrefs = { accent: "red", theme: "dark", calm: false, homeOrder: DEFAULT_ORDER, navTabs: DEFAULT_NAV, restShort: true };
+export const DEFAULT_UI_PREFS: UiPrefs = { accent: "red", theme: "dark", calm: false, homeOrder: DEFAULT_ORDER, navTabs: DEFAULT_NAV, restShort: true, autoSleep: false };
 
 /** Known cards only, each once, in the saved order; anything new goes next to the
  * card it belongs with (see PLACE_AFTER) or, failing that, at the end. */
@@ -98,6 +100,7 @@ export function parseUiPrefs(raw: string | null): UiPrefs {
       homeOrder: normalizeOrder(r.homeOrder),
       navTabs: normalizeNav(r.navTabs),
       restShort: r.restShort !== false,
+      autoSleep: r.autoSleep === true,
     };
   } catch {
     return DEFAULT_UI_PREFS;

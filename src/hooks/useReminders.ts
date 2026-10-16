@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import type { SettingsRecord } from "@/db/db";
 import { pad2, todayISO } from "@/lib/date";
+import { tonightBedtime } from "@/lib/smartSleep";
+import { getUiPrefs } from "@/lib/uiPrefs";
 
 const FIRED_KEY_PREFIX = "performance_reminder_fired_";
 
@@ -42,7 +44,10 @@ export function useReminders(settings: SettingsRecord | undefined): void {
       if (settings!.noPhoneTime && hhmm === settings!.noPhoneTime) {
         fire("nophone", "Sin celular", "Guardá el teléfono — hora de desconectar antes de dormir.");
       }
-      if (settings!.sleepTime && hhmm === settings!.sleepTime) {
+      // With the automatic bedtime on, it follows tomorrow's wake-up; the fixed hour is the fallback.
+      const auto = getUiPrefs().autoSleep ? tonightBedtime(now)?.bedtime : undefined;
+      const sleepAt = auto ?? settings!.sleepTime;
+      if (sleepAt && hhmm === sleepAt) {
         fire("sleep", "Hora de dormir", "Apagá las pantallas — hora de dormir para cumplir tu meta de sueño.");
       }
     }

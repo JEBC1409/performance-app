@@ -4,6 +4,7 @@ import { db, DEFAULT_SETTINGS, type Unit } from "@/db/db";
 import { Card, PageHeader, Field, Input, Select, Button, Chip, Stat } from "@/ui";
 import { useUiPrefs } from "@/hooks/useUiPrefs";
 import { setUiPrefs } from "@/lib/uiPrefs";
+import { tonightBedtime } from "@/lib/smartSleep";
 import { showToast } from "@/ui/Toast";
 import { setCycleSlot, useCycleSlot } from "@/hooks/useCycle";
 import { exportBackup, importBackup } from "@/lib/jsonBackup";
@@ -194,6 +195,27 @@ export function Perfil() {
             <Field label="Hora de dormir">
               <Input type="time" defaultValue={settings?.sleepTime ?? DEFAULT_SETTINGS.sleepTime} onBlur={(e) => patch({ sleepTime: e.target.value })} />
             </Field>
+          </div>
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <div>
+              <div className="text-[13px] font-semibold">Hora de dormir automática</div>
+              <div className="text-[11.5px] leading-snug text-[var(--color-muted)]">
+                {uiPrefs.autoSleep
+                  ? tonightBedtime()
+                    ? `Esta noche te aviso a las ${tonightBedtime()!.bedtime} (mañana despiertas a las ${tonightBedtime()!.wake}).`
+                    : "Mañana no hay bloque de despertar en tu horario: uso la hora fija de arriba."
+                  : "El aviso de dormir se calcula con la hora a la que te levantas mañana, según tu horario."}
+              </div>
+            </div>
+            <button
+              onClick={() => setUiPrefs({ autoSleep: !uiPrefs.autoSleep })}
+              role="switch"
+              aria-checked={uiPrefs.autoSleep}
+              aria-label="Hora de dormir automática"
+              className={`relative h-7 w-12 flex-none rounded-full ${uiPrefs.autoSleep ? "glass-on" : "glass"}`}
+            >
+              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${uiPrefs.autoSleep ? "left-[26px]" : "left-0.5"}`} />
+            </button>
           </div>
           <div className="mt-4 flex items-center justify-between gap-3">
             <div>
