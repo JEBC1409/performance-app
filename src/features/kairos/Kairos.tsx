@@ -4,6 +4,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
 import type { SavedVerseRecord } from "@/db/db";
 import { useBible } from "@/hooks/useBible";
+import { useNarrator } from "@/hooks/useNarrator";
 import { BIBLE_BOOKS } from "@/data/bible/books";
 import { getChapter, chapterCount } from "@/data/bible/loader";
 import { Eyebrow, PageHeader, Card, Sheet, Field, Input, Button, FlameGlyph } from "@/ui";
@@ -16,6 +17,7 @@ import { todayISO } from "@/lib/date";
 import { BookPicker } from "./BookPicker";
 import { ChapterPicker } from "./ChapterPicker";
 import { MarkReadChip, ReadingPlanCard } from "./ReadingPlan";
+import { ListenButton, NarratorBar, VoiceSheet } from "./NarratorUI";
 
 type View = "leer" | "guardados";
 
@@ -80,6 +82,38 @@ export function Kairos() {
   const bookName = BIBLE_BOOKS.find((b) => b.abbrev === abbrev)?.name ?? abbrev;
   const bookmarkBookName = bookmark ? (BIBLE_BOOKS.find((b) => b.abbrev === bookmark.abbrev)?.name ?? bookmark.abbrev) : null;
   const isAtBookmark = !!bookmark && bookmark.abbrev === abbrev && bookmark.chapter === chapter;
+
+  // Reading aloud. When a chapter ends it carries on into the next one (and the
+  // next book), so you can listen through without touching the screen.
+  const autoPlayNext = useRef(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const narrator = useNarrator(verses, `${abbrev}:${chapter}`, () => {
+    if (chapter < chapters) {
+      autoPlayNext.current = true;
+      setChapter(chapter + 1);
+      return;
+    }
+    const nextBook = BIBLE_BOOKS[BIBLE_BOOKS.findIndex((b) => b.abbrev === abbrev) + 1];
+    if (nextBook) {
+      autoPlayNext.current = true;
+      setAbbrev(nextBook.abbrev);
+      setChapter(1);
+    }
+  });
+  const { play: narratorPlay, status: narratorStatus, current: spokenIdx } = narrator;
+  useEffect(() => {
+    if (!autoPlayNext.current || !verses.length) return;
+    autoPlayNext.current = false;
+    narratorPlay(0);
+    document.getElementById("kairos-reader")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    // `verses` is a fresh array every render; its length plus the chapter say when the next one is on screen.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [abbrev, chapter, verses.length, narratorPlay]);
+  // Keep the verse being read in view.
+  useEffect(() => {
+    if (narratorStatus !== "playing" || spokenIdx < 0) return;
+    document.getElementById(`kairos-verse-${spokenIdx + 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [narratorStatus, spokenIdx]);
 
   // Jump-to-verse after "Continuar": set once the target chapter is picked,
   // then scroll as soon as that chapter's verses (and thus the verse's own
@@ -293,9 +327,18 @@ export function Kairos() {
                     </button>
                   </div>
                 </div>
+                {narrator.supported ? (
+                  <div className="-mt-1 mb-4 flex items-center gap-3">
+                    <ListenButton narrator={narrator} />
+                    <button onClick={() => setVoiceOpen(true)} className="text-[11px] text-[var(--color-muted)] underline">
+                      Voz
+                    </button>
+                  </div>
+                ) : null}
                 <div className="flex flex-col divide-y divide-[var(--color-line)]">
                   {verses.map((text, i) => {
                     const vNum = i + 1;
+                    const isSpoken = narratorStatus !== "idle" && spokenIdx === i;
                     const noted = notedVerses.has(vNum);
                     const isBookmarked = bookmark?.abbrev === abbrev && bookmark?.chapter === chapter && bookmark?.verse === vNum;
                     return (
@@ -303,7 +346,7 @@ export function Kairos() {
                         key={i}
                         id={`kairos-verse-${vNum}`}
                         onClick={() => setPickedVerse({ verse: vNum, text })}
-                        className={`group flex items-start gap-3 py-3 text-left first:pt-0 last:pb-0 ${isBookmarked ? "-mx-2 rounded-xl px-2 bg-[rgb(var(--accent-rgb)/0.07)]" : ""}`}
+                        className={`group flex items-start gap-3 py-3 text-left first:pt-0 last:pb-0 ${isBookmarked ? "-mx-2 rounded-xl px-2 bg-[rgb(var(--accent-rgb)/0.07)]" : ""} ${isSpoken ? "-mx-2 rounded-xl px-2 bg-[rgb(var(--accent-rgb)/0.16)]" : ""}`}
                       >
                         <span className="relative num mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-[var(--color-surface-2)] text-[10.5px] font-bold text-[var(--color-red)] transition-colors group-hover:bg-[var(--color-red)] group-hover:text-white">
                           {vNum}
@@ -314,7 +357,7 @@ export function Kairos() {
                             />
                           ) : null}
                         </span>
-                        <span className="text-[14px] leading-relaxed text-[rgb(var(--fg-rgb)/0.82)] transition-colors group-hover:text-[var(--color-ink)]">
+                        <span className={`text-[14px] leading-relaxed transition-colors group-hover:text-[var(--color-ink)] ${isSpoken ? "text-[var(--color-ink)]" : "text-[rgb(var(--fg-rgb)/0.82)]"}`}>
                           {text}
                           {isBookmarked ? <span className="sr-only"> · aquí vas</span> : null}
                           {noted ? <span className="sr-only"> · tienes una nota guardada aquí</span> : null}
@@ -379,6 +422,18 @@ export function Kairos() {
                 </button>
               </div>
               <p className="text-[13.5px] mt-3 leading-relaxed">{pickedVerse.text}</p>
+              {narrator.supported ? (
+                <button
+                  onClick={() => {
+                    const from = pickedVerse.verse - 1;
+                    setPickedVerse(null);
+                    narrator.play(from);
+                  }}
+                  className="glass tap-target mt-3 rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-muted)]"
+                >
+                  Escuchar desde aquí
+                </button>
+              ) : null}
               {existingForPicked.length ? (
                 <div className="mt-3 flex flex-col gap-2">
                   <span className="eyebrow eyebrow-accent">
@@ -419,6 +474,8 @@ export function Kairos() {
             </div>
           ) : null}
         </Sheet>
+        <NarratorBar narrator={narrator} where={`${bookName} ${chapter}:${Math.max(1, spokenIdx + 1)}`} onVoice={() => setVoiceOpen(true)} />
+        <VoiceSheet narrator={narrator} open={voiceOpen} onClose={() => setVoiceOpen(false)} />
       </div>
     </>
   );
