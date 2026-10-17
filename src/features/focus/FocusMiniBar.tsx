@@ -28,7 +28,7 @@ export function FocusMiniBar({ visible, onOpen }: { visible: boolean; onOpen: ()
           </span>
           <span className="text-left leading-none">
             <span className="num block text-[15px] font-semibold">{fmtClock(left)}</span>
-            <span className="mt-0.5 block max-w-[110px] truncate text-[10.5px] text-[var(--color-muted)]">{isBreak ? "Descanso" : paused ? `En pausa · ${timer.task}` : timer.task}</span>
+            <span className="mt-0.5 block max-w-[110px] truncate text-[12px] text-[var(--color-muted)]">{isBreak ? "Descanso" : paused ? `En pausa · ${timer.task}` : timer.task}</span>
           </span>
         </button>
         <button

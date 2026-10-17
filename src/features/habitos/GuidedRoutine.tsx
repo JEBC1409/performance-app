@@ -101,7 +101,7 @@ export function GuidedRoutine({ open, onClose, onFinish }: { open: boolean; onCl
           <Icon name="close" size={14} />
         </button>
         <div className="eyebrow eyebrow-accent">Rutina matutina</div>
-        <span className="num w-10 text-right text-[11px] text-[var(--color-muted)]">{phase === "done" ? total : idx + 1}/{total}</span>
+        <span className="num w-10 text-right text-[12px] text-[var(--color-muted)]">{phase === "done" ? total : idx + 1}/{total}</span>
       </header>
       <div className="relative mt-3 h-1 overflow-hidden rounded-full bg-[var(--color-surface-2)]">
         <div className="h-full rounded-full bg-[var(--color-red)]" style={{ width: `${progress * 100}%`, transition: "width 300ms ease-out" }} />

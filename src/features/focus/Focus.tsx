@@ -272,7 +272,7 @@ function FocusView() {
         {/* status row */}
         <div className="flex items-center justify-between">
           <span
-            className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em]"
+            className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.16em]"
             style={{ borderColor: active ? accent : "var(--color-line-strong)", color: active ? accent : "var(--color-muted)" }}
           >
             <span
@@ -312,7 +312,7 @@ function FocusView() {
             <div className="num font-[var(--font-display)] text-[62px] font-light leading-none tracking-tight">
               {active ? fmtClock(left) : fmtClock(focusMin * 60)}
             </div>
-            <div className="mt-3 text-[11px] font-medium uppercase tracking-[0.22em] text-[var(--color-muted)]">
+            <div className="mt-3 text-[12px] font-medium uppercase tracking-[0.22em] text-[var(--color-muted)]">
               {!active ? "minutos" : isBreak ? "respira" : `bloque de ${timer.focusMin} min`}
             </div>
           </Dial>
@@ -397,7 +397,7 @@ function FocusView() {
                   <button
                     key={r}
                     onClick={() => setTask(r)}
-                    className="glass max-w-full truncate rounded-full px-3 py-1 text-[11px] text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+                    className="glass max-w-full truncate rounded-full px-3 py-1 text-[12px] text-[var(--color-muted)] hover:text-[var(--color-ink)]"
                   >
                     {r}
                   </button>
@@ -433,7 +433,7 @@ function FocusView() {
                     }`}
                   >
                     {m}
-                    <span className="ml-0.5 text-[10.5px] font-medium opacity-70">m</span>
+                    <span className="ml-0.5 text-[12px] font-medium opacity-70">m</span>
                   </button>
                 );
               })}
@@ -463,9 +463,9 @@ function FocusView() {
                   aria-label="Minutos del bloque"
                   className="num w-24 rounded-2xl border border-[var(--color-line-strong)] bg-[rgb(var(--fg-rgb)/0.03)] px-3 py-2.5 text-center text-[18px] font-semibold outline-none focus:border-[var(--color-red)]"
                 />
-                <span className="text-[11.5px] text-[var(--color-muted)]">
+                <span className="text-[12px] text-[var(--color-muted)]">
                   minutos
-                  <span className="block text-[11px] text-[var(--color-muted-2)]">
+                  <span className="block text-[12px] text-[var(--color-muted-2)]">
                     de {MIN_FOCUS_MIN} a {MAX_FOCUS_MIN}
                   </span>
                 </span>
@@ -475,7 +475,7 @@ function FocusView() {
             <Button variant="primary" className="mt-4 w-full py-3.5 text-[13px]" onClick={begin}>
               Empezar bloque
             </Button>
-            <p className="mt-3 text-center text-[11px] text-[var(--color-muted-2)]">
+            <p className="mt-3 text-center text-[12px] text-[var(--color-muted-2)]">
               Descanso de 5 min tras cada bloque · cada {BLOCKS_PER_SET}, uno largo de 15
             </p>
           </>
@@ -506,7 +506,7 @@ function FocusView() {
                     <div className={musicOn ? (lyricsOn ? "-my-[75px] scale-[0.5] md:my-0 md:scale-100" : "-my-6 scale-[0.82] md:my-0 md:scale-100") : ""} style={musicOn ? undefined : { transform: "scale(1.2)", margin: "1.5rem 0" }}>
                       <Dial progress={progress} isBreak={isBreak} live={timer.status === "running"}>
                         <div className="num font-[var(--font-display)] text-[62px] font-light leading-none tracking-tight">{fmtClock(left)}</div>
-                        <div className="mt-3 text-[10.5px] font-medium uppercase tracking-[0.22em] text-[var(--color-muted)]">{isBreak ? "respira" : `bloque de ${timer.focusMin} min`}</div>
+                        <div className="mt-3 text-[12px] font-medium uppercase tracking-[0.22em] text-[var(--color-muted)]">{isBreak ? "respira" : `bloque de ${timer.focusMin} min`}</div>
                       </Dial>
                     </div>
                   </div>
@@ -549,7 +549,7 @@ function FocusView() {
             <div className="eyebrow">Hoy</div>
             <div className="mt-1.5 flex items-baseline gap-1.5">
               <span className="num font-[var(--font-display)] text-[34px] font-light leading-none">{todayMinutes}</span>
-              <span className="text-[11px] text-[var(--color-muted)]">min enfocados</span>
+              <span className="text-[12px] text-[var(--color-muted)]">min enfocados</span>
             </div>
           </div>
           <div className="text-right">
@@ -586,11 +586,11 @@ function FocusView() {
                 ) : null}
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[13.5px]">{s.task}</div>
-                  <div className="num mt-0.5 text-[10.5px] text-[var(--color-muted)]">
+                  <div className="num mt-0.5 text-[12px] text-[var(--color-muted)]">
                     {new Date(s.createdAt).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })}
                   </div>
                 </div>
-                <span className="num flex-none rounded-full border border-[var(--color-line-strong)] px-2.5 py-0.5 text-[11px] font-semibold">
+                <span className="num flex-none rounded-full border border-[var(--color-line-strong)] px-2.5 py-0.5 text-[12px] font-semibold">
                   {s.minutes}m
                 </span>
                 <button

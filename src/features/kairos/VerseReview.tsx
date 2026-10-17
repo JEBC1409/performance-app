@@ -58,7 +58,7 @@ export function VerseReview() {
           {revealed ? (
             <>
               <p className="mt-2 text-[15px] leading-relaxed">{passage.text}</p>
-              <p className="mt-3 text-[11.5px] text-[var(--color-muted)]">¿Lo dijiste bien?</p>
+              <p className="mt-3 text-[12px] text-[var(--color-muted)]">¿Lo dijiste bien?</p>
               <div className="mt-2 flex gap-2">
                 <button onClick={() => void answer(true)} className="glass-on tap-target flex-1 rounded-full py-2.5 text-[12px] font-semibold uppercase tracking-wide">
                   Lo sabía

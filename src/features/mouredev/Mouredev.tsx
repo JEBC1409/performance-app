@@ -63,7 +63,7 @@ export function Mouredev() {
       <div className="flex flex-col gap-4 enter">
         <PageHeader eyebrow="MoureDev" title="Ruta Python" subtitle={`${MOUREDEV_TARGET_LABEL} · ~${MOUREDEV_GOAL_HOURS_PER_WEEK}h/semana`} />
 
-        <p className="-mt-1 text-[11.5px] leading-snug text-[var(--color-muted)]">
+        <p className="-mt-1 text-[12px] leading-snug text-[var(--color-muted)]">
           Los bloques de Focus cuyo nombre diga “MoureDev” o “Python” suman solos a su semana (según la fecha de cada fila). Cada semana cuenta lo mayor entre lo que anotas y lo que mide Focus.
         </p>
         <div className="grid grid-cols-2 gap-2.5">
@@ -89,7 +89,7 @@ export function Mouredev() {
                 href={t.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-full border border-[var(--color-line-strong)] px-3 py-1.5 text-[11px] font-semibold text-[var(--color-muted)] transition-colors hover:border-[var(--color-red)] hover:text-[var(--color-red)]"
+                className="rounded-full border border-[var(--color-line-strong)] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-muted)] transition-colors hover:border-[var(--color-red)] hover:text-[var(--color-red)]"
               >
                 {t.label}
               </a>
@@ -101,7 +101,7 @@ export function Mouredev() {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-[12px] min-w-[560px]">
               <thead>
-                <tr className="text-[11px] uppercase tracking-wide text-[var(--color-muted)] border-b border-[var(--color-line)]">
+                <tr className="text-[12px] uppercase tracking-wide text-[var(--color-muted)] border-b border-[var(--color-line)]">
                   <th className="text-left px-3 py-2.5">Sem</th>
                   <th className="text-left px-2 py-2.5">Fecha</th>
                   <th className="text-left px-2 py-2.5">Tema / módulo</th>
@@ -119,7 +119,7 @@ export function Mouredev() {
                         type="date"
                         defaultValue={w.date}
                         onBlur={(e) => patch(w.week, { date: e.target.value })}
-                        className="bg-transparent px-1.5 py-1 text-[11.5px] outline-none focus:bg-[var(--color-surface-2)] focus:rounded-lg w-[130px]"
+                        className="bg-transparent px-1.5 py-1 text-[12px] outline-none focus:bg-[var(--color-surface-2)] focus:rounded-lg w-[130px]"
                       />
                     </td>
                     <td className="px-1 py-1.5">
@@ -127,17 +127,17 @@ export function Mouredev() {
                         defaultValue={w.topic}
                         onBlur={(e) => patch(w.week, { topic: e.target.value })}
                         placeholder="Tema"
-                        className="bg-transparent px-1.5 py-1 text-[11.5px] outline-none focus:bg-[var(--color-surface-2)] focus:rounded-lg w-full min-w-[160px]"
+                        className="bg-transparent px-1.5 py-1 text-[12px] outline-none focus:bg-[var(--color-surface-2)] focus:rounded-lg w-full min-w-[160px]"
                       />
                     </td>
                     <td className="px-1 py-1.5">
-                      {w.focusHours > 0 ? <div className="num px-1.5 pt-0.5 text-[10px] text-[var(--color-gold)]" title="Medido por Focus">Focus {w.focusHours} h</div> : null}
+                      {w.focusHours > 0 ? <div className="num px-1.5 pt-0.5 text-[12px] text-[var(--color-gold)]" title="Medido por Focus">Focus {w.focusHours} h</div> : null}
                       <input
                         defaultValue={w.hours ?? ""}
                         onBlur={(e) => patch(w.week, { hours: e.target.value ? parseFloat(e.target.value) : null })}
                         placeholder="0"
                         inputMode="decimal"
-                        className="num bg-transparent px-1.5 py-1 text-[11.5px] outline-none focus:bg-[var(--color-surface-2)] focus:rounded-lg w-14"
+                        className="num bg-transparent px-1.5 py-1 text-[12px] outline-none focus:bg-[var(--color-surface-2)] focus:rounded-lg w-14"
                       />
                     </td>
                     <td className="px-1 py-1.5">
@@ -145,7 +145,7 @@ export function Mouredev() {
                         defaultValue={w.project}
                         onBlur={(e) => patch(w.week, { project: e.target.value })}
                         placeholder="Proyecto"
-                        className="bg-transparent px-1.5 py-1 text-[11.5px] outline-none focus:bg-[var(--color-surface-2)] focus:rounded-lg w-full min-w-[140px]"
+                        className="bg-transparent px-1.5 py-1 text-[12px] outline-none focus:bg-[var(--color-surface-2)] focus:rounded-lg w-full min-w-[140px]"
                       />
                     </td>
                     <td className="text-center px-2 py-1.5">

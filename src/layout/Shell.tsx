@@ -32,11 +32,13 @@ export function Shell({
   const label = (k: string) => SIDEBAR_TABS.find((t) => t.key === k)?.label ?? k;
   const MOBILE_TABS: { key: Tab; label: string }[] = [...navTabs.map((k) => ({ key: k as Tab, label: label(k) })), { key: "mas", label: "Más" }];
   const MORE_TABS = SIDEBAR_TABS.filter((t) => !navTabs.includes(t.key as never));
-  const dateLabel = new Date().toLocaleDateString("es-CO", {
+  // "sábado, 17 de octubre" → only the first letter capital (CSS `capitalize` made it "17 De Octubre").
+  const rawDate = new Date().toLocaleDateString("es-CO", {
     weekday: "long",
     day: "numeric",
     month: "long",
   });
+  const dateLabel = rawDate.charAt(0).toUpperCase() + rawDate.slice(1);
 
   return (
     <div className="relative z-10 min-h-[100dvh] flex flex-col">
@@ -74,7 +76,7 @@ export function Shell({
         </div>
 
         <div className="flex-none flex flex-col items-end gap-1">
-          <div className="text-[11px] num text-[var(--color-muted-2)] capitalize leading-snug">
+          <div className="text-[12px] num text-[var(--color-muted-2)] leading-snug">
             {dateLabel}
           </div>
           <SyncStatusDot />
@@ -95,7 +97,7 @@ export function Shell({
             <JourneyTicker />
           </div>
           <div className="flex flex-col items-end gap-1 mt-0.5">
-            <div className="text-[10.5px] num text-[var(--color-muted)] capitalize">
+            <div className="text-[12px] num text-[var(--color-muted)]">
               {dateLabel}
             </div>
             <SyncStatusDot />
@@ -133,7 +135,7 @@ export function Shell({
               >
                 <NavGlyph tab={t.key} active={isActive} />
                 <span
-                  className={`text-[10.5px] font-semibold uppercase tracking-[0.08em] ${
+                  className={`text-[12px] font-semibold uppercase tracking-[0.08em] ${
                     isActive ? "text-[var(--color-red)]" : ""
                   }`}
                 >
@@ -174,7 +176,7 @@ export function Shell({
                       onChange(t.key);
                       setMoreOpen(false);
                     }}
-                    className={`tap-target panel-surface flex items-center gap-3 px-4 py-3.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] transition-all border-l-2 ${
+                    className={`tap-target panel-surface flex items-center gap-3 px-4 py-3.5 text-[12px] font-semibold uppercase tracking-[0.1em] transition-all border-l-2 ${
                       isActive
                         ? "border-l-[var(--color-red)] text-[var(--color-red)]"
                         : "border-l-transparent text-[var(--color-ink)] hover:border-l-[var(--color-red)] hover:text-[var(--color-red)]"

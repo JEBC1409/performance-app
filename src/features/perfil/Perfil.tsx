@@ -22,7 +22,7 @@ import { requestGuide } from "@/lib/onboarding";
 import { RoutineEditor } from "./RoutineEditor";
 
 const HEAVY_DUTY_RULES = [
-  "Pre-fatigá el músculo objetivo con una serie de aislamiento antes del compuesto principal.",
+  "Pre-fatiga el músculo objetivo con una serie de aislamiento antes del compuesto principal.",
   "La última serie de cada ejercicio va al fallo muscular, con negativas de 4 segundos cuando aplique.",
   "Ciclo A → B → C → descanso → repetir. No se entrena el mismo grupo dos días seguidos.",
   "Dropsets de 50% de carga solo en los ejercicios marcados explícitamente.",
@@ -136,7 +136,7 @@ export function Perfil() {
                 {initials}
               </div>
             )}
-            <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-red)] text-[11px] font-bold text-white transition-colors group-hover:brightness-110">
+            <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-red)] text-[12px] font-bold text-white transition-colors group-hover:brightness-110">
               +
             </span>
           </button>
@@ -148,8 +148,8 @@ export function Perfil() {
               placeholder="Tu nombre"
               className="w-full bg-transparent text-[16px] font-bold outline-none focus:text-[var(--color-red)]"
             />
-            <div className="truncate text-[11.5px] text-[var(--color-muted)] mt-0.5">{session?.user.email}</div>
-            <div className="text-[11px] text-[var(--color-muted-2)] mt-1 uppercase tracking-wide num">Miembro desde {memberSince}</div>
+            <div className="truncate text-[12px] text-[var(--color-muted)] mt-0.5">{session?.user.email}</div>
+            <div className="text-[12px] text-[var(--color-muted-2)] mt-1 uppercase tracking-wide num">Miembro desde {memberSince}</div>
           </div>
         </div>
         <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={onAvatarChange} />
@@ -199,7 +199,7 @@ export function Perfil() {
           <div className="mt-4 flex items-center justify-between gap-3">
             <div>
               <div className="text-[13px] font-semibold">Hora de dormir automática</div>
-              <div className="text-[11.5px] leading-snug text-[var(--color-muted)]">
+              <div className="text-[12px] leading-snug text-[var(--color-muted)]">
                 {uiPrefs.autoSleep
                   ? tonightBedtime()
                     ? `Esta noche te aviso a las ${tonightBedtime()!.bedtime} (mañana despiertas a las ${tonightBedtime()!.wake}).`
@@ -220,7 +220,7 @@ export function Perfil() {
           <div className="mt-4 flex items-center justify-between gap-3">
             <div>
               <div className="text-[13px] font-semibold">Descanso corto en aislamiento</div>
-              <div className="text-[11.5px] leading-snug text-[var(--color-muted)]">Después de curls, laterales, extensiones… descansas 90 s como máximo. En los compuestos queda tu descanso de arriba.</div>
+              <div className="text-[12px] leading-snug text-[var(--color-muted)]">Después de curls, laterales, extensiones… descansas 90 s como máximo. En los compuestos queda tu descanso de arriba.</div>
             </div>
             <button
               onClick={() => setUiPrefs({ restShort: !uiPrefs.restShort })}
@@ -279,7 +279,7 @@ export function Perfil() {
               {settings?.remindersEnabled ?? true ? "Desactivar" : "Reactivar"}
             </Button>
           ) : permission === "denied" ? (
-            <p className="text-[11.5px] text-[var(--color-red)] mt-3">
+            <p className="text-[12px] text-[var(--color-red)] mt-3">
               Bloqueaste las notificaciones para este sitio. Habilitalas desde los ajustes del navegador para reactivarlas.
             </p>
           ) : permission === "unsupported" ? null : (
@@ -314,9 +314,9 @@ export function Perfil() {
           <h2 className="card-title">Ciclo actual</h2>
           <div className="mt-2 flex items-center gap-2">
             <Chip tone="accent">{slot === "rest" ? "Descanso" : `Día ${slot}`}</Chip>
-            <span className="text-[11.5px] text-[var(--color-muted)]">A → B → C → descanso → repetir</span>
+            <span className="text-[12px] text-[var(--color-muted)]">A → B → C → descanso → repetir</span>
           </div>
-          <div className="mt-3 text-[11.5px] text-[var(--color-muted)]">¿Te toca otro día hoy? Cámbialo y el ciclo sigue desde ahí.</div>
+          <div className="mt-3 text-[12px] text-[var(--color-muted)]">¿Te toca otro día hoy? Cámbialo y el ciclo sigue desde ahí.</div>
           <div role="group" aria-label="Día que te toca" className="mt-2 grid grid-cols-4 gap-2">
             {(["A", "B", "C", "rest"] as const).map((s) => (
               <button

@@ -37,14 +37,14 @@ export function ExerciseCard({
             className={`h-full w-full object-cover object-[50%_30%] opacity-90 transition-all duration-300 group-hover:scale-105 group-hover:opacity-100 ${photo.custom ? "" : "photo-tone"}`}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center px-2 text-center text-[10.5px] uppercase tracking-wide text-[var(--color-muted-2)]">
+          <div className="flex h-full w-full items-center justify-center px-2 text-center text-[12px] uppercase tracking-wide text-[var(--color-muted-2)]">
             {exercise.name}
           </div>
         )}
         {photo.src && !photo.custom ? <div aria-hidden className="pointer-events-none absolute inset-0 mix-blend-color bg-[rgb(var(--accent-rgb)/0.32)]" /> : null}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-transparent" />
         {photo.caption ? (
-          <span className="absolute bottom-2 left-2 max-w-[85%] truncate rounded-full bg-black/70 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-ink)]">
+          <span className="absolute bottom-2 left-2 max-w-[85%] truncate rounded-full bg-black/70 px-2 py-0.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-ink)]">
             {photo.caption}
           </span>
         ) : null}
@@ -54,18 +54,18 @@ export function ExerciseCard({
           </span>
         ) : null}
         {complete ? (
-          <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-good)] text-[11px] font-bold text-black">
+          <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-good)] text-[12px] font-bold text-black">
             ✓
           </span>
         ) : null}
         {stalled && !complete ? (
-          <span className="absolute bottom-2 right-2 rounded-full bg-[var(--color-warn)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black" title="Varias sesiones sin mejorar">
+          <span className="absolute bottom-2 right-2 rounded-full bg-[var(--color-warn)] px-2 py-0.5 text-[12px] font-bold uppercase tracking-wide text-black" title="Varias sesiones sin mejorar">
             Estancado
           </span>
         ) : null}
         {ready && !stalled && !complete ? (
           <span
-            className="absolute bottom-2 right-2 rounded-full bg-[var(--color-good)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black"
+            className="absolute bottom-2 right-2 rounded-full bg-[var(--color-good)] px-2 py-0.5 text-[12px] font-bold uppercase tracking-wide text-black"
             title={ready.reason}
           >
             {ready.weight != null ? `Sube a ${ready.weight} kg` : "Sube reps"}
@@ -75,10 +75,10 @@ export function ExerciseCard({
       <div className="flex flex-1 flex-col gap-1.5 p-3">
         <div className="line-clamp-2 text-[12px] font-semibold leading-snug">{exercise.name}</div>
         <div className="mt-auto flex items-center justify-between pt-1">
-          <span className="num text-[11.5px] font-semibold text-[var(--color-red)]">
+          <span className="num text-[12px] font-semibold text-[var(--color-red)]">
             {done}/{target}
           </span>
-          <span className="num text-[10.5px] text-[var(--color-muted-2)]">
+          <span className="num text-[12px] text-[var(--color-muted-2)]">
             {exercise.series}×{exercise.repsLabel}
           </span>
         </div>

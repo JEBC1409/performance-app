@@ -7,7 +7,7 @@ export function CardTitle({ children, right }: { children: ReactNode; right?: Re
   return (
     <div className="flex items-center justify-between gap-3">
       <h2 className="card-title">{children}</h2>
-      {right != null ? <div className="num text-[11.5px] text-[var(--color-muted)]">{right}</div> : null}
+      {right != null ? <div className="num text-[12px] text-[var(--color-muted)]">{right}</div> : null}
     </div>
   );
 }

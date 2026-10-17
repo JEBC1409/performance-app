@@ -35,7 +35,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="text-[13px] text-[var(--color-muted)] mt-2.5">
               La app tuvo un error inesperado. Tus datos están a salvo en este navegador.
             </p>
-            <p className="text-[11px] text-[var(--color-muted-2)] mt-2 num">{this.state.error.message}</p>
+            <p className="text-[12px] text-[var(--color-muted-2)] mt-2 num">{this.state.error.message}</p>
             <button
               onClick={() => window.location.reload()}
               className="btn-primary mt-4 w-full rounded-full border border-[rgb(var(--accent-light-rgb)/0.5)] py-2.5 text-[12.5px] font-semibold uppercase tracking-wide text-white"

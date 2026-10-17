@@ -23,7 +23,7 @@ function ChevronGlyph({ dir }: { dir: "left" | "right" }) {
 
 const SIZE = {
   md: "rounded-xl px-3 py-2.5 text-[13px] gap-2",
-  sm: "rounded-lg px-2 py-1.5 text-[11.5px] gap-1.5",
+  sm: "rounded-lg px-2 py-1.5 text-[12px] gap-1.5",
 };
 
 const POPOVER_WIDTH = 248;
@@ -152,7 +152,7 @@ export function DateField({
                 >
                   <ChevronGlyph dir="left" />
                 </button>
-                <span className="text-[11.5px] font-semibold capitalize text-[var(--color-ink)]">
+                <span className="text-[12px] font-semibold capitalize text-[var(--color-ink)]">
                   {MESES[viewMonth]} {viewYear}
                 </span>
                 <button
@@ -167,7 +167,7 @@ export function DateField({
 
               <div className="grid grid-cols-7 gap-y-1">
                 {DIAS_CORTO.map((d) => (
-                  <div key={d} className="flex h-6 items-center justify-center text-[10.5px] uppercase tracking-wide text-[var(--color-muted-2)]">
+                  <div key={d} className="flex h-6 items-center justify-center text-[12px] uppercase tracking-wide text-[var(--color-muted-2)]">
                     {d[0]}
                   </div>
                 ))}
@@ -182,7 +182,7 @@ export function DateField({
                       type="button"
                       disabled={disabled}
                       onClick={() => pick(iso)}
-                      className={`num flex h-7 w-7 items-center justify-center rounded-full text-[11.5px] transition-colors ${
+                      className={`num flex h-7 w-7 items-center justify-center rounded-full text-[12px] transition-colors ${
                         isSelected
                           ? "bg-[var(--color-red)] text-white font-semibold"
                           : disabled
@@ -202,7 +202,7 @@ export function DateField({
                 <button
                   type="button"
                   onClick={() => pick(today)}
-                  className="mt-2.5 w-full rounded-lg border border-[var(--color-line-strong)] py-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-muted)] hover:text-[var(--color-red)] hover:border-[var(--color-red)]"
+                  className="mt-2.5 w-full rounded-lg border border-[var(--color-line-strong)] py-1.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)] hover:text-[var(--color-red)] hover:border-[var(--color-red)]"
                 >
                   Hoy
                 </button>

@@ -48,7 +48,7 @@ export function EmptyState({
       <div className="mt-3 font-[var(--font-display)] text-[14px]">{title}</div>
       {hint ? <p className="mt-1 max-w-[260px] text-[12px] leading-snug text-[var(--color-muted)]">{hint}</p> : null}
       {action ? (
-        <button onClick={action.onClick} className="glass-accent tap-target mt-4 rounded-full px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.1em]">
+        <button onClick={action.onClick} className="glass-accent tap-target mt-4 rounded-full px-5 py-2 text-[12px] font-semibold uppercase tracking-[0.1em]">
           {action.label}
         </button>
       ) : null}

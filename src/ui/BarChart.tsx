@@ -17,7 +17,7 @@ function StatTile({ point, unit }: { point: BarPoint; unit?: string }) {
         {point.value}
         {unit ? <span className="ml-1 text-[13px] font-medium text-[var(--color-muted)]">{unit}</span> : null}
       </div>
-      <div className="text-[11px] text-[var(--color-muted-2)] num">{point.label}</div>
+      <div className="text-[12px] text-[var(--color-muted-2)] num">{point.label}</div>
     </div>
   );
 }
@@ -71,9 +71,9 @@ export function BarChart({
       <div className="flex items-baseline justify-between">
         <span className="num text-[15px] font-bold text-[var(--color-ink)]">
           {activePoint.value}
-          {unit ? <span className="ml-1 text-[11px] font-medium text-[var(--color-muted)]">{unit}</span> : null}
+          {unit ? <span className="ml-1 text-[12px] font-medium text-[var(--color-muted)]">{unit}</span> : null}
         </span>
-        <span className="text-[10.5px] text-[var(--color-muted-2)] num">{activePoint.label}</span>
+        <span className="text-[12px] text-[var(--color-muted-2)] num">{activePoint.label}</span>
       </div>
       <div className="relative mt-1">
         <svg viewBox={`0 0 100 ${height}`} width="100%" height={height} preserveAspectRatio="none" className="block">
@@ -125,14 +125,14 @@ export function BarChart({
         </svg>
         <div
           aria-hidden
-          className="glass pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded-lg px-2 py-0.5 text-[10.5px] font-semibold num text-[var(--color-ink)]"
+          className="glass pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded-lg px-2 py-0.5 text-[12px] font-semibold num text-[var(--color-ink)]"
           style={{ position: "absolute", left: `${bubbleLeft}%`, top: `max(22px, calc(${bubbleTop}% - 4px))`, transition: "left 160ms ease, top 160ms ease" }}
         >
           {activePoint.value}
         </div>
         {goalLine ? (
           <span
-            className="pointer-events-none absolute right-0 -translate-y-full text-[9.5px] text-[var(--color-muted)]"
+            className="pointer-events-none absolute right-0 -translate-y-full text-[12px] text-[var(--color-muted)]"
             style={{ top: `${((baseline - (goalLine / max) * plotH) / height) * 100}%` }}
           >
             meta {goalLine}
@@ -148,7 +148,7 @@ export function BarChart({
               onMouseEnter={() => setHover(i)}
               onMouseLeave={() => setHover(null)}
               onClick={() => setHover(i)}
-              className={`text-center text-[10.5px] num transition-colors ${i === active ? "font-semibold text-[var(--color-ink)]" : "text-[var(--color-muted-2)]"}`}
+              className={`text-center text-[12px] num transition-colors ${i === active ? "font-semibold text-[var(--color-ink)]" : "text-[var(--color-muted-2)]"}`}
               style={{ width: `${barW}%` }}
             >
               {showLabel ? p.label : ""}

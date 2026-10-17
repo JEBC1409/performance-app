@@ -42,15 +42,15 @@ function ExerciseRow({ e }: { e: ExerciseReview }) {
         <div className="flex items-center gap-1.5">
           <span className="truncate text-[13px] font-semibold">{e.name}</span>
           {e.pr ? (
-            <span className="pr-badge flex-none rounded-full border border-[var(--color-gold)] px-1.5 py-px text-[10.5px] font-bold tracking-wider text-[var(--color-gold)]">PR</span>
+            <span className="pr-badge flex-none rounded-full border border-[var(--color-gold)] px-1.5 py-px text-[12px] font-bold tracking-wider text-[var(--color-gold)]">PR</span>
           ) : null}
         </div>
-        <div className="num mt-0.5 text-[11px] text-[var(--color-muted)]">
+        <div className="num mt-0.5 text-[12px] text-[var(--color-muted)]">
           {today}
           {before ? <span className="text-[var(--color-muted-2)]"> · {before}</span> : null}
         </div>
       </div>
-      <span className="num flex-none text-[11px] font-semibold" style={{ color: badge.color }}>
+      <span className="num flex-none text-[12px] font-semibold" style={{ color: badge.color }}>
         {badge.text}
       </span>
     </li>
@@ -112,21 +112,21 @@ function Body({ review: r, next, onGoDay, onClose }: { review: SessionReview; ne
         </div>
         <div className="mt-1.5 font-[var(--font-display)] text-[20px] leading-tight">{h.title}</div>
         <div className="mt-1 text-[12px] text-[var(--color-muted)]">{h.sub}</div>
-        <div className="num mt-2 text-[11px] text-[var(--color-muted-2)]">{facts.join(" · ")}</div>
+        <div className="num mt-2 text-[12px] text-[var(--color-muted-2)]">{facts.join(" · ")}</div>
       </div>
 
       <div className="rounded-2xl border border-[var(--color-line-strong)] bg-[rgb(var(--fg-rgb)/0.03)] px-4 py-3">
         <div className="eyebrow">Volumen</div>
         <div className="mt-1 flex items-baseline gap-2">
           <span className="num font-[var(--font-display)] text-[26px] font-light leading-none">{fmtVol(r.volume)}</span>
-          <span className="text-[11px] text-[var(--color-muted)]">kg totales</span>
+          <span className="text-[12px] text-[var(--color-muted)]">kg totales</span>
           {pct != null ? (
             <span className="num ml-auto text-[12px] font-semibold" style={{ color: pct >= 0 ? "var(--color-good)" : "var(--color-warn)" }}>
               {pct >= 0 ? "▲" : "▼"} {Math.abs(Math.round(pct))}%
             </span>
           ) : null}
         </div>
-        <div className="num mt-1 text-[10.5px] text-[var(--color-muted-2)]">
+        <div className="num mt-1 text-[12px] text-[var(--color-muted-2)]">
           {r.prevVolume != null && r.prevDate
             ? `Día ${r.day} anterior (${fmtDateHuman(r.prevDate)}): ${fmtVol(r.prevVolume)} kg`
             : `Primera sesión del Día ${r.day} con volumen: queda como referencia.`}
@@ -147,7 +147,7 @@ function Body({ review: r, next, onGoDay, onClose }: { review: SessionReview; ne
         {next.slot === "rest" ? (
           <>
             <div className="mt-1 font-[var(--font-display)] text-[15px]">Descanso</div>
-            <div className="mt-0.5 text-[11.5px] text-[var(--color-muted)]">
+            <div className="mt-0.5 text-[12px] text-[var(--color-muted)]">
               Recupera hoy. Luego toca Día {next.then === "rest" ? "A" : next.then} · {next.then !== "rest" ? GYM_DIAS[next.then].nombre : ""}.
             </div>
           </>
@@ -157,10 +157,10 @@ function Body({ review: r, next, onGoDay, onClose }: { review: SessionReview; ne
               <div className="font-[var(--font-display)] text-[15px]">
                 Día {next.slot} · {GYM_DIAS[next.slot].nombre}
               </div>
-              <div className="mt-0.5 text-[11.5px] text-[var(--color-muted)]">{GYM_DIAS[next.slot].grupo}</div>
+              <div className="mt-0.5 text-[12px] text-[var(--color-muted)]">{GYM_DIAS[next.slot].grupo}</div>
             </div>
             <Button
-              className="flex-none px-3 py-2 text-[10.5px]"
+              className="flex-none px-3 py-2 text-[12px]"
               onClick={() => {
                 onGoDay(next.slot as GymDay);
                 onClose();

@@ -60,7 +60,7 @@ function ToastBubble({ toast, onDone }: { toast: ToastState; onDone: () => void 
             action.onClick();
             onDone();
           }}
-          className="rounded-full bg-[rgb(var(--accent-rgb))] px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white"
+          className="rounded-full bg-[rgb(var(--accent-rgb))] px-3 py-1 text-[12px] font-bold uppercase tracking-wide text-white"
         >
           {action.label}
         </button>

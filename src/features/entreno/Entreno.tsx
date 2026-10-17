@@ -155,7 +155,7 @@ export function Entreno({
     });
     if (record) {
       const what = record.kind === "1rm" ? `${payload.weight} kg × ${payload.reps} (1RM est. ${record.estimate} kg)` : `${payload.reps} reps`;
-      showToast(`🏆 Récord en ${exerciseName}: ${what}`);
+      showToast(`Nuevo récord en ${exerciseName}: ${what}`);
       celebrate();
       haptic([30, 40, 30]);
     } else showToast("Serie guardada");
@@ -200,7 +200,7 @@ export function Entreno({
     const summary = await buildDailySummary(sessionDate);
     try {
       await navigator.clipboard.writeText(summary);
-      showToast("Resumen copiado — pegalo en tu chat de progreso");
+      showToast("Resumen copiado — pégalo en tu chat de progreso");
     } catch {
       showToast("No se pudo copiar");
     }
@@ -214,7 +214,7 @@ export function Entreno({
         subtitle={GYM_DIAS[day].grupo}
         right={
           <label className="flex flex-col items-end gap-1">
-            <span className="text-[10.5px] text-[var(--color-muted)] uppercase tracking-wide">Fecha</span>
+            <span className="text-[12px] text-[var(--color-muted)] uppercase tracking-wide">Fecha</span>
             <DateField value={sessionDate} max={today} onChange={setSessionDate} size="sm" />
           </label>
         }
@@ -231,7 +231,7 @@ export function Entreno({
       </Button>
 
       <div>
-        <div className="flex items-center justify-between text-[11px] text-[var(--color-muted)] mb-1.5 num">
+        <div className="flex items-center justify-between text-[12px] text-[var(--color-muted)] mb-1.5 num">
           <span>Progreso de la sesión</span>
           <span>
             {done} / {target} series
@@ -258,7 +258,7 @@ export function Entreno({
       {done > 0 ? (
         <button
           onClick={copySummary}
-          className="glass tap-target w-full rounded-full py-2.5 text-[11.5px] font-semibold uppercase tracking-wide"
+          className="glass tap-target w-full rounded-full py-2.5 text-[12px] font-semibold uppercase tracking-wide"
         >
           Copiar resumen ({fmtDateHuman(sessionDate)})
         </button>

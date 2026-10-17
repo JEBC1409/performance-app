@@ -47,7 +47,7 @@ export function WeightGoalCard({ points, unit }: { points: WeightPoint[]; unit: 
           Fijar meta
         </Button>
         {editing ? (
-          <button onClick={() => setEditing(false)} className="mt-2 text-[11.5px] text-[var(--color-muted)] underline">
+          <button onClick={() => setEditing(false)} className="mt-2 text-[12px] text-[var(--color-muted)] underline">
             Cancelar
           </button>
         ) : null}
@@ -101,7 +101,7 @@ export function WeightGoalCard({ points, unit }: { points: WeightPoint[]; unit: 
     <Card>
       <div className="flex items-center justify-between">
         <CardTitle>Meta de peso</CardTitle>
-        <div className="flex items-center gap-3 text-[11px] text-[var(--color-muted)]">
+        <div className="flex items-center gap-3 text-[12px] text-[var(--color-muted)]">
           <button onClick={() => setEditing(true)} className="underline">
             Cambiar
           </button>

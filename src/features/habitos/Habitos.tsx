@@ -66,7 +66,7 @@ export function Habitos() {
       <Card>
         <div className="flex items-center justify-between">
           <h2 className="card-title">Consistencia del mes</h2>
-          <span className="text-[10.5px] text-[var(--color-muted)] num">de {habitList.length} hábitos/día</span>
+          <span className="text-[12px] text-[var(--color-muted)] num">de {habitList.length} hábitos/día</span>
         </div>
         <div className="mt-3">
           <BarChart
@@ -85,14 +85,14 @@ export function Habitos() {
             <div key={h.key} className={`panel-surface p-3.5 flex flex-col gap-2.5 ${streak > 0 ? "panel-surface-glow" : ""}`}>
               <div className="flex items-center gap-2">
                 <HabitGlyph icon={h.icon} active={doneToday} size={11} />
-                <span className="text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-muted)] leading-tight">{h.label}</span>
+                <span className="text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)] leading-tight">{h.label}</span>
               </div>
               <div className="mt-auto flex items-end gap-1.5">
                 <FlameGlyph size={20} className={streak > 0 ? "flame-glow" : "text-[var(--color-muted-2)]"} />
                 <span className={`num text-xl font-bold leading-none ${streak > 0 ? "text-[var(--color-ink)]" : "text-[var(--color-muted-2)]"}`}>
                   {streak}
                 </span>
-                <span className="text-[10.5px] text-[var(--color-muted-2)] uppercase pb-0.5">{streak === 1 ? "día" : "días"}</span>
+                <span className="text-[12px] text-[var(--color-muted-2)] uppercase pb-0.5">{streak === 1 ? "día" : "días"}</span>
               </div>
             </div>
           );
@@ -122,7 +122,7 @@ export function Habitos() {
           </div>
         </div>
         <div className="overflow-x-auto px-1 pb-1">
-          <table className="w-full text-[11px]" style={{ borderCollapse: "separate", borderSpacing: "3px 4px" }}>
+          <table className="w-full text-[12px]" style={{ borderCollapse: "separate", borderSpacing: "3px 4px" }}>
             <thead>
               <tr>
                 <th className="sticky left-0 bg-[var(--color-surface)] text-left px-3 py-2 text-[var(--color-muted)] font-semibold">Hábito</th>
@@ -188,14 +188,14 @@ export function Habitos() {
       <Card>
         <div className="flex items-center justify-between gap-3">
           <h2 className="card-title">Rutina matutina · 7 min en ayunas</h2>
-          {routine.doneToday ? <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-good)]">Hecha hoy ✓</span> : null}
+          {routine.doneToday ? <span className="text-[12px] font-semibold uppercase tracking-wide text-[var(--color-good)]">Hecha hoy ✓</span> : null}
         </div>
         <div className="mt-3 flex flex-col divide-y divide-[var(--color-line)]">
           {RUTINA_MATUTINA.map((r) => (
             <div key={r.ex} className="py-2.5 flex items-start justify-between gap-3">
               <div>
                 <div className="text-[13px] font-medium">{r.ex}</div>
-                <div className="text-[11px] text-[var(--color-muted)] mt-0.5">{r.nota}</div>
+                <div className="text-[12px] text-[var(--color-muted)] mt-0.5">{r.nota}</div>
               </div>
               <div className="num text-[12px] text-[var(--color-red)] flex-none">
                 {r.series}×{r.carga}

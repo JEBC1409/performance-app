@@ -45,7 +45,7 @@ export function ListenButton({ narrator }: { narrator: Narrator }) {
     <button
       onClick={() => (playing ? narrator.pause() : narrator.status === "paused" ? narrator.play() : narrator.play(0))}
       aria-pressed={playing}
-      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wide ${
+      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold uppercase tracking-wide ${
         narrator.status === "idle" ? "glass text-[var(--color-muted)] hover:text-[var(--color-gold)]" : "glass-gold text-[var(--color-ink)]"
       }`}
     >
@@ -89,7 +89,7 @@ export function NarratorBar({ narrator, where, onVoice }: { narrator: Narrator; 
             <div className="eyebrow eyebrow-gold">Leyendo</div>
             <div className="num truncate text-[12.5px] font-semibold">{where}</div>
           </div>
-          <button onClick={onVoice} className="glass tap-target rounded-full px-2.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-muted)]">
+          <button onClick={onVoice} className="glass tap-target rounded-full px-2.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)]">
             Voz
           </button>
           <button onClick={narrator.stop} aria-label="Detener lectura" className="glass tap-target flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-muted)]">
@@ -130,7 +130,7 @@ export function VoiceSheet({ narrator, open, onClose }: { narrator: Narrator; op
                 className={`rounded-xl px-3 py-2 text-left ${v.voiceURI === active ? "glass-on" : "glass"}`}
               >
                 <span className="block text-[13px] font-semibold">{v.name.replace(/^Microsoft |^Google /, "")}</span>
-                <span className={`block text-[11px] ${v.voiceURI === active ? "text-white/80" : "text-[var(--color-muted)]"}`}>{v.lang}</span>
+                <span className={`block text-[12px] ${v.voiceURI === active ? "text-white/80" : "text-[var(--color-muted)]"}`}>{v.lang}</span>
               </button>
             ))}
           </div>
@@ -178,12 +178,12 @@ export function VoiceSheet({ narrator, open, onClose }: { narrator: Narrator; op
               );
             })}
           </div>
-          {narrator.sleepAt != null ? <p className="mt-2 text-[11.5px] text-[var(--color-muted)]">Se apaga en unos {sleepMinutesLeft(narrator.sleepAt)} min, al terminar el versículo.</p> : null}
+          {narrator.sleepAt != null ? <p className="mt-2 text-[12px] text-[var(--color-muted)]">Se apaga en unos {sleepMinutesLeft(narrator.sleepAt)} min, al terminar el versículo.</p> : null}
         </div>
         <button onClick={() => narrator.preview(prefs.voiceURI)} className="glass tap-target rounded-full px-5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.1em]">
           Probar la voz
         </button>
-        <p className="text-[11px] leading-snug text-[var(--color-muted-2)]">
+        <p className="text-[12px] leading-snug text-[var(--color-muted-2)]">
           La velocidad y el tono se aplican desde el siguiente versículo. Las voces con “Natural” u “Online” suenan mejor que las básicas.
         </p>
       </div>

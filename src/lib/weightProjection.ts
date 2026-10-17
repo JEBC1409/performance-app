@@ -55,6 +55,6 @@ export function evaluateRate(points: WeightPoint[]): RateAlert {
   return {
     rate,
     overPace,
-    suggestion: overPace ? "Subiendo más de 1 kg/semana — considerá bajar ~200 kcal/día." : null,
+    suggestion: overPace ? "Subiendo más de 1 kg/semana — considera bajar ~200 kcal/día." : null,
   };
 }

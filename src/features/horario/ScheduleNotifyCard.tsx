@@ -24,7 +24,7 @@ function Segmented<T extends string | number>({ value, options, onChange, label 
           key={String(o.value)}
           onClick={() => onChange(o.value)}
           aria-pressed={value === o.value}
-          className={`rounded-full px-2 py-2 text-[11.5px] font-semibold ${
+          className={`rounded-full px-2 py-2 text-[12px] font-semibold ${
             value === o.value ? "glass-on" : "glass-flat text-[var(--color-muted)] hover:text-[var(--color-ink)]"
           }`}
         >
@@ -87,9 +87,9 @@ export function ScheduleNotifyCard() {
       </div>
 
       {permission === "unsupported" ? (
-        <p className="mt-3 text-[11.5px] text-[var(--color-muted-2)]">Este navegador no admite notificaciones. En iPhone, instala la app en la pantalla de inicio primero.</p>
+        <p className="mt-3 text-[12px] text-[var(--color-muted-2)]">Este navegador no admite notificaciones. En iPhone, instala la app en la pantalla de inicio primero.</p>
       ) : permission === "denied" ? (
-        <p className="mt-3 text-[11.5px] text-[var(--color-red)]">Bloqueaste las notificaciones para este sitio. Habilítalas en los ajustes del navegador para usar los avisos.</p>
+        <p className="mt-3 text-[12px] text-[var(--color-red)]">Bloqueaste las notificaciones para este sitio. Habilítalas en los ajustes del navegador para usar los avisos.</p>
       ) : (
         <>
           {prefs.enabled ? (
@@ -97,7 +97,7 @@ export function ScheduleNotifyCard() {
               <Segmented label="Cuándo avisar" value={prefs.lead} options={LEADS} onChange={(lead) => setNotifyPrefs({ lead })} />
               <Segmented label="Qué avisar" value={prefs.scope} options={SCOPES} onChange={(scope) => setNotifyPrefs({ scope })} />
               <div className="mt-0.5 flex items-center justify-between gap-3">
-                <span className="text-[11.5px] text-[var(--color-muted)]">
+                <span className="text-[12px] text-[var(--color-muted)]">
                   {next ? (
                     <>
                       Próximo aviso: <span className="num font-semibold text-[var(--color-ink)]">{fmtMin(next.fireMin)}</span> · {next.event.cell.text}
@@ -106,13 +106,13 @@ export function ScheduleNotifyCard() {
                     "No quedan avisos por hoy"
                   )}
                 </span>
-                <Button className="flex-none px-3 py-1.5 text-[10.5px]" onClick={test}>
+                <Button className="flex-none px-3 py-1.5 text-[12px]" onClick={test}>
                   Probar
                 </Button>
               </div>
             </div>
           ) : null}
-          <p className="mt-3 text-[11px] leading-snug text-[var(--color-muted-2)]">Llegan mientras la app esté abierta o instalada y en ejecución; si el sistema la cierra del todo, no puede avisarte.</p>
+          <p className="mt-3 text-[12px] leading-snug text-[var(--color-muted-2)]">Llegan mientras la app esté abierta o instalada y en ejecución; si el sistema la cierra del todo, no puede avisarte.</p>
         </>
       )}
     </Card>

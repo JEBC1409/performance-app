@@ -17,13 +17,13 @@ const fmt1 = (n: number) => String(Math.round(n * 10) / 10);
 
 /** Change vs the previous week. `good` says which direction is the win. */
 function DeltaChip({ d, suffix = "", good = "up", digits = 0 }: { d: Delta | null; suffix?: string; good?: "up" | "neutral"; digits?: number }) {
-  if (!d) return <span className="text-[10.5px] text-[var(--color-muted-2)]">—</span>;
-  if (d.dir === "flat") return <span className="num text-[10.5px] text-[var(--color-muted)]">= igual</span>;
+  if (!d) return <span className="text-[12px] text-[var(--color-muted-2)]">—</span>;
+  if (d.dir === "flat") return <span className="num text-[12px] text-[var(--color-muted)]">= igual</span>;
   const up = d.dir === "up";
   const color = good === "neutral" ? "var(--color-muted)" : up ? "var(--color-good)" : "var(--color-warn)";
   const n = Math.abs(d.diff);
   return (
-    <span className="num text-[10.5px] font-semibold" style={{ color }}>
+    <span className="num text-[12px] font-semibold" style={{ color }}>
       {up ? "▲" : "▼"} {digits ? n.toFixed(digits) : Math.round(n)}
       {suffix}
     </span>
@@ -39,9 +39,9 @@ function Tile({ label, value, unit, sub, chip }: { label: string; value: ReactNo
       </div>
       <div className="mt-2 flex items-baseline gap-1">
         <span className="num font-[var(--font-display)] text-[26px] font-light leading-none">{value}</span>
-        {unit ? <span className="text-[11px] text-[var(--color-muted)]">{unit}</span> : null}
+        {unit ? <span className="text-[12px] text-[var(--color-muted)]">{unit}</span> : null}
       </div>
-      {sub ? <div className="num mt-1.5 text-[10.5px] leading-snug text-[var(--color-muted-2)]">{sub}</div> : null}
+      {sub ? <div className="num mt-1.5 text-[12px] leading-snug text-[var(--color-muted-2)]">{sub}</div> : null}
     </div>
   );
 }
@@ -86,7 +86,7 @@ export function SemanaTab() {
         </button>
         <div className="text-center">
           <div className="text-[13px] font-semibold">{weekLabel(weekStart, currentWeek)}</div>
-          <div className="num text-[10.5px] text-[var(--color-muted-2)]">
+          <div className="num text-[12px] text-[var(--color-muted-2)]">
             {fmtDateHuman(cur.start)} – {fmtDateHuman(cur.end)}
           </div>
         </div>
@@ -159,7 +159,7 @@ function Hero({ cur, prev }: { cur: WeekStats; prev: WeekStats }) {
         </div>
         <div className="text-right">
           <DeltaChip d={delta(cur.activeDays, prev.activeDays)} />
-          <div className="mt-1 text-[11px] text-[var(--color-muted-2)]">vs semana anterior ({prev.activeDays})</div>
+          <div className="mt-1 text-[12px] text-[var(--color-muted-2)]">vs semana anterior ({prev.activeDays})</div>
         </div>
       </div>
       <div className="mt-4 grid grid-cols-7 gap-1.5">
@@ -173,7 +173,7 @@ function Hero({ cur, prev }: { cur: WeekStats; prev: WeekStats }) {
                 boxShadow: on ? "0 0 12px -2px var(--color-red-soft)" : "none",
               }}
             />
-            <span className="text-[10.5px] font-semibold text-[var(--color-muted)]">{DAY_LETTERS[i]}</span>
+            <span className="text-[12px] font-semibold text-[var(--color-muted)]">{DAY_LETTERS[i]}</span>
           </div>
         ))}
       </div>
@@ -191,7 +191,7 @@ function Habits({ cur, prev }: { cur: WeekStats; prev: WeekStats }) {
         {cur.habitPct != null ? (
           <span className="num text-[12px] font-semibold">
             {Math.round(cur.habitPct * 100)}%
-            <span className="ml-1.5 text-[10.5px] font-normal text-[var(--color-muted-2)]">{prev.habitPct != null ? `(antes ${Math.round(prev.habitPct * 100)}%)` : ""}</span>
+            <span className="ml-1.5 text-[12px] font-normal text-[var(--color-muted-2)]">{prev.habitPct != null ? `(antes ${Math.round(prev.habitPct * 100)}%)` : ""}</span>
           </span>
         ) : null}
       </div>
@@ -203,7 +203,7 @@ function Habits({ cur, prev }: { cur: WeekStats; prev: WeekStats }) {
               <li key={h.key}>
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="text-[12.5px]">{h.label}</span>
-                  <span className="num text-[11px] text-[var(--color-muted)]">
+                  <span className="num text-[12px] text-[var(--color-muted)]">
                     {h.days}/{denom}
                     <span className="ml-1.5 text-[var(--color-muted-2)]">antes {before}</span>
                   </span>
@@ -219,7 +219,7 @@ function Habits({ cur, prev }: { cur: WeekStats; prev: WeekStats }) {
         <EmptyState compact icon="check" title="Aún no tienes hábitos" hint="Créalos en Perfil › Hábitos y aquí verás cuántos días cumples cada uno." />
       )}
       {!hasKey ? (
-        <p className="mt-3 text-[11px] leading-snug text-[var(--color-muted-2)]">
+        <p className="mt-3 text-[12px] leading-snug text-[var(--color-muted-2)]">
           Tip: crea los hábitos «Biblia» y «MoureDev» en Perfil › Hábitos y aparecerán aquí, con los días que cumpliste cada uno.
         </p>
       ) : null}

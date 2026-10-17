@@ -31,7 +31,7 @@ export function DayTimeline({ day, onDay, editing, onPick }: { day: number; onDa
             role="tab"
             aria-selected={day === i}
             onClick={() => onDay(i)}
-            className={`relative rounded-full py-2 text-[11px] font-semibold uppercase ${day === i ? "glass-on" : "glass-flat text-[var(--color-muted)]"}`}
+            className={`relative rounded-full py-2 text-[12px] font-semibold uppercase ${day === i ? "glass-on" : "glass-flat text-[var(--color-muted)]"}`}
           >
             {d}
             {i === todayCol ? <span aria-hidden className="absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[var(--color-red)]" /> : null}
@@ -53,8 +53,8 @@ export function DayTimeline({ day, onDay, editing, onPick }: { day: number; onDa
           return (
             <li key={row} className={`flex items-stretch gap-3 ${past ? "opacity-50" : ""}`}>
               <div className="flex w-[62px] flex-none flex-col items-end pt-2.5">
-                <span className={`num text-[11.5px] font-medium ${current ? "text-[var(--color-red)]" : "text-[var(--color-muted)]"}`}>{time}</span>
-                {current ? <span className="mt-1 rounded-full bg-[var(--color-red)] px-1.5 py-px text-[9.5px] font-bold uppercase tracking-wider text-white">Ahora</span> : null}
+                <span className={`num text-[12px] font-medium ${current ? "text-[var(--color-red)]" : "text-[var(--color-muted)]"}`}>{time}</span>
+                {current ? <span className="mt-1 rounded-full bg-[var(--color-red)] px-1.5 py-px text-[12px] font-bold uppercase tracking-wider text-white">Ahora</span> : null}
               </div>
               <span aria-hidden className="relative flex w-3 flex-none justify-center">
                 <span className={`absolute bottom-[-10px] top-0 w-px ${current ? "bg-[var(--color-red)]" : "bg-[var(--color-line-strong)]"}`} />

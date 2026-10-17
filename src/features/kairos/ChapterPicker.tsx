@@ -92,7 +92,7 @@ export function ChapterPicker({ value, count, onChange }: { value: number; count
                         onChange(n);
                         setOpen(false);
                       }}
-                      className={`num flex h-7 items-center justify-center rounded-lg text-[11.5px] transition-colors ${
+                      className={`num flex h-7 items-center justify-center rounded-lg text-[12px] transition-colors ${
                         isSelected ? "glass-on font-semibold" : "glass-flat text-[var(--color-ink)]"
                       }`}
                     >

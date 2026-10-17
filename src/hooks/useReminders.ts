@@ -42,13 +42,13 @@ export function useReminders(settings: SettingsRecord | undefined): void {
       const now = new Date();
       const hhmm = `${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
       if (settings!.noPhoneTime && hhmm === settings!.noPhoneTime) {
-        fire("nophone", "Sin celular", "Guardá el teléfono — hora de desconectar antes de dormir.");
+        fire("nophone", "Sin celular", "Guarda el teléfono — hora de desconectar antes de dormir.");
       }
       // With the automatic bedtime on, it follows tomorrow's wake-up; the fixed hour is the fallback.
       const auto = getUiPrefs().autoSleep ? tonightBedtime(now)?.bedtime : undefined;
       const sleepAt = auto ?? settings!.sleepTime;
       if (sleepAt && hhmm === sleepAt) {
-        fire("sleep", "Hora de dormir", "Apagá las pantallas — hora de dormir para cumplir tu meta de sueño.");
+        fire("sleep", "Hora de dormir", "Apaga las pantallas — hora de dormir para cumplir tu meta de sueño.");
       }
     }
 

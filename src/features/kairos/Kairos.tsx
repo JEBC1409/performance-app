@@ -267,7 +267,7 @@ export function Kairos() {
         {bibleStreak > 0 ? (
           <div className="flex items-center gap-2 px-1">
             <FlameGlyph size={16} className="flame-glow flex-none" />
-            <span className="text-[11.5px] text-[var(--color-muted)]">
+            <span className="text-[12px] text-[var(--color-muted)]">
               <span className="num font-semibold text-[var(--color-ink)]">{bibleStreak}</span> {bibleStreak === 1 ? "día seguido leyendo" : "días seguidos leyendo"}
             </span>
           </div>
@@ -297,7 +297,7 @@ export function Kairos() {
                   <span className="text-[12px] text-[var(--color-ink)]">
                     Ibas en <span className="font-semibold">{bookmarkBookName} {bookmark.chapter}{bookmark.verse ? `:${bookmark.verse}` : ""}</span>
                   </span>
-                  <span className="ml-auto flex-none text-[11px] uppercase tracking-wide text-[var(--color-red)]">Continuar →</span>
+                  <span className="ml-auto flex-none text-[12px] uppercase tracking-wide text-[var(--color-red)]">Continuar →</span>
                 </button>
               ) : null}
 
@@ -316,7 +316,7 @@ export function Kairos() {
                       <p className="px-2 py-3 text-[12.5px] text-[var(--color-muted)]">No encontré versículos con eso.</p>
                     ) : (
                       <>
-                        <div className="num px-2 pb-1.5 pt-1 text-[11px] uppercase tracking-wide text-[var(--color-muted)]">
+                        <div className="num px-2 pb-1.5 pt-1 text-[12px] uppercase tracking-wide text-[var(--color-muted)]">
                           {searchResult.total} {searchResult.total === 1 ? "versículo" : "versículos"}
                           {searchResult.total > searchResult.hits.length ? ` · mostrando ${searchResult.hits.length}` : ""}
                         </div>
@@ -332,7 +332,7 @@ export function Kairos() {
                                 }}
                                 className="w-full px-2 py-2.5 text-left"
                               >
-                                <span className="num text-[11px] font-semibold uppercase tracking-wide text-[var(--color-gold)]">
+                                <span className="num text-[12px] font-semibold uppercase tracking-wide text-[var(--color-gold)]">
                                   {h.bookName} {h.chapter}:{h.verse}
                                 </span>
                                 <span className="mt-0.5 block text-[13px] leading-snug text-[rgb(var(--fg-rgb)/0.85)]">{h.text}</span>
@@ -371,12 +371,12 @@ export function Kairos() {
                     </div>
                   </div>
                   <div className="flex flex-none flex-col items-end gap-1.5">
-                    <span className="text-[11px] text-[var(--color-muted-2)] num uppercase tracking-wide">{verses.length} versículos</span>
+                    <span className="text-[12px] text-[var(--color-muted-2)] num uppercase tracking-wide">{verses.length} versículos</span>
                     <MarkReadChip abbrev={abbrev} chapter={chapter} />
                     <button
                       onClick={markHere}
                       disabled={isAtBookmark}
-                      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wide ${
+                      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold uppercase tracking-wide ${
                         isAtBookmark ? "glass-gold" : "glass text-[var(--color-muted)] hover:text-[var(--color-gold)]"
                       }`}
                     >
@@ -388,7 +388,7 @@ export function Kairos() {
                 {narrator.supported ? (
                   <div className="-mt-1 mb-4 flex items-center gap-3">
                     <ListenButton narrator={narrator} />
-                    <button onClick={() => setVoiceOpen(true)} className="text-[11px] text-[var(--color-muted)] underline">
+                    <button onClick={() => setVoiceOpen(true)} className="text-[12px] text-[var(--color-muted)] underline">
                       Voz
                     </button>
                   </div>
@@ -408,7 +408,7 @@ export function Kairos() {
                         className={`group flex items-start gap-3 py-3 text-left first:pt-0 last:pb-0 ${isBookmarked ? "-mx-2 rounded-xl px-2 bg-[rgb(var(--accent-rgb)/0.07)]" : ""} ${isSpoken ? "-mx-2 rounded-xl px-2 bg-[rgb(var(--accent-rgb)/0.16)]" : ""} ${tint && !isSpoken && !isBookmarked ? "-mx-2 rounded-xl px-2" : ""}`}
                         style={tint && !isSpoken ? { backgroundColor: `rgb(${colorRgb(tint)} / 0.18)` } : undefined}
                       >
-                        <span className="relative num mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-[var(--color-surface-2)] text-[10.5px] font-bold text-[var(--color-red)] transition-colors group-hover:bg-[var(--color-red)] group-hover:text-white">
+                        <span className="relative num mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-[var(--color-surface-2)] text-[12px] font-bold text-[var(--color-red)] transition-colors group-hover:bg-[var(--color-red)] group-hover:text-white">
                           {vNum}
                           {noted ? (
                             <span
@@ -471,12 +471,12 @@ export function Kairos() {
           {pickedVerse ? (
             <div>
               <div className="flex items-start justify-between gap-2">
-                <div className="inline-flex items-center rounded-full border border-[var(--color-red-soft)] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-red)] num">
+                <div className="inline-flex items-center rounded-full border border-[var(--color-red-soft)] px-2.5 py-0.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-red)] num">
                   {bookName} {chapter}:{pickedVerse.verse}
                 </div>
                 <button
                   onClick={() => markVerseHere(pickedVerse.verse)}
-                  className="glass-gold tap-target flex flex-none items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-ink)]"
+                  className="glass-gold tap-target flex flex-none items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-ink)]"
                 >
                   <BookmarkGlyph filled />
                   Marcar aquí
@@ -484,7 +484,7 @@ export function Kairos() {
               </div>
               <p className="text-[13.5px] mt-3 leading-relaxed">{pickedVerse.text}</p>
               <div className="mt-3 flex items-center gap-2" role="group" aria-label="Resaltar versículo">
-                <span className="mr-1 text-[11px] uppercase tracking-wide text-[var(--color-muted)]">Resaltar</span>
+                <span className="mr-1 text-[12px] uppercase tracking-wide text-[var(--color-muted)]">Resaltar</span>
                 {HIGHLIGHT_COLORS.map((c) => {
                   const on = highlights[verseKey(abbrev, chapter, pickedVerse.verse)] === c.key;
                   return (
@@ -506,7 +506,7 @@ export function Kairos() {
                     void (key in review.state ? review.stop(key) : review.start(key, todayISO()));
                     showToast(key in review.state ? "Quitado del repaso" : "A memorizar — te lo recuerdo en Guardados");
                   }}
-                  className="glass tap-target rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-muted)]"
+                  className="glass tap-target rounded-full px-4 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)]"
                 >
                   {verseKey(abbrev, chapter, pickedVerse.verse) in review.state ? "Dejar de memorizar" : "Memorizar"}
                 </button>
@@ -516,7 +516,7 @@ export function Kairos() {
                     if (r === "downloaded") showToast("Imagen guardada");
                     else if (r === "failed") showToast("No se pudo crear la imagen");
                   }}
-                  className="glass tap-target rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-muted)]"
+                  className="glass tap-target rounded-full px-4 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)]"
                 >
                   Compartir imagen
                 </button>
@@ -528,7 +528,7 @@ export function Kairos() {
                     setPickedVerse(null);
                     narrator.play(from);
                   }}
-                  className="glass tap-target mt-3 rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-muted)]"
+                  className="glass tap-target mt-3 rounded-full px-4 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)]"
                 >
                   Escuchar desde aquí
                 </button>
@@ -546,7 +546,7 @@ export function Kairos() {
                         ) : (
                           <p className="text-[12px] text-[var(--color-muted-2)]">Sin nota — solo el versículo.</p>
                         )}
-                        <div className="text-[10.5px] text-[var(--color-muted-2)] mt-1 num">{new Date(v.createdAt).toLocaleDateString("es-CO")}</div>
+                        <div className="text-[12px] text-[var(--color-muted-2)] mt-1 num">{new Date(v.createdAt).toLocaleDateString("es-CO")}</div>
                       </div>
                       <button
                         onClick={() => deleteSaved(v)}
@@ -584,7 +584,7 @@ function SavedCard({ v, onDelete }: { v: SavedVerseRecord; onDelete: (v: SavedVe
   return (
     <Card className="panel-surface-glow">
       <div className="flex items-start justify-between gap-2">
-        <div className="inline-flex items-center rounded-full border border-[var(--color-red-soft)] px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-[var(--color-red)] num">
+        <div className="inline-flex items-center rounded-full border border-[var(--color-red-soft)] px-2.5 py-0.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-red)] num">
           {v.bookName} {v.chapter}:{v.verse}
         </div>
         <button
@@ -597,7 +597,7 @@ function SavedCard({ v, onDelete }: { v: SavedVerseRecord; onDelete: (v: SavedVe
       </div>
       <p className="text-[14px] mt-2.5 leading-relaxed">{v.text}</p>
       {v.note ? <p className="text-[12px] text-[var(--color-muted)] mt-2.5 border-l-2 border-[var(--color-red-soft)] pl-3 italic">{v.note}</p> : null}
-      <div className="text-[10.5px] text-[var(--color-muted-2)] mt-2.5 num">{new Date(v.createdAt).toLocaleDateString("es-CO")}</div>
+      <div className="text-[12px] text-[var(--color-muted-2)] mt-2.5 num">{new Date(v.createdAt).toLocaleDateString("es-CO")}</div>
     </Card>
   );
 }

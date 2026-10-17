@@ -26,7 +26,7 @@ export function Stat({
         {value}
       </div>
       {sub ? (
-        <div className="text-[10.5px] text-[var(--color-muted-2)] leading-tight">
+        <div className="text-[12px] text-[var(--color-muted-2)] leading-tight">
           {sub}
         </div>
       ) : null}

@@ -40,7 +40,7 @@ export function Horario() {
           <button
             onClick={() => setEditing((e) => !e)}
             aria-pressed={editing}
-            className={`mt-1 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.1em] ${editing ? "glass-on" : "glass text-[var(--color-muted)]"}`}
+            className={`mt-1 rounded-full px-4 py-2 text-[12px] font-semibold uppercase tracking-[0.1em] ${editing ? "glass-on" : "glass text-[var(--color-muted)]"}`}
           >
             {editing ? "Listo" : "Editar"}
           </button>
@@ -65,7 +65,7 @@ export function Horario() {
           <table className="border-collapse text-[12.5px] min-w-[900px] w-full">
             <thead>
               <tr>
-                <th className="sticky left-0 z-10 bg-[var(--color-surface)] text-left px-4 py-3.5 text-[10.5px] uppercase tracking-wide text-[var(--color-muted)] font-semibold w-[104px]">
+                <th className="sticky left-0 z-10 bg-[var(--color-surface)] text-left px-4 py-3.5 text-[12px] uppercase tracking-wide text-[var(--color-muted)] font-semibold w-[104px]">
                   Hora
                 </th>
                 {DIAS_CORTO.map((d, i) => (
@@ -85,7 +85,7 @@ export function Horario() {
             <tbody>
               {HORARIO.map((row, r) => (
                 <tr key={row.time} className="border-t border-[var(--color-line)]">
-                  <td className="sticky left-0 bg-[var(--color-surface)] num px-4 py-2.5 text-[11.5px] font-medium text-[var(--color-muted)] whitespace-nowrap">
+                  <td className="sticky left-0 bg-[var(--color-surface)] num px-4 py-2.5 text-[12px] font-medium text-[var(--color-muted)] whitespace-nowrap">
                     {editing ? (
                       <button onClick={() => setRowEdit(r)} className="glass-flat hit -mx-1.5 rounded-lg px-1.5 py-0.5 underline decoration-dotted underline-offset-4" aria-label={`Editar la hora ${row.time}`}>
                         {row.time}
@@ -123,21 +123,21 @@ export function Horario() {
         {LEGEND.map((t) => (
           <div
             key={t}
-            className="flex items-center gap-2 rounded-full border border-[var(--color-line-strong)] px-3 py-1.5 text-[11px] font-semibold text-[var(--color-muted)]"
+            className="flex items-center gap-2 rounded-full border border-[var(--color-line-strong)] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-muted)]"
           >
             <span className="h-2.5 w-2.5 rounded-full" style={{ background: BLOCK_COLOR[t] }} />
             {BLOCK_LABEL[t]}
           </div>
         ))}
       </div>
-      <p className="-mt-1 text-[11px] leading-snug text-[var(--color-muted-2)]">{HORARIO_GOAL}</p>
+      <p className="-mt-1 text-[12px] leading-snug text-[var(--color-muted-2)]">{HORARIO_GOAL}</p>
 
       {editing ? (
         <div className="flex flex-wrap items-center gap-2">
-          <button onClick={() => setAddingRow(true)} className="glass-accent tap-target rounded-full px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.1em]">
+          <button onClick={() => setAddingRow(true)} className="glass-accent tap-target rounded-full px-5 py-2 text-[12px] font-semibold uppercase tracking-[0.1em]">
             + Añadir fila
           </button>
-          <button onClick={restore} className="ml-auto text-[11px] text-[var(--color-muted)] underline-offset-2 hover:text-[var(--color-red)] hover:underline">
+          <button onClick={restore} className="ml-auto text-[12px] text-[var(--color-muted)] underline-offset-2 hover:text-[var(--color-red)] hover:underline">
             Volver al horario original
           </button>
         </div>

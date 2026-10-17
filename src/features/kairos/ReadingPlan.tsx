@@ -42,9 +42,9 @@ export function ReadingPlanCard({ onOpen }: { onOpen: (abbrev: string, chapter: 
         <button onClick={() => setPicking(true)} className="glass-gold flex items-center gap-3 rounded-2xl px-4 py-3 text-left">
           <span className="min-w-0 flex-1">
             <span className="block text-[13.5px] font-semibold">Plan de lectura</span>
-            <span className="block text-[11.5px] text-[var(--color-muted)]">Elige un libro y te digo qué leer cada día.</span>
+            <span className="block text-[12px] text-[var(--color-muted)]">Elige un libro y te digo qué leer cada día.</span>
           </span>
-          <span className="flex-none text-[11px] font-semibold uppercase tracking-wide text-[var(--color-gold)]">Elegir →</span>
+          <span className="flex-none text-[12px] font-semibold uppercase tracking-wide text-[var(--color-gold)]">Elegir →</span>
         </button>
       ) : (
         <div className="panel-surface p-4">
@@ -55,7 +55,7 @@ export function ReadingPlanCard({ onOpen }: { onOpen: (abbrev: string, chapter: 
                 {def.name} · día {progress.dayNumber} de {plan.days} · {progress.doneCount}/{progress.total} capítulos
               </div>
             </div>
-            <div className="flex flex-none items-center gap-3 text-[11px] text-[var(--color-muted)]">
+            <div className="flex flex-none items-center gap-3 text-[12px] text-[var(--color-muted)]">
               <button onClick={() => setPicking(true)} className="underline">
                 Cambiar
               </button>
@@ -70,7 +70,7 @@ export function ReadingPlanCard({ onOpen }: { onOpen: (abbrev: string, chapter: 
             <p className="mt-3 text-[13px]">¡Terminaste el plan! Elige otro para seguir.</p>
           ) : progress.today.length ? (
             <>
-              <div className="mt-3 text-[11.5px] text-[var(--color-muted)]">
+              <div className="mt-3 text-[12px] text-[var(--color-muted)]">
                 Te toca hoy
                 {progress.behind > 0 ? ` · incluye ${progress.behind} ${progress.behind === 1 ? "capítulo atrasado" : "capítulos atrasados"}` : ""}
               </div>
@@ -91,7 +91,7 @@ export function ReadingPlanCard({ onOpen }: { onOpen: (abbrev: string, chapter: 
             <div className="mt-3 flex items-center justify-between gap-3">
               <span className="text-[13px] text-[var(--color-good)]">Al día ✓</span>
               {progress.nextUnread ? (
-                <button onClick={() => onOpen(progress.nextUnread!.abbrev, progress.nextUnread!.chapter)} className="text-[11.5px] text-[var(--color-muted)] underline">
+                <button onClick={() => onOpen(progress.nextUnread!.abbrev, progress.nextUnread!.chapter)} className="text-[12px] text-[var(--color-muted)] underline">
                   Leer adelante: {label(progress.nextUnread)}
                 </button>
               ) : null}
@@ -139,7 +139,7 @@ function PlanPicker({ current, onStart, onStop }: { current: PlanState | null; o
             className={`rounded-2xl px-3.5 py-2.5 text-left ${p.id === planId ? "glass-on" : "glass"}`}
           >
             <span className="block text-[13.5px] font-semibold">{p.name}</span>
-            <span className={`block text-[11.5px] ${p.id === planId ? "text-white/80" : "text-[var(--color-muted)]"}`}>{p.blurb}</span>
+            <span className={`block text-[12px] ${p.id === planId ? "text-white/80" : "text-[var(--color-muted)]"}`}>{p.blurb}</span>
           </button>
         ))}
       </div>
@@ -153,7 +153,7 @@ function PlanPicker({ current, onStart, onStop }: { current: PlanState | null; o
             </button>
           ))}
         </div>
-        <p className="mt-2 text-[11.5px] text-[var(--color-muted)]">
+        <p className="mt-2 text-[12px] text-[var(--color-muted)]">
           {total} capítulos · unos {perDay >= 1 ? Math.round(perDay * 10) / 10 : `1 cada ${Math.round(1 / perDay)}`} {perDay >= 1 ? "por día" : "días"}
         </p>
       </div>
@@ -162,7 +162,7 @@ function PlanPicker({ current, onStart, onStop }: { current: PlanState | null; o
         {current ? "Empezar este plan de nuevo" : "Empezar hoy"}
       </Button>
       {onStop ? (
-        <button onClick={onStop} className="text-center text-[11.5px] text-[var(--color-muted)] underline">
+        <button onClick={onStop} className="text-center text-[12px] text-[var(--color-muted)] underline">
           Dejar el plan actual
         </button>
       ) : null}
@@ -184,7 +184,7 @@ export function MarkReadChip({ abbrev, chapter }: { abbrev: string; chapter: num
         if (!read && planProgress(next, todayISO()).today.length === 0) showToast("¡Lectura de hoy completa!");
       }}
       aria-pressed={read}
-      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wide ${read ? "glass-on" : "glass text-[var(--color-muted)]"}`}
+      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold uppercase tracking-wide ${read ? "glass-on" : "glass text-[var(--color-muted)]"}`}
     >
       <Icon name="check" size={11} />
       {read ? "Leído" : "Marcar leído"}

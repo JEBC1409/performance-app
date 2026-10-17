@@ -125,20 +125,20 @@ export function ExerciseLogForm({
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-[14px] font-semibold">{exercise.name}</div>
-          {exercise.note ? <div className="mt-0.5 text-[11px] text-[var(--color-muted)]">{exercise.note}</div> : null}
+          {exercise.note ? <div className="mt-0.5 text-[12px] text-[var(--color-muted)]">{exercise.note}</div> : null}
         </div>
         <div className="flex-none text-right">
           <div className="num text-[13px] font-semibold text-[var(--color-red)]">
             {done}/{target}
           </div>
-          <div className="num text-[11px] text-[var(--color-muted-2)]">
+          <div className="num text-[12px] text-[var(--color-muted-2)]">
             {exercise.series}×{exercise.repsLabel}
           </div>
         </div>
       </div>
 
       {lastSession ? (
-        <div className="num text-[11px] text-[var(--color-muted)]">
+        <div className="num text-[12px] text-[var(--color-muted)]">
           Última vez ({fmtDateHuman(lastSession.date)}): {lastSession.sets.map((s) => `${s.weight ?? "—"}×${s.reps ?? "—"}`).join(" · ")}
           {lastTop != null ? <span className="text-[var(--color-red)]"> · top {lastTop}kg</span> : null}
         </div>
@@ -146,7 +146,7 @@ export function ExerciseLogForm({
 
       {stall ? (
         <div role="note" className="rounded-2xl border border-[var(--color-warn)] bg-[rgb(var(--fg-rgb)/0.03)] px-3 py-2.5">
-          <div className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[var(--color-warn)]">Estancado</div>
+          <div className="text-[12px] font-semibold uppercase tracking-[0.14em] text-[var(--color-warn)]">Estancado</div>
           <p className="mt-1 text-[12px] leading-snug">{stallAdvice(stall)}</p>
         </div>
       ) : null}
@@ -155,11 +155,11 @@ export function ExerciseLogForm({
         <div className="flex items-center gap-3 rounded-2xl border border-[var(--color-line-strong)] bg-[rgb(var(--fg-rgb)/0.03)] px-3 py-2.5">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em]" style={{ color: SUGGESTION_COLOR[suggestion.kind] }}>
+              <span className="text-[12px] font-semibold uppercase tracking-[0.14em]" style={{ color: SUGGESTION_COLOR[suggestion.kind] }}>
                 Hoy · {SUGGESTION_LABEL[suggestion.kind]}
               </span>
               {suggestion.delta != null ? (
-                <span className="num text-[11px] text-[var(--color-muted)]">
+                <span className="num text-[12px] text-[var(--color-muted)]">
                   {suggestion.delta > 0 ? "+" : ""}
                   {fmtNum(suggestion.delta)} kg
                 </span>
@@ -168,18 +168,18 @@ export function ExerciseLogForm({
             <div className="num mt-0.5 text-[17px] font-semibold leading-tight">
               {suggestion.weight != null ? `${fmtNum(suggestion.weight)} kg × ${suggestion.reps}` : `${suggestion.reps} reps`}
             </div>
-            {exercise.loadNote ? <div className="text-[10.5px] font-medium text-[var(--color-muted)]">{exercise.loadNote}</div> : null}
-            <div className="mt-0.5 text-[10.5px] leading-snug text-[var(--color-muted)]">{suggestion.reason}</div>
+            {exercise.loadNote ? <div className="text-[12px] font-medium text-[var(--color-muted)]">{exercise.loadNote}</div> : null}
+            <div className="mt-0.5 text-[12px] leading-snug text-[var(--color-muted)]">{suggestion.reason}</div>
           </div>
           <button
             onClick={applySuggestion}
-            className="glass-accent tap-target flex-none rounded-full px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.1em]"
+            className="glass-accent tap-target flex-none rounded-full px-3.5 py-2 text-[12px] font-semibold uppercase tracking-[0.1em]"
           >
             Usar
           </button>
         </div>
       ) : !lastSession && range ? (
-        <div className="rounded-2xl border border-dashed border-[var(--color-line-strong)] px-3 py-2.5 text-[11px] leading-snug text-[var(--color-muted)]">
+        <div className="rounded-2xl border border-dashed border-[var(--color-line-strong)] px-3 py-2.5 text-[12px] leading-snug text-[var(--color-muted)]">
           Primera vez: elige un peso con el que llegues al fallo dentro del rango ({exercise.repsLabel}). Desde la próxima te sugiero cuánto subir.
         </div>
       ) : null}
@@ -199,7 +199,7 @@ export function ExerciseLogForm({
                 setDrag(null);
               }}
               style={drag && drag.id === s.id ? { transform: `translateX(${drag.dx}px)`, opacity: 1 + drag.dx / 160, transition: "none" } : { transition: "transform 180ms ease, opacity 180ms ease" }}
-              className={`num flex touch-pan-y items-center gap-1.5 rounded-full border pl-2.5 pr-1 py-1 text-[11px] transition-colors ${
+              className={`num flex touch-pan-y items-center gap-1.5 rounded-full border pl-2.5 pr-1 py-1 text-[12px] transition-colors ${
                 editingId === s.id ? "border-[var(--color-red)] bg-[rgb(var(--accent-rgb)/0.12)]" : "border-[var(--color-line-strong)]"
               }`}
             >
@@ -232,7 +232,7 @@ export function ExerciseLogForm({
           onMinus={() => setWeight((w) => Math.max(0, Math.round(((w ?? 0) - step) * 10) / 10))}
           onPlus={() => setWeight((w) => Math.round(((w ?? 0) + step) * 10) / 10)}
           chip={
-            <button onClick={cycleStep} className="glass-flat rounded-full px-2.5 py-1 text-[11px] font-semibold text-[var(--color-muted)]" aria-label={`Paso de peso ${step} kilos; toca para cambiar`}>
+            <button onClick={cycleStep} className="glass-flat rounded-full px-2.5 py-1 text-[12px] font-semibold text-[var(--color-muted)]" aria-label={`Paso de peso ${step} kilos; toca para cambiar`}>
               paso {fmtNum(step)}
             </button>
           }
@@ -251,7 +251,7 @@ export function ExerciseLogForm({
         <button
           onClick={() => setToFailure((f) => !f)}
           aria-pressed={toFailure}
-          className={`rounded-full px-3 py-2 text-[11px] font-semibold uppercase tracking-wide ${toFailure ? "glass-on" : "glass text-[var(--color-muted)]"}`}
+          className={`rounded-full px-3 py-2 text-[12px] font-semibold uppercase tracking-wide ${toFailure ? "glass-on" : "glass text-[var(--color-muted)]"}`}
         >
           Al fallo
         </button>

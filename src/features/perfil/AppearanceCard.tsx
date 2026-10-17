@@ -34,7 +34,7 @@ export function AppearanceCard() {
       <h2 className="card-title">Apariencia</h2>
 
       <div className="mt-3">
-        <div className="mb-2 text-[11.5px] text-[var(--color-muted)]">Color de acento</div>
+        <div className="mb-2 text-[12px] text-[var(--color-muted)]">Color de acento</div>
         <div className="flex gap-3" role="radiogroup" aria-label="Color de acento">
           {ACCENTS.map((a) => {
             const on = prefs.accent === a.key;
@@ -55,7 +55,7 @@ export function AppearanceCard() {
       </div>
 
       <div className="mt-4">
-        <div className="mb-2 text-[11.5px] text-[var(--color-muted)]">Tema</div>
+        <div className="mb-2 text-[12px] text-[var(--color-muted)]">Tema</div>
         <div className="glass-track grid grid-cols-3 gap-1 rounded-full p-1" role="radiogroup" aria-label="Tema">
           {([["dark", "Oscuro"], ["light", "Claro"], ["auto", "Automático"]] as const).map(([k, label]) => (
             <button key={k} role="radio" aria-checked={prefs.theme === k} onClick={() => setUiPrefs({ theme: k })} className={`rounded-full py-2 text-[12px] font-semibold ${prefs.theme === k ? "glass-on" : "glass-flat text-[var(--color-muted)]"}`}>
@@ -68,7 +68,7 @@ export function AppearanceCard() {
       <div className="mt-4 flex items-center justify-between gap-3">
         <div>
           <div className="text-[13px] font-semibold">Modo sobrio</div>
-          <div className="text-[11.5px] leading-snug text-[var(--color-muted)]">Menos brillo y resplandor; bordes neutros.</div>
+          <div className="text-[12px] leading-snug text-[var(--color-muted)]">Menos brillo y resplandor; bordes neutros.</div>
         </div>
         <button
           onClick={() => setUiPrefs({ calm: !prefs.calm })}
@@ -83,8 +83,8 @@ export function AppearanceCard() {
 
       <div className="mt-4">
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-[11.5px] text-[var(--color-muted)]">Barra de abajo (elige hasta {NAV_SLOTS})</span>
-          <button onClick={() => setUiPrefs({ navTabs: DEFAULT_NAV })} className="text-[11px] text-[var(--color-muted)] hover:text-[var(--color-red)]">
+          <span className="text-[12px] text-[var(--color-muted)]">Barra de abajo (elige hasta {NAV_SLOTS})</span>
+          <button onClick={() => setUiPrefs({ navTabs: DEFAULT_NAV })} className="text-[12px] text-[var(--color-muted)] hover:text-[var(--color-red)]">
             Restablecer
           </button>
         </div>
@@ -92,7 +92,7 @@ export function AppearanceCard() {
           {NAV_TABS.map((t) => {
             const idx = prefs.navTabs.indexOf(t.key);
             return (
-              <button key={t.key} onClick={() => toggleNav(t.key)} aria-pressed={idx >= 0} className={`rounded-full px-3.5 py-2 text-[11.5px] font-semibold ${idx >= 0 ? "glass-on" : "glass text-[var(--color-muted)]"}`}>
+              <button key={t.key} onClick={() => toggleNav(t.key)} aria-pressed={idx >= 0} className={`rounded-full px-3.5 py-2 text-[12px] font-semibold ${idx >= 0 ? "glass-on" : "glass text-[var(--color-muted)]"}`}>
                 {idx >= 0 ? `${idx + 1} · ` : ""}
                 {t.label}
               </button>
@@ -103,15 +103,15 @@ export function AppearanceCard() {
 
       <div className="mt-4">
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-[11.5px] text-[var(--color-muted)]">Orden de las tarjetas en Hoy</span>
-          <button onClick={() => setUiPrefs({ homeOrder: DEFAULT_UI_PREFS.homeOrder })} className="text-[11px] text-[var(--color-muted)] hover:text-[var(--color-red)]">
+          <span className="text-[12px] text-[var(--color-muted)]">Orden de las tarjetas en Hoy</span>
+          <button onClick={() => setUiPrefs({ homeOrder: DEFAULT_UI_PREFS.homeOrder })} className="text-[12px] text-[var(--color-muted)] hover:text-[var(--color-red)]">
             Restablecer
           </button>
         </div>
         <ul className="flex flex-col gap-1.5">
           {prefs.homeOrder.map((k, i) => (
             <li key={k} className="glass flex items-center gap-2 rounded-xl px-3 py-1.5">
-              <span className="num w-4 text-[11px] text-[var(--color-muted-2)]">{i + 1}</span>
+              <span className="num w-4 text-[12px] text-[var(--color-muted-2)]">{i + 1}</span>
               <span className="flex-1 text-[12.5px]">{label(k)}</span>
               <button
                 onClick={() => move(i, -1)}

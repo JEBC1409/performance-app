@@ -217,7 +217,7 @@ export interface RutinaItem {
 }
 
 export const RUTINA_MATUTINA: RutinaItem[] = [
-  { ex: "Stomach vacuums", series: 5, carga: "20-30 seg", nota: "Exhalá todo, metés ombligo a la columna, sostenés" },
+  { ex: "Stomach vacuums", series: 5, carga: "20-30 seg", nota: "Exhala todo, lleva el ombligo hacia la columna y sostén" },
   { ex: "Plancha frontal", series: 3, carga: "30-45 seg", nota: "Cuerpo recto, sin bajar cadera" },
   { ex: "Dead bug", series: 3, carga: "8-10/lado", nota: "Espalda baja pegada al piso, lento y controlado" },
   { ex: "Bird dog", series: 3, carga: "10/lado", nota: "En 4 puntos, brazo y pierna opuestos, sostener 3 seg" },

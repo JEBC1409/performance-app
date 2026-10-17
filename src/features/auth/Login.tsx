@@ -8,8 +8,8 @@ type Step = "email" | "code";
 const RESEND_COOLDOWN_SEC = 30;
 
 const ERROR_MESSAGES: Record<string, string> = {
-  "Token has expired or is invalid": "El código expiró o es incorrecto. Pedí uno nuevo.",
-  "Email rate limit exceeded": "Pediste demasiados códigos seguidos. Esperá un minuto e intentá de nuevo.",
+  "Token has expired or is invalid": "El código expiró o es incorrecto. Pide uno nuevo.",
+  "Email rate limit exceeded": "Pediste demasiados códigos seguidos. Espera un minuto e inténtalo de nuevo.",
   "Signups not allowed for this instance": "Este correo no tiene acceso todavía.",
 };
 
@@ -81,8 +81,8 @@ export function Login() {
           <div className="eyebrow eyebrow-accent">Configuración pendiente</div>
           <h1 className="font-[var(--font-display)] text-lg mt-2.5">Falta conectar Supabase</h1>
           <p className="text-[12.5px] text-[var(--color-muted)] mt-3 leading-relaxed">
-            El login por código necesita un proyecto de Supabase. Creá uno en{" "}
-            <span className="text-[var(--color-ink)]">supabase.com</span>, copiá la Project URL y el anon key desde{" "}
+            El login por código necesita un proyecto de Supabase. Crea uno en{" "}
+            <span className="text-[var(--color-ink)]">supabase.com</span>, copia la Project URL y el anon key desde{" "}
             <span className="text-[var(--color-ink)]">Settings → API</span>, y agregalos a un archivo{" "}
             <code className="text-[var(--color-red)]">.env.local</code> en la raíz del proyecto como{" "}
             <code className="text-[var(--color-red)]">VITE_SUPABASE_URL</code> y{" "}
@@ -115,7 +115,7 @@ export function Login() {
               </div>
 
               <label className="flex flex-col gap-1.5">
-                <span className="text-[10.5px] text-[var(--color-muted)] uppercase tracking-wide">Correo</span>
+                <span className="text-[12px] text-[var(--color-muted)] uppercase tracking-wide">Correo</span>
                 <input
                   ref={emailInputRef}
                   type="email"
@@ -144,15 +144,15 @@ export function Login() {
             <div className="flex flex-col gap-5">
               <div>
                 <div className="eyebrow eyebrow-accent">Verificación</div>
-                <h1 className="font-[var(--font-display)] text-lg mt-2">Ingresá el código</h1>
+                <h1 className="font-[var(--font-display)] text-lg mt-2">Ingresa el código</h1>
                 <p className="text-[12px] text-[var(--color-muted)] mt-2 leading-relaxed">
                   Enviado a <span className="text-[var(--color-ink)] font-medium">{email}</span>
                 </p>
               </div>
 
               <OtpInput value={code} onChange={setCode} disabled={loading} />
-              <p className="text-[11px] text-[var(--color-muted-2)] -mt-2.5">
-                ¿No ves un código de {OTP_LENGTH} dígitos? También podés entrar tocando el enlace del correo.
+              <p className="text-[12px] text-[var(--color-muted-2)] -mt-2.5">
+                ¿No ves un código de {OTP_LENGTH} dígitos? También puedes entrar tocando el enlace del correo.
               </p>
 
               {error ? <div className="text-[12px] text-[var(--color-red)] border-l-2 border-[var(--color-red)] pl-2.5">{error}</div> : null}
@@ -165,7 +165,7 @@ export function Login() {
                 {loading ? "Verificando…" : "Verificar"}
               </button>
 
-              <div className="flex items-center justify-between text-[11.5px]">
+              <div className="flex items-center justify-between text-[12px]">
                 <button
                   onClick={() => {
                     setStep("email");
@@ -188,7 +188,7 @@ export function Login() {
           )}
         </div>
 
-        <p className="text-center text-[10.5px] text-[var(--color-muted-2)] mt-5">Tus datos de entrenamiento viven solo en este dispositivo.</p>
+        <p className="text-center text-[12px] text-[var(--color-muted-2)] mt-5">Tus datos de entrenamiento viven solo en este dispositivo.</p>
       </div>
     </div>
   );

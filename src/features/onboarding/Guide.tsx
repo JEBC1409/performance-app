@@ -77,7 +77,7 @@ export function Guide({ onNavigate }: { onNavigate: (t: Tab) => void }) {
               Siguiente <Icon name="arrow-right" size={14} />
             </button>
           ) : (
-            <p className="flex-1 self-center text-center text-[11px] text-[var(--color-muted)]">Instálala en tu pantalla de inicio para tenerla como app.</p>
+            <p className="flex-1 self-center text-center text-[12px] text-[var(--color-muted)]">Instálala en tu pantalla de inicio para tenerla como app.</p>
           )}
         </div>
       </div>

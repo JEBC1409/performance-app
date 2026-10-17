@@ -149,11 +149,11 @@ export function LineChart({
           style={{ position: "absolute", left: `${Math.min(80, Math.max(20, pctX(activeIdx)))}%`, top: `max(46px, calc(${pctY(active.value)}% - 12px))`, transition: "left 140ms ease, top 140ms ease" }}
         >
           <div className="num text-[12px] font-semibold text-[var(--color-ink)]">{bubbleText}</div>
-          <div className="num text-[10px] text-[var(--color-muted)]">{active.label}</div>
+          <div className="num text-[12px] text-[var(--color-muted)]">{active.label}</div>
         </div>
       </div>
       {trend ? (
-        <div className="mt-1.5 flex items-center gap-1.5 text-[10.5px] text-[var(--color-muted)]">
+        <div className="mt-1.5 flex items-center gap-1.5 text-[12px] text-[var(--color-muted)]">
           <span className="inline-block w-5 border-t border-dotted border-[rgb(var(--fg-rgb)/0.6)]" />
           tendencia
           <span className="num text-[var(--color-muted-2)]">

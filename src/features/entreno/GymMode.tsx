@@ -77,7 +77,7 @@ export function GymMode({
         </button>
         <div className="min-w-0 flex-1 text-center">
           <div className="eyebrow eyebrow-accent">Día {day} · modo gimnasio</div>
-          <div className="num mt-0.5 text-[11px] text-[var(--color-muted)]">
+          <div className="num mt-0.5 text-[12px] text-[var(--color-muted)]">
             Ejercicio {idx + 1}/{exercises.length} · {totalDone}/{totalTarget} series
           </div>
         </div>
@@ -192,7 +192,7 @@ function GymExercise({
               setWeight(suggestion.weight);
               setReps(suggestion.reps);
             }}
-            className="glass-accent tap-target rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.1em]"
+            className="glass-accent tap-target rounded-full px-4 py-2 text-[12px] font-semibold uppercase tracking-[0.1em]"
           >
             Usar
           </button>
@@ -207,7 +207,7 @@ function GymExercise({
           onMinus={() => setWeight((w) => Math.max(0, Math.round(((w ?? 0) - step) * 10) / 10))}
           onPlus={() => setWeight((w) => Math.round(((w ?? 0) + step) * 10) / 10)}
           chip={
-            <button onClick={cycleStep} className="glass-flat rounded-full px-2.5 py-1 text-[11px] font-semibold text-[var(--color-muted)]" aria-label={`Paso de peso ${step} kilos; toca para cambiar`}>
+            <button onClick={cycleStep} className="glass-flat rounded-full px-2.5 py-1 text-[12px] font-semibold text-[var(--color-muted)]" aria-label={`Paso de peso ${step} kilos; toca para cambiar`}>
               paso {fmt(step)}
             </button>
           }

@@ -43,7 +43,7 @@ export function Section({ id, title, summary, defaultOpen = false, children }: {
       >
         <span className="min-w-0">
           <span className="block font-[var(--font-display)] text-[15px]">{title}</span>
-          {summary ? <span className="mt-0.5 block truncate text-[11.5px] text-[var(--color-muted)]">{summary}</span> : null}
+          {summary ? <span className="mt-0.5 block truncate text-[12px] text-[var(--color-muted)]">{summary}</span> : null}
         </span>
         <Icon name="chevron-right" size={18} className={`flex-none text-[var(--color-muted)] transition-transform duration-200 ${open ? "rotate-90" : ""}`} />
       </button>

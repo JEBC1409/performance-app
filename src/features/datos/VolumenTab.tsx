@@ -69,11 +69,11 @@ export function VolumenTab() {
             <div className="flex items-center gap-3">
               <RankBadge tier={activeTier} size={48} />
               <div className="flex-1">
-                <div className="text-[11px] uppercase tracking-wide text-[var(--color-muted)]">{MUSCLE_GROUP_LABEL[activeGroup]}</div>
+                <div className="text-[12px] uppercase tracking-wide text-[var(--color-muted)]">{MUSCLE_GROUP_LABEL[activeGroup]}</div>
                 <div className="text-[15px] font-bold leading-tight" style={{ color: activeTier.color }}>
                   {activeTier.label}
                 </div>
-                <div className="num mt-0.5 text-[11px] text-[var(--color-muted-2)]">
+                <div className="num mt-0.5 text-[12px] text-[var(--color-muted-2)]">
                   {bodyweightKg > 0 ? (
                     <>
                       1RM est. {roundKg(strength[activeGroup].bestKg)}kg
@@ -109,7 +109,7 @@ export function VolumenTab() {
                 className={`panel-surface flex flex-col items-center gap-1 p-2.5 transition-colors ${activeGroup === g ? "panel-surface-glow" : ""}`}
               >
                 <RankBadge tier={rankByGroup[g]} size={28} />
-                <span className="text-[10.5px] uppercase tracking-wide text-[var(--color-muted)]">{MUSCLE_GROUP_LABEL[g]}</span>
+                <span className="text-[12px] uppercase tracking-wide text-[var(--color-muted)]">{MUSCLE_GROUP_LABEL[g]}</span>
               </button>
             ))}
           </div>

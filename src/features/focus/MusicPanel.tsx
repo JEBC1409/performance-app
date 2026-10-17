@@ -108,11 +108,11 @@ export function MusicPanel() {
           </button>
         </div>
         {editing ? (
-          <button onClick={() => setEditing(false)} className="mt-2 text-[11.5px] text-[var(--color-muted)] underline">
+          <button onClick={() => setEditing(false)} className="mt-2 text-[12px] text-[var(--color-muted)] underline">
             Cancelar
           </button>
         ) : null}
-        <p className="mt-3 text-[11px] leading-snug text-[var(--color-muted-2)]">
+        <p className="mt-3 text-[12px] leading-snug text-[var(--color-muted-2)]">
           Mejor con listas propias o de álbum; las mezclas automáticas de YouTube a veces no se dejan reproducir fuera de YouTube.
         </p>
         <div className="mt-4 border-t border-[var(--color-line)] pt-4">
@@ -127,7 +127,7 @@ export function MusicPanel() {
     <div className="panel-surface p-4">
       <div className="flex items-center justify-between">
         <h2 className="card-title">Música</h2>
-        <div className="flex items-center gap-3 text-[11px] text-[var(--color-muted)]">
+        <div className="flex items-center gap-3 text-[12px] text-[var(--color-muted)]">
           <button onClick={() => setEditing(true)} className="underline">
             Cambiar
           </button>
@@ -155,7 +155,7 @@ export function MusicPanel() {
       </div>
 
       {m.error ? (
-        <p role="alert" className="mt-3 text-[11.5px] text-[var(--color-warn)]">
+        <p role="alert" className="mt-3 text-[12px] text-[var(--color-warn)]">
           {m.error}
         </p>
       ) : null}
@@ -167,7 +167,7 @@ export function MusicPanel() {
       >
         <span className="text-[12.5px]">
           Sonar solo durante el bloque
-          <span className="block text-[11px] text-[var(--color-muted)]">Empieza con el bloque y se pausa con el cronómetro y en los descansos.</span>
+          <span className="block text-[12px] text-[var(--color-muted)]">Empieza con el bloque y se pausa con el cronómetro y en los descansos.</span>
         </span>
         <span aria-hidden className={`relative h-5 w-9 flex-none rounded-full transition-colors ${m.config.sync ? "bg-[var(--color-red)]" : "bg-[var(--color-surface-2)]"}`}>
           <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${m.config.sync ? "left-[18px]" : "left-0.5"}`} />
@@ -232,7 +232,7 @@ export function MusicZen() {
                 <button onClick={() => setLyricsOffset(m.videoId, offset - OFFSET_STEP)} aria-label="Letra más tarde" className="hit flex h-8 w-8 items-center justify-center text-[15px] text-[var(--color-muted)]">
                   −
                 </button>
-                <button onClick={() => setLyricsOffset(m.videoId, 0)} aria-label="Restablecer el tiempo de la letra" title="Restablecer" className="num min-w-[3.6rem] px-1 text-center text-[11px] font-semibold text-[var(--color-ink)]">
+                <button onClick={() => setLyricsOffset(m.videoId, 0)} aria-label="Restablecer el tiempo de la letra" title="Restablecer" className="num min-w-[3.6rem] px-1 text-center text-[12px] font-semibold text-[var(--color-ink)]">
                   {formatOffset(offset)}
                 </button>
                 <button onClick={() => setLyricsOffset(m.videoId, offset + OFFSET_STEP)} aria-label="Letra más temprano" className="hit flex h-8 w-8 items-center justify-center text-[15px] text-[var(--color-muted)]">
@@ -243,7 +243,7 @@ export function MusicZen() {
             <button
               onClick={() => setLyricsPref(!lyricsOn)}
               aria-pressed={lyricsOn}
-              className={`rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] ${lyricsOn ? "glass-on text-white" : "glass text-[var(--color-muted)]"} ${compact ? "max-md:px-3 max-md:py-1 max-md:text-[10px]" : ""}`}
+              className={`rounded-full px-4 py-1.5 text-[12px] font-semibold uppercase tracking-[0.12em] ${lyricsOn ? "glass-on text-white" : "glass text-[var(--color-muted)]"} ${compact ? "max-md:px-3 max-md:py-1 max-md:text-[12px]" : ""}`}
             >
               Letra
             </button>
@@ -260,7 +260,7 @@ export function MusicZen() {
                       if (!active && saveMusicConfig(l.url)) playMusic();
                     }}
                     aria-pressed={active}
-                    className={`max-w-[9rem] flex-none truncate rounded-full px-3 py-1 text-[11px] font-semibold ${active ? "glass-on text-white" : "glass text-[var(--color-muted)]"}`}
+                    className={`max-w-[9rem] flex-none truncate rounded-full px-3 py-1 text-[12px] font-semibold ${active ? "glass-on text-white" : "glass text-[var(--color-muted)]"}`}
                   >
                     {l.name}
                   </button>
