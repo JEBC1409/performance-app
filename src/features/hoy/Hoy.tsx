@@ -101,7 +101,7 @@ export function Hoy({
     const summary = await buildDailySummary(today);
     try {
       await navigator.clipboard.writeText(summary);
-      showToast("Resumen copiado — pegalo en tu chat de progreso");
+      showToast("Resumen copiado — pégalo en tu chat de progreso");
     } catch {
       showToast("No se pudo copiar");
     }
@@ -154,7 +154,7 @@ export function Hoy({
           </div>
           <button
             onClick={() => onNavigate("horario")}
-            className="text-[11px] text-[var(--color-muted)] hover:text-[var(--color-red)] uppercase tracking-[0.12em] transition-colors"
+            className="text-[12px] text-[var(--color-muted)] hover:text-[var(--color-red)] uppercase tracking-[0.12em] transition-colors"
           >
             Ver horario <Icon name="arrow-right" size={12} className="ml-1 inline" />
           </button>
@@ -163,7 +163,7 @@ export function Hoy({
         {blockTime ? <div className="num mt-1 text-[12px] text-[var(--color-muted)]">{blockTime}</div> : null}
         {heroAction}
       </div>
-      <div className="mt-4 border-t border-[var(--color-line)] px-4 py-3 text-[11.5px] leading-tight text-[var(--color-muted)]">
+      <div className="mt-4 border-t border-[var(--color-line)] px-4 py-3 text-[12px] leading-tight text-[var(--color-muted)]">
         {nextCell ? (
           <>
             Siguiente{nextRow?.time ? ` (${nextRow.time})` : ""}: <span className="font-semibold text-[var(--color-ink)]">{nextCell.text}</span>
@@ -191,11 +191,11 @@ export function Hoy({
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 border border-[var(--color-line-strong)] flex items-center justify-center flex-none">
-                  <span className="eyebrow text-[11px]">Z</span>
+                  <span className="eyebrow text-[12px]">Z</span>
                 </div>
                 <div>
                   <div className="font-[var(--font-display)] text-[13px] tracking-[0.06em]">Descanso</div>
-                  <div className="text-[11px] text-[var(--color-muted)] mt-0.5">Ciclo A → B → C → descanso. Hoy toca recuperar.</div>
+                  <div className="text-[12px] text-[var(--color-muted)] mt-0.5">Ciclo A → B → C → descanso. Hoy toca recuperar.</div>
                 </div>
               </div>
               <Button variant="outline" onClick={openStartPrompt}>
@@ -206,11 +206,11 @@ export function Hoy({
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-[var(--color-red)] flex items-center justify-center flex-none">
-                  <span className="font-[var(--font-display)] text-[11px] text-white tracking-wide">{slot}</span>
+                  <span className="font-[var(--font-display)] text-[12px] text-white tracking-wide">{slot}</span>
                 </div>
                 <div>
                   <div className="font-[var(--font-display)] text-[13px] tracking-[0.06em]">{GYM_DIAS[slot].nombre}</div>
-                  <div className="text-[11px] text-[var(--color-muted)] mt-0.5">{GYM_DIAS[slot].grupo}</div>
+                  <div className="text-[12px] text-[var(--color-muted)] mt-0.5">{GYM_DIAS[slot].grupo}</div>
                 </div>
               </div>
               <Button variant="primary" onClick={openStartPrompt}>
@@ -238,7 +238,7 @@ export function Hoy({
       <div key="habits" className="panel-surface enter enter-delay-2">
         <div className="px-4 pt-4 pb-3 border-b border-[var(--color-line)] flex items-center justify-between">
           <div className="card-title">Hábitos de hoy</div>
-          <span className="num text-[11.5px] text-[var(--color-muted)]">
+          <span className="num text-[12px] text-[var(--color-muted)]">
             <span className="font-semibold text-[var(--color-ink)]">{habitsCompleted}</span>/{habitsTotal}
           </span>
         </div>
@@ -255,7 +255,7 @@ export function Hoy({
                 <span className={`flex h-7 w-7 flex-none items-center justify-center rounded-full ${on ? "bg-[rgb(var(--fg-rgb)/0.22)] pop" : "bg-[rgb(var(--fg-rgb)/0.06)]"}`}>
                   <HabitGlyph icon={h.icon} active={on} activeColor="#fff" size={12} />
                 </span>
-                <span className={`text-[11px] font-semibold uppercase tracking-wide leading-tight ${on ? "text-white" : "text-[var(--color-muted)]"}`}>{h.label}</span>
+                <span className={`text-[12px] font-semibold uppercase tracking-wide leading-tight ${on ? "text-white" : "text-[var(--color-muted)]"}`}>{h.label}</span>
               </button>
             );
           })}
@@ -282,7 +282,7 @@ export function Hoy({
           <Eyebrow gold>Versículo del día</Eyebrow>
           <button
             onClick={() => onNavigate("kairos")}
-            className="text-[11px] text-[var(--color-muted)] hover:text-[var(--color-gold)] uppercase tracking-[0.12em] transition-colors"
+            className="text-[12px] text-[var(--color-muted)] hover:text-[var(--color-gold)] uppercase tracking-[0.12em] transition-colors"
           >
             Oración <Icon name="arrow-right" size={12} className="ml-1 inline" />
           </button>
@@ -290,7 +290,7 @@ export function Hoy({
         {verse ? (
           <div>
             <p className="text-[13px] leading-relaxed text-[var(--color-ink)]">{verse.text}</p>
-            <div className="text-[10.5px] text-[var(--color-muted)] mt-2.5 num">
+            <div className="text-[12px] text-[var(--color-muted)] mt-2.5 num">
               {verse.bookName} {verse.chapter}:{verse.verse}
             </div>
           </div>
@@ -323,16 +323,19 @@ export function Hoy({
 
       {hero}
       {sundayCard}
-      {homeOrder.map((k) => cards[k])}
+      {/* One column on a phone; on a wide screen the cards flow into two, in order, instead of leaving half the window empty. */}
+      <div className="flex flex-col gap-4 lg:block lg:columns-2 lg:gap-4 lg:[&>*]:mb-4 lg:[&>*]:break-inside-avoid lg:[&>*]:inline-block lg:[&>*]:w-full">
+        {homeOrder.map((k) => cards[k])}
+      </div>
 
-      <button onClick={copyDailySummary} className="glass tap-target w-full rounded-full py-2.5 text-[11.5px] font-semibold uppercase tracking-wide">
+      <button onClick={copyDailySummary} className="glass tap-target w-full rounded-full py-2.5 text-[12px] font-semibold uppercase tracking-wide">
         Copiar resumen del día
       </button>
 
       <Sheet open={startPrompt} onClose={() => setStartPrompt(false)} title="Empezar entreno">
         <div className="flex flex-col gap-4">
           <div>
-            <div className="text-[11px] text-[var(--color-muted)] mb-2 uppercase tracking-wide">¿Qué día vas a entrenar?</div>
+            <div className="text-[12px] text-[var(--color-muted)] mb-2 uppercase tracking-wide">¿Qué día vas a entrenar?</div>
             <div className="flex gap-2">
               {GYM_DAY_ORDER.map((d) => (
                 <button
@@ -343,13 +346,13 @@ export function Hoy({
                   }`}
                 >
                   <div className="font-[var(--font-display)] text-[13px]">Día {d}</div>
-                  <div className="text-[11px] mt-0.5">{GYM_DIAS[d].nombre}</div>
+                  <div className="text-[12px] mt-0.5">{GYM_DIAS[d].nombre}</div>
                 </button>
               ))}
             </div>
           </div>
           <label className="flex flex-col gap-1.5">
-            <span className="text-[10.5px] text-[var(--color-muted)] uppercase tracking-wide">Fecha</span>
+            <span className="text-[12px] text-[var(--color-muted)] uppercase tracking-wide">Fecha</span>
             <DateField value={pickedDate} max={today} onChange={setPickedDate} />
           </label>
           <Button

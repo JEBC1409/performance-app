@@ -46,7 +46,7 @@ export function WeekSummaryCard({ onOpenDatos }: { onOpenDatos: () => void }) {
         {stats.map(([label, value]) => (
           <div key={label}>
             <div className="num font-[var(--font-display)] text-[20px] font-light leading-none">{value}</div>
-            <div className="mt-1 text-[10.5px] uppercase tracking-wide text-[var(--color-muted)]">{label}</div>
+            <div className="mt-1 text-[12px] uppercase tracking-wide text-[var(--color-muted)]">{label}</div>
           </div>
         ))}
       </div>

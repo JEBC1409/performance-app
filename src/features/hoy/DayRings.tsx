@@ -92,7 +92,7 @@ export function DayRings({ habitsDone, habitsTotal, slot }: { habitsDone: number
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="num font-[var(--font-display)] text-[26px] font-light leading-none">{closed}</span>
-          <span className="mt-0.5 text-[10.5px] uppercase tracking-[0.14em] text-[var(--color-muted)]">de 3</span>
+          <span className="mt-0.5 text-[12px] uppercase tracking-[0.14em] text-[var(--color-muted)]">de 3</span>
         </div>
       </div>
 

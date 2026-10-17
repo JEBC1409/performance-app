@@ -6,11 +6,11 @@ export const CONFIG_MOOD = "mood";
 export const KEEP_DAYS = 200;
 
 export const MOODS = [
-  { value: 1, emoji: "😞", label: "Mal" },
-  { value: 2, emoji: "🙁", label: "Bajo" },
-  { value: 3, emoji: "😐", label: "Normal" },
-  { value: 4, emoji: "🙂", label: "Bien" },
-  { value: 5, emoji: "😄", label: "Genial" },
+  { value: 1, label: "Mal" },
+  { value: 2, label: "Bajo" },
+  { value: 3, label: "Normal" },
+  { value: 4, label: "Bien" },
+  { value: 5, label: "Genial" },
 ] as const;
 
 export type MoodMap = Record<string, number>;

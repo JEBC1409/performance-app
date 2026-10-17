@@ -131,7 +131,7 @@ export function PrioritiesCard() {
             <button onClick={() => setCarry((c) => !c)} aria-pressed={carry} className="flex items-center justify-between gap-3 rounded-xl border border-[var(--color-line-strong)] px-3 py-2.5 text-left">
               <span className="text-[12.5px]">
                 Pasar a mañana lo pendiente ({pending.length})
-                <span className="block text-[11px] text-[var(--color-muted)]">{pending.map((p) => p.text).join(" · ")}</span>
+                <span className="block text-[12px] text-[var(--color-muted)]">{pending.map((p) => p.text).join(" · ")}</span>
               </span>
               <span aria-hidden className={`relative h-5 w-9 flex-none rounded-full transition-colors ${carry ? "bg-[var(--color-red)]" : "bg-[var(--color-surface-2)]"}`}>
                 <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${carry ? "left-[18px]" : "left-0.5"}`} />

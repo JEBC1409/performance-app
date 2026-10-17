@@ -16,7 +16,7 @@ export function InsightsCard() {
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-[10.5px] text-[var(--color-muted-2)]">Calculado con tus últimos 90 días. Son patrones, no causas.</p>
+      <p className="mt-3 text-[12px] text-[var(--color-muted-2)]">Calculado con tus últimos 90 días. Son patrones, no causas.</p>
     </Card>
   );
 }
