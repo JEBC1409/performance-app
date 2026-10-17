@@ -842,33 +842,34 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 :root[data-theme="light"] {
   color-scheme: light;
   --fg-rgb: 22 22 28;
-  --bg-rgb: 217 219 225;
-  --surface-rgb: 230 232 236;
-  --raised-rgb: 238 240 243;
-  --color-bg: #d9dbe1;
-  --color-surface: #e6e8ec;
-  --color-surface-2: #cdd0d7;
+  --bg-rgb: 196 199 207;
+  --surface-rgb: 211 214 220;
+  --raised-rgb: 219 222 227;
+  --color-bg: #c4c7cf;
+  --color-surface: #d3d6dc;
+  --color-surface-2: #b6bac3;
   --color-ink: #14141a;
-  --color-muted-2: rgb(var(--fg-rgb) / 0.66);
-  --color-gold: #784b00;
-  --color-warn: #844600;
-  --color-good: #006226;
-  --accent-ink-rgb: 170 23 34;
+  --color-muted: rgb(var(--fg-rgb) / 0.8);
+  --color-muted-2: rgb(var(--fg-rgb) / 0.72);
+  --color-gold: #5f420a;
+  --color-warn: #644000;
+  --color-good: #10502d;
+  --accent-ink-rgb: 144 15 23;
   /* Quiet fills for chart bars and the like, strong enough to see on the gray ground. */
-  --color-bar: rgb(var(--fg-rgb) / 0.26);
+  --color-bar: rgb(var(--fg-rgb) / 0.3);
   --gold-rgb: 176 128 30;
   --color-on-solid: #ffffff;
-  --tier-ink: 52%;
+  --tier-ink: 35%;
   --color-scrim: rgb(20 20 28 / 0.42);
 }
 :root[data-theme="light"][data-accent="blue"] {
-  --accent-ink-rgb: 32 81 179;
+  --accent-ink-rgb: 29 68 144;
 }
 :root[data-theme="light"][data-accent="violet"] {
-  --accent-ink-rgb: 98 56 193;
+  --accent-ink-rgb: 79 50 151;
 }
 :root[data-theme="light"][data-accent="gold"] {
-  --accent-ink-rgb: 112 72 6;
+  --accent-ink-rgb: 93 65 12;
   --accent-rgb: 176 128 30;
   --accent-light-rgb: 210 165 65;
   --accent-dark-rgb: 120 84 10;

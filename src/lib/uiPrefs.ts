@@ -145,7 +145,7 @@ export function applyUiPrefs(p: UiPrefs = prefs): void {
   else delete root.dataset.calm;
   const theme = resolveTheme(p.theme);
   root.dataset.theme = theme;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "light" ? "#d9dbe1" : "#000000");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "light" ? "#c4c7cf" : "#000000");
   if (!autoListener && typeof window !== "undefined" && window.matchMedia) {
     autoListener = true;
     window.matchMedia("(prefers-color-scheme: light)").addEventListener?.("change", () => {

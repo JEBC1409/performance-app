@@ -44,7 +44,7 @@ const rgbOf = (v: string | undefined): Rgb => {
 
 const SURFACES: Record<"dark" | "light", Rgb[]> = {
   dark: [[0, 0, 0], [11, 11, 13], [17, 17, 20], [23, 23, 27]],
-  light: [[217, 219, 225], [230, 232, 236], hex("#cdd0d7")],
+  light: [[196, 199, 207], [211, 214, 220], hex("#b6bac3")],
 };
 const ACCENTS = ["red", "gold", "blue", "violet"] as const;
 
@@ -84,6 +84,12 @@ describe("semantic text colours", () => {
     const alpha = Number(m?.[1]);
     expect(alpha).toBeGreaterThan(0);
     for (const s of SURFACES.light) expect(ratio(over([22, 22, 28], alpha, s), s)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("the main grey (muted) is stronger than muted-2 and readable on the light surfaces", () => {
+    const alphaOf = (v: string) => Number(v.match(/\/\s*([\d.]+)\)/)?.[1]);
+    expect(alphaOf(light["--color-muted"])).toBeGreaterThan(alphaOf(light["--color-muted-2"]));
+    for (const s of SURFACES.light) expect(ratio(over([22, 22, 28], alphaOf(light["--color-muted"]), s), s)).toBeGreaterThanOrEqual(4.5);
   });
 });
 
