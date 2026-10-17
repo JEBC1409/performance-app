@@ -2,7 +2,7 @@
  * order of the cards on Hoy. Stored per device in localStorage and applied to
  * <html> as data attributes, so the CSS does the rest. */
 
-export type Accent = "red" | "gold" | "blue" | "violet";
+export type Accent = "red" | "gold" | "blue" | "violet" | "green" | "cyan" | "orange" | "pink";
 export type Theme = "dark" | "light" | "auto";
 
 export const ACCENTS: { key: Accent; label: string; swatch: string }[] = [
@@ -10,6 +10,10 @@ export const ACCENTS: { key: Accent; label: string; swatch: string }[] = [
   { key: "gold", label: "Dorado", swatch: "#e2b96f" },
   { key: "blue", label: "Azul", swatch: "#3b82f6" },
   { key: "violet", label: "Violeta", swatch: "#8b5cf6" },
+  { key: "green", label: "Verde", swatch: "#22c55e" },
+  { key: "cyan", label: "Cian", swatch: "#06b6d4" },
+  { key: "orange", label: "Naranja", swatch: "#f97316" },
+  { key: "pink", label: "Rosa", swatch: "#ec4899" },
 ];
 
 export type HomeCard = "rings" | "priorities" | "session" | "streak" | "habits" | "insights" | "stats" | "verse";

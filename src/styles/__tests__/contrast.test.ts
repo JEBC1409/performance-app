@@ -46,7 +46,7 @@ const SURFACES: Record<"dark" | "light", Rgb[]> = {
   dark: [[0, 0, 0], [11, 11, 13], [17, 17, 20], [23, 23, 27]],
   light: [[196, 199, 207], [211, 214, 220], hex("#b6bac3")],
 };
-const ACCENTS = ["red", "gold", "blue", "violet"] as const;
+const ACCENTS = ["red", "gold", "blue", "violet", "green", "cyan", "orange", "pink"] as const;
 
 function inkFor(theme: "dark" | "light", accent: (typeof ACCENTS)[number]): Rgb {
   const sel = (theme === "light" ? ':root[data-theme="light"]' : ":root") + (accent === "red" ? "" : `[data-accent="${accent}"]`);

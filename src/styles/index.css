@@ -92,6 +92,30 @@
   --accent-light-rgb: 187 158 255;
   --accent-dark-rgb: 80 40 170;
 }
+:root[data-accent="green"] {
+  --accent-ink-rgb: 34 197 94;
+  --accent-rgb: 34 197 94;
+  --accent-light-rgb: 110 231 160;
+  --accent-dark-rgb: 14 100 50;
+}
+:root[data-accent="cyan"] {
+  --accent-ink-rgb: 6 182 212;
+  --accent-rgb: 6 182 212;
+  --accent-light-rgb: 103 232 249;
+  --accent-dark-rgb: 14 90 120;
+}
+:root[data-accent="orange"] {
+  --accent-ink-rgb: 249 115 22;
+  --accent-rgb: 249 115 22;
+  --accent-light-rgb: 253 170 100;
+  --accent-dark-rgb: 150 60 6;
+}
+:root[data-accent="pink"] {
+  --accent-ink-rgb: 236 72 153;
+  --accent-rgb: 236 72 153;
+  --accent-light-rgb: 249 148 200;
+  --accent-dark-rgb: 150 25 90;
+}
 
 /* "Sobrio": the same app with far less glow — neutral edges, a quiet
    background — for people who find the red halo loud. */
@@ -867,6 +891,18 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 :root[data-theme="light"][data-accent="violet"] {
   --accent-ink-rgb: 79 50 151;
+}
+:root[data-theme="light"][data-accent="green"] {
+  --accent-ink-rgb: 14 83 39;
+}
+:root[data-theme="light"][data-accent="cyan"] {
+  --accent-ink-rgb: 3 80 93;
+}
+:root[data-theme="light"][data-accent="orange"] {
+  --accent-ink-rgb: 117 54 10;
+}
+:root[data-theme="light"][data-accent="pink"] {
+  --accent-ink-rgb: 127 39 83;
 }
 :root[data-theme="light"][data-accent="gold"] {
   --accent-ink-rgb: 93 65 12;

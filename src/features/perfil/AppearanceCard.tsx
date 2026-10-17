@@ -35,7 +35,7 @@ export function AppearanceCard() {
 
       <div className="mt-3">
         <div className="mb-2 text-[12px] text-[var(--color-muted)]">Color de acento</div>
-        <div className="flex gap-3" role="radiogroup" aria-label="Color de acento">
+        <div className="flex flex-wrap gap-3" role="radiogroup" aria-label="Color de acento">
           {ACCENTS.map((a) => {
             const on = prefs.accent === a.key;
             return (
