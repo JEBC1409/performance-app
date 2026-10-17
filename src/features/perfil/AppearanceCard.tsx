@@ -84,7 +84,7 @@ export function AppearanceCard() {
       <div className="mt-4">
         <div className="mb-2 flex items-center justify-between">
           <span className="text-[12px] text-[var(--color-muted)]">Barra de abajo (elige hasta {NAV_SLOTS})</span>
-          <button onClick={() => setUiPrefs({ navTabs: DEFAULT_NAV })} className="text-[12px] text-[var(--color-muted)] hover:text-[var(--color-red)]">
+          <button onClick={() => setUiPrefs({ navTabs: DEFAULT_NAV })} className="text-[12px] text-[var(--color-muted)] hover:text-[var(--color-red-ink)]">
             Restablecer
           </button>
         </div>
@@ -104,7 +104,7 @@ export function AppearanceCard() {
       <div className="mt-4">
         <div className="mb-2 flex items-center justify-between">
           <span className="text-[12px] text-[var(--color-muted)]">Orden de las tarjetas en Hoy</span>
-          <button onClick={() => setUiPrefs({ homeOrder: DEFAULT_UI_PREFS.homeOrder })} className="text-[12px] text-[var(--color-muted)] hover:text-[var(--color-red)]">
+          <button onClick={() => setUiPrefs({ homeOrder: DEFAULT_UI_PREFS.homeOrder })} className="text-[12px] text-[var(--color-muted)] hover:text-[var(--color-red-ink)]">
             Restablecer
           </button>
         </div>

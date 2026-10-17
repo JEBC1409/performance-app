@@ -137,7 +137,7 @@ export function GuidedRoutine({ open, onClose, onFinish }: { open: boolean; onCl
                 Serie {step.setNo} de {step.setsTotal}
               </div>
               <h2 className="font-[var(--font-display)] text-[30px] leading-tight">{step.exercise}</h2>
-              <div className="num text-[15px] text-[var(--color-red)]">{step.load}</div>
+              <div className="num text-[15px] text-[var(--color-red-ink)]">{step.load}</div>
               <p className="max-w-[300px] text-[13px] leading-relaxed text-[var(--color-muted)]">{step.note}</p>
 
               {phase === "work" && timed ? (

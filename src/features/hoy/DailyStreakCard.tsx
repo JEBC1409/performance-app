@@ -5,6 +5,8 @@ import { RankBadge } from "@/ui";
 import { FlameGlyph, FreezeGlyph } from "@/ui/icons";
 import { addDays, startOfWeek, todayISO, DIAS_CORTO } from "@/lib/date";
 
+import { tierInk } from "@/lib/tierInk";
+
 const FREEZE_COLOR = "#4fa8c9";
 const OPEN_KEY = "performance_streak_open_v1";
 
@@ -75,7 +77,7 @@ export function DailyStreakCard() {
                   : d.frozen
                     ? "text-[var(--color-ink)]"
                     : d.isToday
-                      ? "border-[var(--color-red)] text-[var(--color-red)]"
+                      ? "border-[var(--color-red)] text-[var(--color-red-ink)]"
                       : "border-[var(--color-line-strong)] text-[var(--color-muted-2)]"
               }`}
               style={d.frozen ? { borderColor: FREEZE_COLOR, background: `${FREEZE_COLOR}26`, color: FREEZE_COLOR } : undefined}
@@ -83,7 +85,7 @@ export function DailyStreakCard() {
             >
               {d.done ? <Icon name="check" size={13} /> : d.frozen ? <FreezeGlyph size={10} /> : d.isFuture ? "" : d.isToday ? "…" : "·"}
             </div>
-            <span className={`text-[8.5px] uppercase ${d.isToday ? "text-[var(--color-red)]" : "text-[var(--color-muted-2)]"}`}>{d.label}</span>
+            <span className={`text-[8.5px] uppercase ${d.isToday ? "text-[var(--color-red-ink)]" : "text-[var(--color-muted-2)]"}`}>{d.label}</span>
           </div>
         ))}
       </div>
@@ -102,7 +104,7 @@ export function DailyStreakCard() {
           aria-expanded={open}
           className="flex w-full items-center justify-between gap-3 text-left text-[12px]"
         >
-          <span className="font-semibold" style={{ color: tier.color }}>
+          <span className="font-semibold" style={{ color: tierInk(tier.color) }}>
             {tier.label}
             <span className="ml-1.5 font-normal text-[var(--color-muted)]">· {data.activeDays} días activos</span>
           </span>

@@ -38,7 +38,7 @@ export function ExercisePhotoEditor({ name }: { name: string }) {
       <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-[var(--color-line)] bg-[var(--color-surface-2)]">
         {src ? <img src={src} alt={name} className="h-full w-full object-cover" /> : null}
         {custom?.caption ? (
-          <span className="absolute bottom-2 left-2 rounded-full bg-black/70 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-ink)]">
+          <span className="absolute bottom-2 left-2 rounded-full bg-black/70 px-2.5 py-1 text-[12px] font-semibold uppercase tracking-wide text-white">
             {custom.caption}
           </span>
         ) : null}
@@ -49,14 +49,14 @@ export function ExercisePhotoEditor({ name }: { name: string }) {
         <button
           onClick={() => fileRef.current?.click()}
           disabled={busy}
-          className="glass tap-target flex-1 rounded-full px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-ink)] hover:text-[var(--color-red)] disabled:opacity-50"
+          className="glass tap-target flex-1 rounded-full px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-ink)] hover:text-[var(--color-red-ink)] disabled:opacity-50"
         >
           {custom ? "Cambiar foto" : "Poner mi foto"}
         </button>
         {custom ? (
           <button
             onClick={() => db.exercisePhotos.delete(name)}
-            className="glass tap-target rounded-full px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-muted)] hover:text-[var(--color-red)]"
+            className="glass tap-target rounded-full px-3 py-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-muted)] hover:text-[var(--color-red-ink)]"
           >
             Quitar
           </button>

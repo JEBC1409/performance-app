@@ -221,7 +221,7 @@ function GymExercise({
             <span key={st.id ?? i} className="glass num rounded-full px-3 py-1 text-[12px]">
               {st.weight != null ? `${fmt(st.weight)}×` : ""}
               {st.reps ?? "—"}
-              {st.toFailure ? <span className="text-[var(--color-red)]"> AF</span> : null}
+              {st.toFailure ? <span className="text-[var(--color-red-ink)]"> AF</span> : null}
             </span>
           ))}
         </div>
@@ -232,7 +232,7 @@ function GymExercise({
           <div className="glass-track flex items-center justify-between gap-3 rounded-3xl px-4 py-3" role="timer" aria-live="off">
             <div>
               <div className={`eyebrow ${timer.remaining <= 5 ? "eyebrow-accent" : ""}`}>Descanso</div>
-              <div className={`num font-[var(--font-display)] text-[44px] font-light leading-none ${timer.remaining <= 5 ? "pulse text-[var(--color-red)]" : ""}`}>
+              <div className={`num font-[var(--font-display)] text-[44px] font-light leading-none ${timer.remaining <= 5 ? "pulse text-[var(--color-red-ink)]" : ""}`}>
                 {m}:{s}
               </div>
             </div>

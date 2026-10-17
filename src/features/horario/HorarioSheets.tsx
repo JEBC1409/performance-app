@@ -96,7 +96,7 @@ export function BlockSheet({ day, row, onClose }: { day: number; row: number; on
                 onClose();
                 showToast("Bloque vaciado");
               }}
-              className="glass rounded-full px-3.5 py-2 text-[12px] font-semibold text-[var(--color-muted)] hover:text-[var(--color-red)]"
+              className="glass rounded-full px-3.5 py-2 text-[12px] font-semibold text-[var(--color-muted)] hover:text-[var(--color-red-ink)]"
             >
               Vaciar
             </button>
@@ -149,7 +149,7 @@ export function RowSheet({ row, onClose }: { row: number; onClose: () => void })
             onClose();
             showToast("Fila eliminada");
           }}
-          className="glass self-center rounded-full px-4 py-2 text-[12px] font-semibold text-[var(--color-muted)] hover:text-[var(--color-red)]"
+          className="glass self-center rounded-full px-4 py-2 text-[12px] font-semibold text-[var(--color-muted)] hover:text-[var(--color-red-ink)]"
         >
           Eliminar fila
         </button>

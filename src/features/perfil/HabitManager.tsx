@@ -76,7 +76,7 @@ export function HabitManager() {
                 className="min-w-0 flex-1 bg-transparent text-[13px] outline-none border-b border-[var(--color-red)]"
               />
             ) : (
-              <button type="button" onClick={() => startEdit(h)} className="min-w-0 flex-1 truncate text-left text-[13px] hover:text-[var(--color-red)]">
+              <button type="button" onClick={() => startEdit(h)} className="min-w-0 flex-1 truncate text-left text-[13px] hover:text-[var(--color-red-ink)]">
                 {h.label}
               </button>
             )}
@@ -84,7 +84,7 @@ export function HabitManager() {
               type="button"
               onClick={() => removeHabit(h.key, h.label)}
               aria-label={`Eliminar ${h.label}`}
-              className="glass hit flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-red)]"
+              className="glass hit flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-red-ink)]"
             >
               <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden>
                 <path d="M1 1l8 8M9 1l-8 8" stroke="currentColor" strokeWidth="1.4" />

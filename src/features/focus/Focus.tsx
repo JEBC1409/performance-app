@@ -334,7 +334,7 @@ function FocusView() {
                   showToast(isBreak ? "Descanso saltado" : "Bloque cancelado");
                 }}
                 aria-label={isBreak ? "Saltar descanso" : "Cancelar bloque"}
-                className="glass tap-target flex h-12 w-12 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-red)]"
+                className="glass tap-target flex h-12 w-12 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-red-ink)]"
               >
                 {isBreak ? <SkipIcon /> : <StopIcon />}
               </button>
@@ -365,7 +365,7 @@ function FocusView() {
                   aria-label={pip.kind ? "Cerrar ventana flotante" : "Abrir ventana flotante"}
                   title="Ventana flotante"
                   className={`tap-target flex h-12 w-12 items-center justify-center rounded-full ${
-                    pip.kind ? "glass-accent" : "glass text-[var(--color-muted)] hover:text-[var(--color-red)]"
+                    pip.kind ? "glass-accent" : "glass text-[var(--color-muted)] hover:text-[var(--color-red-ink)]"
                   }`}
                 >
                   <PipIcon />
@@ -596,7 +596,7 @@ function FocusView() {
                 <button
                   onClick={() => removeSession(s)}
                   aria-label={`Eliminar ${s.task}`}
-                  className="hit flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted-2)] transition-colors hover:text-[var(--color-red)]"
+                  className="hit flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted-2)] transition-colors hover:text-[var(--color-red-ink)]"
                 >
                   <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden>
                     <path d="M1 1l8 8M9 1l-8 8" stroke="currentColor" strokeWidth="1.4" />

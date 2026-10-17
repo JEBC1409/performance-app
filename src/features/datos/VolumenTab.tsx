@@ -9,6 +9,7 @@ import { rankProgress, groupStrengthPct } from "@/lib/muscleRank";
 import { roundKg } from "@/lib/epley";
 import { addDays, todayISO } from "@/lib/date";
 import { MuscleBodyDiagram } from "./MuscleBodyDiagram";
+import { tierInk } from "@/lib/tierInk";
 
 export function VolumenTab() {
   const sets = useLiveQuery(() => db.sets.toArray(), []);
@@ -104,7 +105,7 @@ export function VolumenTab() {
               <RankBadge tier={activeTier} size={48} />
               <div className="flex-1">
                 <div className="text-[12px] uppercase tracking-wide text-[var(--color-muted)]">{MUSCLE_GROUP_LABEL[activeGroup]}</div>
-                <div className="text-[15px] font-bold leading-tight" style={{ color: activeTier.color }}>
+                <div className="text-[15px] font-bold leading-tight" style={{ color: tierInk(activeTier.color) }}>
                   {activeTier.label}
                 </div>
                 <div className="num mt-0.5 text-[12px] text-[var(--color-muted-2)]">

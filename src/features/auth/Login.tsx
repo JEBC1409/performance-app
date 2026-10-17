@@ -84,9 +84,9 @@ export function Login() {
             El login por código necesita un proyecto de Supabase. Crea uno en{" "}
             <span className="text-[var(--color-ink)]">supabase.com</span>, copia la Project URL y el anon key desde{" "}
             <span className="text-[var(--color-ink)]">Settings → API</span>, y agregalos a un archivo{" "}
-            <code className="text-[var(--color-red)]">.env.local</code> en la raíz del proyecto como{" "}
-            <code className="text-[var(--color-red)]">VITE_SUPABASE_URL</code> y{" "}
-            <code className="text-[var(--color-red)]">VITE_SUPABASE_ANON_KEY</code>.
+            <code className="text-[var(--color-red-ink)]">.env.local</code> en la raíz del proyecto como{" "}
+            <code className="text-[var(--color-red-ink)]">VITE_SUPABASE_URL</code> y{" "}
+            <code className="text-[var(--color-red-ink)]">VITE_SUPABASE_ANON_KEY</code>.
           </p>
         </div>
       </div>
@@ -99,7 +99,7 @@ export function Login() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="font-[var(--font-display)] text-base tracking-[0.14em]">
-            PERFORMANCE<span className="text-[var(--color-red)]">.</span>
+            PERFORMANCE<span className="text-[var(--color-red-ink)]">.</span>
           </div>
         </div>
 
@@ -130,7 +130,7 @@ export function Login() {
                 />
               </label>
 
-              {error ? <div className="text-[12px] text-[var(--color-red)] border-l-2 border-[var(--color-red)] pl-2.5">{error}</div> : null}
+              {error ? <div className="text-[12px] text-[var(--color-red-ink)] border-l-2 border-[var(--color-red)] pl-2.5">{error}</div> : null}
 
               <button
                 type="submit"
@@ -155,7 +155,7 @@ export function Login() {
                 ¿No ves un código de {OTP_LENGTH} dígitos? También puedes entrar tocando el enlace del correo.
               </p>
 
-              {error ? <div className="text-[12px] text-[var(--color-red)] border-l-2 border-[var(--color-red)] pl-2.5">{error}</div> : null}
+              {error ? <div className="text-[12px] text-[var(--color-red-ink)] border-l-2 border-[var(--color-red)] pl-2.5">{error}</div> : null}
 
               <button
                 onClick={verifyCode}
@@ -179,7 +179,7 @@ export function Login() {
                 <button
                   onClick={() => sendCode()}
                   disabled={cooldown > 0 || loading}
-                  className="text-[var(--color-muted)] hover:text-[var(--color-red)] disabled:opacity-40 uppercase tracking-wide"
+                  className="text-[var(--color-muted)] hover:text-[var(--color-red-ink)] disabled:opacity-40 uppercase tracking-wide"
                 >
                   {cooldown > 0 ? `Reenviar (${cooldown}s)` : "Reenviar código"}
                 </button>

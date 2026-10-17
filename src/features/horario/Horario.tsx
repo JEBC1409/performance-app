@@ -72,7 +72,7 @@ export function Horario() {
                   <th key={d} className="px-3 py-3.5 text-center">
                     <div
                       className={`text-[13.5px] font-bold uppercase tracking-wide ${
-                        i === todayCol ? "text-[var(--color-red)]" : "text-[var(--color-muted)]"
+                        i === todayCol ? "text-[var(--color-red-ink)]" : "text-[var(--color-muted)]"
                       }`}
                     >
                       {d}
@@ -137,7 +137,7 @@ export function Horario() {
           <button onClick={() => setAddingRow(true)} className="glass-accent tap-target rounded-full px-5 py-2 text-[12px] font-semibold uppercase tracking-[0.1em]">
             + Añadir fila
           </button>
-          <button onClick={restore} className="ml-auto text-[12px] text-[var(--color-muted)] underline-offset-2 hover:text-[var(--color-red)] hover:underline">
+          <button onClick={restore} className="ml-auto text-[12px] text-[var(--color-muted)] underline-offset-2 hover:text-[var(--color-red-ink)] hover:underline">
             Volver al horario original
           </button>
         </div>

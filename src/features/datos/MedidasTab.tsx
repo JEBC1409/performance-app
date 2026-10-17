@@ -121,7 +121,7 @@ function MeasureList({ rows, unit }: { rows: { date: string; value: number | nul
               {r.value}
               {unit}
               {r.delta != null ? (
-                <span className={r.delta > 0 ? "text-[var(--color-good)]" : r.delta < 0 ? "text-[var(--color-red)]" : "text-[var(--color-muted-2)]"}>
+                <span className={r.delta > 0 ? "text-[var(--color-good)]" : r.delta < 0 ? "text-[var(--color-red-ink)]" : "text-[var(--color-muted-2)]"}>
                   ({r.delta > 0 ? "+" : ""}
                   {r.delta.toFixed(1)})
                 </span>

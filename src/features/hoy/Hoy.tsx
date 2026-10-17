@@ -154,7 +154,7 @@ export function Hoy({
           </div>
           <button
             onClick={() => onNavigate("horario")}
-            className="text-[12px] text-[var(--color-muted)] hover:text-[var(--color-red)] uppercase tracking-[0.12em] transition-colors"
+            className="text-[12px] text-[var(--color-muted)] hover:text-[var(--color-red-ink)] uppercase tracking-[0.12em] transition-colors"
           >
             Ver horario <Icon name="arrow-right" size={12} className="ml-1 inline" />
           </button>

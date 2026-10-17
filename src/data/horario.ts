@@ -33,7 +33,7 @@ function c(text: string, type: BlockType, extra: Partial<HorarioCell> = {}): Hor
 
 export const BLOCK_COLOR: Record<BlockType, string> = {
   clase: "var(--color-red)",
-  gym: "#ffffff",
+  gym: "var(--color-ink)",
   mouredev: "#9aa0a6",
   ingles: "var(--color-red)",
   dios: "var(--color-gold)",
@@ -57,7 +57,7 @@ export const BLOCK_TINT: Record<BlockType, string> = {
   gym: "rgb(var(--fg-rgb) / 0.1)",
   mouredev: "rgb(var(--fg-rgb) / 0.06)",
   ingles: "rgb(var(--accent-rgb) / 0.16)",
-  dios: "rgba(226, 185, 111, 0.13)",
+  dios: "rgb(var(--gold-rgb) / 0.13)",
   libre: "rgb(var(--fg-rgb) / 0.04)",
   otro: "transparent",
 };
@@ -67,7 +67,7 @@ export const BLOCK_BORDER: Record<BlockType, string> = {
   gym: "rgb(var(--fg-rgb) / 0.4)",
   mouredev: "rgb(var(--fg-rgb) / 0.22)",
   ingles: "rgb(var(--accent-rgb) / 0.55)",
-  dios: "rgba(226, 185, 111, 0.5)",
+  dios: "rgb(var(--gold-rgb) / 0.5)",
   libre: "rgb(var(--fg-rgb) / 0.14)",
   otro: "transparent",
 };
@@ -77,7 +77,7 @@ export const BLOCK_TEXT: Record<BlockType, string> = {
   gym: "var(--color-ink)",
   mouredev: "var(--color-muted)",
   ingles: "var(--color-red)",
-  dios: "#f0cf8e",
+  dios: "var(--color-gold)",
   libre: "var(--color-muted)",
   otro: "var(--color-muted)",
 };

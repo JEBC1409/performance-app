@@ -40,7 +40,7 @@ export function WeekSummaryCard({ onOpenDatos }: { onOpenDatos: () => void }) {
           <div className="eyebrow eyebrow-accent">{dow === 1 ? "Semana pasada" : "Domingo"}</div>
           <div className="mt-1 font-[var(--font-display)] text-[15px]">Tu resumen de la semana</div>
         </div>
-        <Icon name="arrow-right" size={18} className="mt-1 flex-none text-[var(--color-red)]" />
+        <Icon name="arrow-right" size={18} className="mt-1 flex-none text-[var(--color-red-ink)]" />
       </div>
       <div className="grid grid-cols-4 gap-2">
         {stats.map(([label, value]) => (

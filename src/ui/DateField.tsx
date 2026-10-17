@@ -188,7 +188,7 @@ export function DateField({
                           : disabled
                             ? "text-[var(--color-muted-2)] opacity-30"
                             : isToday
-                              ? "border border-[var(--color-red)] text-[var(--color-red)]"
+                              ? "border border-[var(--color-red)] text-[var(--color-red-ink)]"
                               : "text-[var(--color-ink)] hover:bg-[rgb(var(--fg-rgb)/0.08)]"
                       }`}
                     >
@@ -202,7 +202,7 @@ export function DateField({
                 <button
                   type="button"
                   onClick={() => pick(today)}
-                  className="mt-2.5 w-full rounded-lg border border-[var(--color-line-strong)] py-1.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)] hover:text-[var(--color-red)] hover:border-[var(--color-red)]"
+                  className="mt-2.5 w-full rounded-lg border border-[var(--color-line-strong)] py-1.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)] hover:text-[var(--color-red-ink)] hover:border-[var(--color-red)]"
                 >
                   Hoy
                 </button>

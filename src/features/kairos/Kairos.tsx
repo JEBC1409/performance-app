@@ -293,11 +293,11 @@ export function Kairos() {
                   }}
                   className="glass-gold flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-left"
                 >
-                  <BookmarkGlyph filled className="flex-none text-[var(--color-red)]" />
+                  <BookmarkGlyph filled className="flex-none text-[var(--color-red-ink)]" />
                   <span className="text-[12px] text-[var(--color-ink)]">
                     Ibas en <span className="font-semibold">{bookmarkBookName} {bookmark.chapter}{bookmark.verse ? `:${bookmark.verse}` : ""}</span>
                   </span>
-                  <span className="ml-auto flex-none text-[12px] uppercase tracking-wide text-[var(--color-red)]">Continuar →</span>
+                  <span className="ml-auto flex-none text-[12px] uppercase tracking-wide text-[var(--color-red-ink)]">Continuar →</span>
                 </button>
               ) : null}
 
@@ -408,7 +408,7 @@ export function Kairos() {
                         className={`group flex items-start gap-3 py-3 text-left first:pt-0 last:pb-0 ${isBookmarked ? "-mx-2 rounded-xl px-2 bg-[rgb(var(--accent-rgb)/0.07)]" : ""} ${isSpoken ? "-mx-2 rounded-xl px-2 bg-[rgb(var(--accent-rgb)/0.16)]" : ""} ${tint && !isSpoken && !isBookmarked ? "-mx-2 rounded-xl px-2" : ""}`}
                         style={tint && !isSpoken ? { backgroundColor: `rgb(${colorRgb(tint)} / 0.18)` } : undefined}
                       >
-                        <span className="relative num mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-[var(--color-surface-2)] text-[12px] font-bold text-[var(--color-red)] transition-colors group-hover:bg-[var(--color-red)] group-hover:text-white">
+                        <span className="relative num mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-[var(--color-surface-2)] text-[12px] font-bold text-[var(--color-red-ink)] transition-colors group-hover:bg-[var(--color-red)] group-hover:text-white">
                           {vNum}
                           {noted ? (
                             <span
@@ -422,7 +422,7 @@ export function Kairos() {
                           {isBookmarked ? <span className="sr-only"> · aquí vas</span> : null}
                           {noted ? <span className="sr-only"> · tienes una nota guardada aquí</span> : null}
                         </span>
-                        {isBookmarked ? <BookmarkGlyph filled className="mt-1 flex-none self-center text-[var(--color-red)]" /> : null}
+                        {isBookmarked ? <BookmarkGlyph filled className="mt-1 flex-none self-center text-[var(--color-red-ink)]" /> : null}
                       </button>
                     );
                   })}
@@ -471,7 +471,7 @@ export function Kairos() {
           {pickedVerse ? (
             <div>
               <div className="flex items-start justify-between gap-2">
-                <div className="inline-flex items-center rounded-full border border-[var(--color-red-soft)] px-2.5 py-0.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-red)] num">
+                <div className="inline-flex items-center rounded-full border border-[var(--color-red-soft)] px-2.5 py-0.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-red-ink)] num">
                   {bookName} {chapter}:{pickedVerse.verse}
                 </div>
                 <button
@@ -584,7 +584,7 @@ function SavedCard({ v, onDelete }: { v: SavedVerseRecord; onDelete: (v: SavedVe
   return (
     <Card className="panel-surface-glow">
       <div className="flex items-start justify-between gap-2">
-        <div className="inline-flex items-center rounded-full border border-[var(--color-red-soft)] px-2.5 py-0.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-red)] num">
+        <div className="inline-flex items-center rounded-full border border-[var(--color-red-soft)] px-2.5 py-0.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-red-ink)] num">
           {v.bookName} {v.chapter}:{v.verse}
         </div>
         <button

@@ -4,7 +4,7 @@ function DigitBox({ value, urgent }: { value: string; urgent: boolean }) {
   return (
     <div
       className={`num flex h-11 w-11 items-center justify-center rounded-xl border text-[19px] font-bold transition-colors ${
-        urgent ? "border-[var(--color-red)] text-[var(--color-red)]" : "border-[var(--color-line-strong)] text-[var(--color-ink)]"
+        urgent ? "border-[var(--color-red)] text-[var(--color-red-ink)]" : "border-[var(--color-line-strong)] text-[var(--color-ink)]"
       }`}
       style={{
         background: "linear-gradient(180deg, rgb(var(--fg-rgb)/0.05), rgb(var(--bg-rgb)/0.3))",
@@ -42,7 +42,7 @@ export function RestTimer({
         }}
       >
         <div className="flex flex-col items-center gap-1">
-          <span className={`eyebrow ${urgent ? "text-[var(--color-red)]" : ""}`}>Descanso</span>
+          <span className={`eyebrow ${urgent ? "text-[var(--color-red-ink)]" : ""}`}>Descanso</span>
           <div className="relative h-1 w-10 overflow-hidden rounded-full bg-[var(--color-surface-2)]">
             <div className="h-full rounded-full bg-[var(--color-red)]" style={{ width: `${pct * 100}%`, transition: "width 1s linear" }} />
           </div>
@@ -60,7 +60,7 @@ export function RestTimer({
               timer.addTime(30);
               onAdd?.();
             }}
-            className="glass tap-target rounded-full px-3 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)] hover:text-[var(--color-red)]"
+            className="glass tap-target rounded-full px-3 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)] hover:text-[var(--color-red-ink)]"
           >
             +30s
           </button>

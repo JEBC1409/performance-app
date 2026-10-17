@@ -128,7 +128,7 @@ export function ExerciseLogForm({
           {exercise.note ? <div className="mt-0.5 text-[12px] text-[var(--color-muted)]">{exercise.note}</div> : null}
         </div>
         <div className="flex-none text-right">
-          <div className="num text-[13px] font-semibold text-[var(--color-red)]">
+          <div className="num text-[13px] font-semibold text-[var(--color-red-ink)]">
             {done}/{target}
           </div>
           <div className="num text-[12px] text-[var(--color-muted-2)]">
@@ -140,7 +140,7 @@ export function ExerciseLogForm({
       {lastSession ? (
         <div className="num text-[12px] text-[var(--color-muted)]">
           Última vez ({fmtDateHuman(lastSession.date)}): {lastSession.sets.map((s) => `${s.weight ?? "—"}×${s.reps ?? "—"}`).join(" · ")}
-          {lastTop != null ? <span className="text-[var(--color-red)]"> · top {lastTop}kg</span> : null}
+          {lastTop != null ? <span className="text-[var(--color-red-ink)]"> · top {lastTop}kg</span> : null}
         </div>
       ) : null}
 
@@ -205,7 +205,7 @@ export function ExerciseLogForm({
             >
               <button onClick={() => startEdit(s)} className="flex items-center gap-1">
                 {s.weight ?? "—"}kg × {s.reps ?? "—"}
-                {s.toFailure ? <span className="text-[var(--color-red)]"> · AF</span> : null}
+                {s.toFailure ? <span className="text-[var(--color-red-ink)]"> · AF</span> : null}
               </button>
               <button
                 onClick={() => {

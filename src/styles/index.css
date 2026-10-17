@@ -61,22 +61,33 @@
   --accent-light-rgb: 255 95 105;
   --accent-dark-rgb: 140 15 25;
   --color-red: rgb(var(--accent-rgb));
+  --accent-ink-rgb: 239 66 77;
+  --color-red-ink: rgb(var(--accent-ink-rgb));
+  --color-bar: rgb(var(--fg-rgb) / 0.22);
+  --gold-rgb: 226 185 111;
+  /* Text on a solid good/warn fill: black on the bright dark-theme colours, white on the deeper light-theme ones. */
+  --color-on-solid: #000000;
+  /* The dimming behind a sheet or menu. */
+  --color-scrim: rgb(0 0 0 / 0.7);
   --color-red-soft: rgb(var(--accent-rgb) / 0.45);
   --color-red-softer: rgb(var(--accent-rgb) / 0.65);
   --color-warn: #e0a030;
   --color-gold: #e2b96f;
 }
 :root[data-accent="gold"] {
+  --accent-ink-rgb: 226 185 111;
   --accent-rgb: 226 185 111;
   --accent-light-rgb: 245 214 150;
   --accent-dark-rgb: 150 108 38;
 }
 :root[data-accent="blue"] {
+  --accent-ink-rgb: 59 130 246;
   --accent-rgb: 59 130 246;
   --accent-light-rgb: 125 178 255;
   --accent-dark-rgb: 20 60 150;
 }
 :root[data-accent="violet"] {
+  --accent-ink-rgb: 147 103 247;
   --accent-rgb: 139 92 246;
   --accent-light-rgb: 187 158 255;
   --accent-dark-rgb: 80 40 170;
@@ -170,7 +181,7 @@ body {
 }
 
 .eyebrow-accent {
-  color: var(--color-red);
+  color: var(--color-red-ink);
 }
 .eyebrow-gold {
   color: var(--color-gold);
@@ -269,7 +280,7 @@ body {
 
 /* Neon streak flame — habit streak indicators. */
 .flame-glow {
-  color: var(--color-red);
+  color: var(--color-red-ink);
   filter: drop-shadow(0 0 3px rgb(var(--accent-rgb) / 0.9)) drop-shadow(0 0 8px rgb(var(--accent-rgb) / 0.6));
 }
 
@@ -474,7 +485,7 @@ body {
 }
 .glass-accent {
   border: 1px solid rgb(var(--accent-rgb) / 0.45);
-  color: var(--color-red);
+  color: var(--color-red-ink);
   background: linear-gradient(165deg, rgb(var(--accent-rgb) / 0.2) 0%, rgb(var(--accent-rgb) / 0.05) 70%);
   box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.08) inset;
 }
@@ -838,11 +849,26 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   --color-surface: #ffffff;
   --color-surface-2: #ececf0;
   --color-ink: #14141a;
-  --color-gold: #94670f;
-  --color-warn: #a86a00;
-  --color-good: #1c8a4e;
+  --color-muted-2: rgb(var(--fg-rgb) / 0.64);
+  --color-gold: #8c5f07;
+  --color-warn: #945600;
+  --color-good: #08763a;
+  --accent-ink-rgb: 203 32 43;
+  /* Quiet fills for chart bars and the like, strong enough to see on white. */
+  --color-bar: rgb(var(--fg-rgb) / 0.26);
+  --gold-rgb: 176 128 30;
+  --color-on-solid: #ffffff;
+  --tier-ink: 52%;
+  --color-scrim: rgb(20 20 28 / 0.42);
+}
+:root[data-theme="light"][data-accent="blue"] {
+  --accent-ink-rgb: 42 99 204;
+}
+:root[data-theme="light"][data-accent="violet"] {
+  --accent-ink-rgb: 118 73 219;
 }
 :root[data-theme="light"][data-accent="gold"] {
+  --accent-ink-rgb: 137 97 16;
   --accent-rgb: 176 128 30;
   --accent-light-rgb: 210 165 65;
   --accent-dark-rgb: 120 84 10;
@@ -883,6 +909,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   mix-blend-mode: multiply;
   filter: invert(1) contrast(1.1);
   opacity: 0.4;
+}
+/* The shading at the foot of an exercise photo, so its caption reads. */
+.photo-scrim {
+  background: linear-gradient(to top, rgb(0 0 0 / 0.75), rgb(0 0 0 / 0.05) 50%, transparent);
+}
+:root[data-theme="light"] .photo-scrim {
+  background: linear-gradient(to top, rgb(20 20 28 / 0.5), transparent 55%);
 }
 :root[data-theme="light"] .photo-tone {
   filter: saturate(0.7) contrast(1.02) brightness(1);

@@ -30,7 +30,7 @@ export function JourneyTicker() {
     <div className="flex items-center gap-1.5 num text-[12px] text-[var(--color-muted-2)]" aria-label="Días desde tu primer registro">
       <span className="w-1 h-1 rounded-full bg-[var(--color-red)] glow-dot" />
       <span className="text-[var(--color-muted)]">
-        Día <span className="text-[var(--color-red)] font-semibold">{days}</span>
+        Día <span className="text-[var(--color-red-ink)] font-semibold">{days}</span>
       </span>
       <span className="tabular-nums">
         {pad2(hours)}:{pad2(minutes)}:{pad2(seconds)}

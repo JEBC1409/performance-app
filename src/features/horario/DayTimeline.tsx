@@ -53,7 +53,7 @@ export function DayTimeline({ day, onDay, editing, onPick }: { day: number; onDa
           return (
             <li key={row} className={`flex items-stretch gap-3 ${past ? "opacity-50" : ""}`}>
               <div className="flex w-[62px] flex-none flex-col items-end pt-2.5">
-                <span className={`num text-[12px] font-medium ${current ? "text-[var(--color-red)]" : "text-[var(--color-muted)]"}`}>{time}</span>
+                <span className={`num text-[12px] font-medium ${current ? "text-[var(--color-red-ink)]" : "text-[var(--color-muted)]"}`}>{time}</span>
                 {current ? <span className="mt-1 rounded-full bg-[var(--color-red)] px-1.5 py-px text-[12px] font-bold uppercase tracking-wider text-white">Ahora</span> : null}
               </div>
               <span aria-hidden className="relative flex w-3 flex-none justify-center">

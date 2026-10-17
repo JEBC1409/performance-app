@@ -129,7 +129,7 @@ export function Habitos() {
                 {Array.from({ length: nDays }, (_, i) => i + 1).map((d) => (
                   <th
                     key={d}
-                    className={`num px-0 pb-1 text-center font-medium w-7 sidebar:w-8 ${isCurrentMonth && d === new Date().getDate() ? "text-[var(--color-red)]" : "text-[var(--color-muted-2)]"}`}
+                    className={`num px-0 pb-1 text-center font-medium w-7 sidebar:w-8 ${isCurrentMonth && d === new Date().getDate() ? "text-[var(--color-red-ink)]" : "text-[var(--color-muted-2)]"}`}
                   >
                     {d}
                   </th>
@@ -197,7 +197,7 @@ export function Habitos() {
                 <div className="text-[13px] font-medium">{r.ex}</div>
                 <div className="text-[12px] text-[var(--color-muted)] mt-0.5">{r.nota}</div>
               </div>
-              <div className="num text-[12px] text-[var(--color-red)] flex-none">
+              <div className="num text-[12px] text-[var(--color-red-ink)] flex-none">
                 {r.series}×{r.carga}
               </div>
             </div>

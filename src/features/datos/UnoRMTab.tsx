@@ -130,7 +130,7 @@ function LoadProgressCard({ exercise, sets, start }: { exercise: string; sets: S
         </div>
         {last ? (
           <div className="flex-none text-right">
-            <div className="num text-[13px] font-semibold text-[var(--color-red)]">{last.value}kg</div>
+            <div className="num text-[13px] font-semibold text-[var(--color-red-ink)]">{last.value}kg</div>
             {hasDelta ? (
               <div className={`num text-[12px] ${delta >= 0 ? "text-[var(--color-good)]" : "text-[var(--color-muted-2)]"}`}>
                 {delta >= 0 ? "+" : ""}

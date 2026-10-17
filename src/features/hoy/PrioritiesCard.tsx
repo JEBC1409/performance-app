@@ -58,12 +58,12 @@ export function PrioritiesCard() {
               }}
               aria-pressed={i.done}
               aria-label={`${i.done ? "Desmarcar" : "Marcar"}: ${i.text}`}
-              className={`hit flex h-7 w-7 flex-none items-center justify-center rounded-full border ${i.done ? "border-transparent bg-[var(--color-good)] text-black" : "border-[var(--color-line-strong)]"}`}
+              className={`hit flex h-7 w-7 flex-none items-center justify-center rounded-full border ${i.done ? "border-transparent bg-[var(--color-good)] text-[var(--color-on-solid)]" : "border-[var(--color-line-strong)]"}`}
             >
               {i.done ? <Icon name="check" size={14} /> : null}
             </button>
             <span className={`min-w-0 flex-1 text-[14px] leading-snug ${i.done ? "text-[var(--color-muted-2)] line-through" : ""}`}>{i.text}</span>
-            <button onClick={() => void update((s) => removeItem(s, today, i.id))} aria-label={`Quitar: ${i.text}`} className="hit flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted-2)] hover:text-[var(--color-red)]">
+            <button onClick={() => void update((s) => removeItem(s, today, i.id))} aria-label={`Quitar: ${i.text}`} className="hit flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted-2)] hover:text-[var(--color-red-ink)]">
               <Icon name="close" size={11} />
             </button>
           </li>

@@ -40,7 +40,7 @@ export function EmptyState({
 }) {
   return (
     <div className={`flex flex-col items-center text-center ${compact ? "px-4 py-5" : "px-6 py-8"}`}>
-      <span className="glass flex h-12 w-12 items-center justify-center rounded-full text-[var(--color-red)]">
+      <span className="glass flex h-12 w-12 items-center justify-center rounded-full text-[var(--color-red-ink)]">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
           {PATHS[icon]}
         </svg>

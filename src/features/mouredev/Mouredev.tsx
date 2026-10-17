@@ -49,13 +49,13 @@ export function Mouredev() {
          no quedar atrapada por su transform (ver nota en Kairos.tsx). */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed left-0 top-1/3 z-[-1] hidden -rotate-6 select-none font-mono text-[170px] font-bold leading-none text-[var(--color-red)] opacity-[0.07] sidebar:block"
+        className="pointer-events-none fixed left-0 top-1/3 z-[-1] hidden -rotate-6 select-none font-mono text-[170px] font-bold leading-none text-[var(--color-red-ink)] opacity-[0.07] sidebar:block"
       >
         {"</>"}
       </div>
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed right-2 bottom-16 z-[-1] hidden rotate-6 select-none font-mono text-[150px] font-bold leading-none text-[var(--color-red)] opacity-[0.07] sidebar:block"
+        className="pointer-events-none fixed right-2 bottom-16 z-[-1] hidden rotate-6 select-none font-mono text-[150px] font-bold leading-none text-[var(--color-red-ink)] opacity-[0.07] sidebar:block"
       >
         {"{ }"}
       </div>
@@ -89,7 +89,7 @@ export function Mouredev() {
                 href={t.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-full border border-[var(--color-line-strong)] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-muted)] transition-colors hover:border-[var(--color-red)] hover:text-[var(--color-red)]"
+                className="rounded-full border border-[var(--color-line-strong)] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-muted)] transition-colors hover:border-[var(--color-red)] hover:text-[var(--color-red-ink)]"
               >
                 {t.label}
               </a>

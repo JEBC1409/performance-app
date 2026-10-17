@@ -114,7 +114,7 @@ function ExerciseRow({
               Dropset
             </ToggleChip>
           </div>
-          <button type="button" onClick={onDelete} className="glass self-start rounded-full px-4 py-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-muted)] hover:text-[var(--color-red)]">
+          <button type="button" onClick={onDelete} className="glass self-start rounded-full px-4 py-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-muted)] hover:text-[var(--color-red-ink)]">
             Quitar ejercicio
           </button>
         </div>
@@ -271,7 +271,7 @@ export function RoutineEditor() {
               Guardar rutina
             </Button>
           </div>
-          <button type="button" onClick={restore} className="self-center text-[12px] text-[var(--color-muted)] underline-offset-2 hover:text-[var(--color-red)] hover:underline">
+          <button type="button" onClick={restore} className="self-center text-[12px] text-[var(--color-muted)] underline-offset-2 hover:text-[var(--color-red-ink)] hover:underline">
             Volver a la rutina original
           </button>
         </div>

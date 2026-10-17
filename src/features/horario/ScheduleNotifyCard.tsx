@@ -89,7 +89,7 @@ export function ScheduleNotifyCard() {
       {permission === "unsupported" ? (
         <p className="mt-3 text-[12px] text-[var(--color-muted-2)]">Este navegador no admite notificaciones. En iPhone, instala la app en la pantalla de inicio primero.</p>
       ) : permission === "denied" ? (
-        <p className="mt-3 text-[12px] text-[var(--color-red)]">Bloqueaste las notificaciones para este sitio. Habilítalas en los ajustes del navegador para usar los avisos.</p>
+        <p className="mt-3 text-[12px] text-[var(--color-red-ink)]">Bloqueaste las notificaciones para este sitio. Habilítalas en los ajustes del navegador para usar los avisos.</p>
       ) : (
         <>
           {prefs.enabled ? (

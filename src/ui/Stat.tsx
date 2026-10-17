@@ -20,7 +20,7 @@ export function Stat({
       <div className="eyebrow">{label}</div>
       <div
         className={`num font-[var(--font-display)] text-[28px] font-light leading-none tracking-tight ${
-          accent ? "text-[var(--color-red)]" : "text-[var(--color-ink)]"
+          accent ? "text-[var(--color-red-ink)]" : "text-[var(--color-ink)]"
         }`}
       >
         {value}

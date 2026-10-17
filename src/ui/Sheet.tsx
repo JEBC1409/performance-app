@@ -58,7 +58,7 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end sidebar:items-center sidebar:justify-center">
-      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
+      <div className="absolute inset-0 bg-[var(--color-scrim)]" onClick={onClose} />
       <div
         ref={panelRef}
         role="dialog"

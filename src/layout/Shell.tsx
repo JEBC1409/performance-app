@@ -47,7 +47,7 @@ export function Shell({
       <header className="hidden sidebar:grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-4 sticky top-0 z-20">
         <div className="flex-none flex flex-col gap-1">
           <div className="font-[var(--font-display)] text-[13px] tracking-[0.18em] text-[var(--color-ink)]">
-            PERFORMANCE<span className="text-[var(--color-red)]">.</span>
+            PERFORMANCE<span className="text-[var(--color-red-ink)]">.</span>
           </div>
           <JourneyTicker />
         </div>
@@ -92,7 +92,7 @@ export function Shell({
         >
           <div className="flex flex-col gap-1">
             <div className="font-[var(--font-display)] text-[12.5px] tracking-[0.18em]">
-              PERFORMANCE<span className="text-[var(--color-red)]">.</span>
+              PERFORMANCE<span className="text-[var(--color-red-ink)]">.</span>
             </div>
             <JourneyTicker />
           </div>
@@ -129,14 +129,14 @@ export function Shell({
                 }
                 className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors duration-150 ${
                   isActive
-                    ? "text-[var(--color-red)]"
+                    ? "text-[var(--color-red-ink)]"
                     : "text-[var(--color-muted)] active:text-[var(--color-ink)]"
                 }`}
               >
                 <NavGlyph tab={t.key} active={isActive} />
                 <span
                   className={`text-[12px] font-semibold uppercase tracking-[0.08em] ${
-                    isActive ? "text-[var(--color-red)]" : ""
+                    isActive ? "text-[var(--color-red-ink)]" : ""
                   }`}
                 >
                   {t.label}
@@ -158,7 +158,7 @@ export function Shell({
           aria-modal
         >
           <div
-            className="absolute inset-0 bg-black/80"
+            className="absolute inset-0 bg-[var(--color-scrim)]"
             onClick={() => setMoreOpen(false)}
           />
           <div
@@ -178,8 +178,8 @@ export function Shell({
                     }}
                     className={`tap-target panel-surface flex items-center gap-3 px-4 py-3.5 text-[12px] font-semibold uppercase tracking-[0.1em] transition-all border-l-2 ${
                       isActive
-                        ? "border-l-[var(--color-red)] text-[var(--color-red)]"
-                        : "border-l-transparent text-[var(--color-ink)] hover:border-l-[var(--color-red)] hover:text-[var(--color-red)]"
+                        ? "border-l-[var(--color-red)] text-[var(--color-red-ink)]"
+                        : "border-l-transparent text-[var(--color-ink)] hover:border-l-[var(--color-red)] hover:text-[var(--color-red-ink)]"
                     }`}
                   >
                     <NavGlyph tab={t.key} active={isActive} />

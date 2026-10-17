@@ -104,7 +104,7 @@ export function BarChart({
             const h = Math.max(1.5, (p.value / max) * plotH);
             const x = i * barW + (barW - slotW) / 2;
             const isActive = i === active;
-            const fill = isActive ? `url(#${uid}-on)` : p.highlight ? `url(#${uid}-soft)` : "var(--color-line-strong)";
+            const fill = isActive ? `url(#${uid}-on)` : p.highlight ? `url(#${uid}-soft)` : "var(--color-bar)";
             return (
               <g key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} onClick={() => setHover(i)} style={{ cursor: "pointer" }}>
                 {/* A slot-wide invisible target so thin bars are easy to hit. */}

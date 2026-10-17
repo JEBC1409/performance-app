@@ -132,7 +132,7 @@ export function Perfil() {
             {avatarUrl ? (
               <img src={avatarUrl} alt="" className="h-16 w-16 rounded-full border-2 border-[var(--color-red)] object-cover" />
             ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-[var(--color-line-strong)] bg-[var(--color-surface-2)] text-[20px] font-bold text-[var(--color-red)]">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-[var(--color-line-strong)] bg-[var(--color-surface-2)] text-[20px] font-bold text-[var(--color-red-ink)]">
                 {initials}
               </div>
             )}
@@ -146,7 +146,7 @@ export function Perfil() {
               defaultValue={displayName}
               onBlur={(e) => patch({ displayName: e.target.value })}
               placeholder="Tu nombre"
-              className="w-full bg-transparent text-[16px] font-bold outline-none focus:text-[var(--color-red)]"
+              className="w-full bg-transparent text-[16px] font-bold outline-none focus:text-[var(--color-red-ink)]"
             />
             <div className="truncate text-[12px] text-[var(--color-muted)] mt-0.5">{session?.user.email}</div>
             <div className="text-[12px] text-[var(--color-muted-2)] mt-1 uppercase tracking-wide num">Miembro desde {memberSince}</div>
@@ -243,7 +243,7 @@ export function Perfil() {
           <ul className="mt-2.5 flex flex-col gap-2">
             {HEAVY_DUTY_RULES.map((rule) => (
               <li key={rule} className="text-[12.5px] text-[var(--color-muted)] flex gap-2">
-                <span className="text-[var(--color-red)] flex-none">—</span>
+                <span className="text-[var(--color-red-ink)] flex-none">—</span>
                 {rule}
               </li>
             ))}
@@ -279,7 +279,7 @@ export function Perfil() {
               {settings?.remindersEnabled ?? true ? "Desactivar" : "Reactivar"}
             </Button>
           ) : permission === "denied" ? (
-            <p className="text-[12px] text-[var(--color-red)] mt-3">
+            <p className="text-[12px] text-[var(--color-red-ink)] mt-3">
               Bloqueaste las notificaciones para este sitio. Habilitalas desde los ajustes del navegador para reactivarlas.
             </p>
           ) : permission === "unsupported" ? null : (
