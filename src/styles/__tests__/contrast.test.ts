@@ -44,7 +44,7 @@ const rgbOf = (v: string | undefined): Rgb => {
 
 const SURFACES: Record<"dark" | "light", Rgb[]> = {
   dark: [[0, 0, 0], [11, 11, 13], [17, 17, 20], [23, 23, 27]],
-  light: [[244, 244, 247], [255, 255, 255], hex("#ececf0")],
+  light: [[217, 219, 225], [230, 232, 236], hex("#cdd0d7")],
 };
 const ACCENTS = ["red", "gold", "blue", "violet"] as const;
 

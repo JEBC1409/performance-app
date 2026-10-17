@@ -842,19 +842,19 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 :root[data-theme="light"] {
   color-scheme: light;
   --fg-rgb: 22 22 28;
-  --bg-rgb: 244 244 247;
-  --surface-rgb: 255 255 255;
-  --raised-rgb: 255 255 255;
-  --color-bg: #f4f4f7;
-  --color-surface: #ffffff;
-  --color-surface-2: #ececf0;
+  --bg-rgb: 217 219 225;
+  --surface-rgb: 230 232 236;
+  --raised-rgb: 238 240 243;
+  --color-bg: #d9dbe1;
+  --color-surface: #e6e8ec;
+  --color-surface-2: #cdd0d7;
   --color-ink: #14141a;
-  --color-muted-2: rgb(var(--fg-rgb) / 0.64);
-  --color-gold: #8c5f07;
-  --color-warn: #945600;
-  --color-good: #08763a;
-  --accent-ink-rgb: 203 32 43;
-  /* Quiet fills for chart bars and the like, strong enough to see on white. */
+  --color-muted-2: rgb(var(--fg-rgb) / 0.66);
+  --color-gold: #784b00;
+  --color-warn: #844600;
+  --color-good: #006226;
+  --accent-ink-rgb: 170 23 34;
+  /* Quiet fills for chart bars and the like, strong enough to see on the gray ground. */
   --color-bar: rgb(var(--fg-rgb) / 0.26);
   --gold-rgb: 176 128 30;
   --color-on-solid: #ffffff;
@@ -862,13 +862,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   --color-scrim: rgb(20 20 28 / 0.42);
 }
 :root[data-theme="light"][data-accent="blue"] {
-  --accent-ink-rgb: 42 99 204;
+  --accent-ink-rgb: 32 81 179;
 }
 :root[data-theme="light"][data-accent="violet"] {
-  --accent-ink-rgb: 118 73 219;
+  --accent-ink-rgb: 98 56 193;
 }
 :root[data-theme="light"][data-accent="gold"] {
-  --accent-ink-rgb: 137 97 16;
+  --accent-ink-rgb: 112 72 6;
   --accent-rgb: 176 128 30;
   --accent-light-rgb: 210 165 65;
   --accent-dark-rgb: 120 84 10;
@@ -876,11 +876,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 :root[data-theme="light"] .glass::before,
 :root[data-theme="light"] .glass-on::before,
 :root[data-theme="light"] .glass-accent::before {
-  background: linear-gradient(170deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0) 46%);
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 46%);
 }
 :root[data-theme="light"] .glass {
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.55) 70%);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 8px 20px -14px rgba(30, 30, 60, 0.35);
+  background: linear-gradient(165deg, rgb(var(--raised-rgb) / 0.85), rgb(var(--surface-rgb) / 0.55) 70%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 8px 20px -14px rgba(30, 30, 60, 0.35);
 }
 :root[data-theme="light"] .glass-on,
 :root[data-theme="light"] .btn-primary {
@@ -888,7 +888,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 :root[data-theme="light"] .panel-surface {
   border-color: rgb(var(--fg-rgb) / 0.1);
-  box-shadow: 0 14px 34px -22px rgba(30, 30, 60, 0.35), 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  box-shadow: 0 14px 34px -22px rgba(30, 30, 60, 0.35), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
 }
 :root[data-theme="light"] .panel-surface-glow {
   border-color: rgb(var(--accent-rgb) / 0.4);
@@ -898,7 +898,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   opacity: 0.22;
 }
 :root[data-theme="light"] .nav-pillbar {
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 12px 26px -16px rgba(30, 30, 60, 0.35);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 12px 26px -16px rgba(30, 30, 60, 0.35);
 }
 /* The side art (mascots, Kairos) is light-on-black and blends with "screen",
    which makes it vanish on a light page. Inverting it turns the black backdrop
