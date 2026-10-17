@@ -13,7 +13,8 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,png,svg,woff2}"],
         // The Excel reader (~500 KB) is only used by the one-off import in Perfil: not
         // worth downloading on install, cached the first time it is actually used.
-        globIgnores: ["**/xlsx-*.js"],
+        // (The landing page's own copies of the fonts are fetched normally, not pre-cached.)
+        globIgnores: ["**/xlsx-*.js", "fonts/**"],
         // The 4 MB Bible isn't downloaded on install anymore (that made the first
         // visit heavy); it is cached the first time you read or open Hoy, then
         // works offline.
@@ -61,6 +62,7 @@ export default defineConfig({
           { name: "Registrar peso", short_name: "Peso", url: "/?enter&go=peso", icons: [{ src: "icons/icon-192.png", sizes: "192x192", type: "image/png" }] },
         ],
         icons: [
+          { src: "icons/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
           { src: "icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
           { src: "icons/icon-192-maskable.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
           { src: "icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
