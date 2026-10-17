@@ -17,7 +17,7 @@ export function FocusMiniBar({ visible, onOpen }: { visible: boolean; onOpen: ()
   const color = isBreak ? "var(--color-good)" : "var(--color-red)";
 
   return (
-    <div className="fixed right-3 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 sidebar:bottom-5 enter">
+    <div className="fixed left-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 sidebar:left-auto sidebar:right-3 sidebar:bottom-5 enter">
       <div className="glass flex items-center gap-1 rounded-full py-1 pl-1 pr-1.5" style={{ boxShadow: `0 10px 26px -12px ${color}` }}>
         <button onClick={onOpen} aria-label="Abrir Focus" className="flex items-center gap-2.5 rounded-full py-1 pl-2 pr-2">
           <span className="relative flex h-7 w-7 flex-none items-center justify-center">

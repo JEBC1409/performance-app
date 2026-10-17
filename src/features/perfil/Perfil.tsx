@@ -291,7 +291,7 @@ export function Perfil() {
 
         </Section>
 
-        <Section id="apariencia" title="Apariencia" summary="Color, modo sobrio, barra de abajo y orden de Hoy">
+        <Section id="apariencia" title="Apariencia" summary="Color, modo sobrio, isla de navegación y orden de Hoy">
         <AppearanceCard />
         </Section>
 

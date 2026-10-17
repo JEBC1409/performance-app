@@ -12,6 +12,7 @@ import { daysInMonth, pad2, todayISO, MESES } from "@/lib/date";
 import { currentStreak } from "@/lib/streak";
 import { useMorningRoutine } from "@/hooks/useMorningRoutine";
 import { GuidedRoutine } from "./GuidedRoutine";
+import { WeekGrid } from "./WeekGrid";
 
 const EMPTY_HABITS: HabitDefRecord[] = [];
 
@@ -100,6 +101,12 @@ export function Habitos() {
       </div>
 
       <Card padded={false}>
+        {/* Phones: one week at a time, seven big cells. */}
+        <div className="sidebar:hidden">
+          <WeekGrid habits={habitList} onToggle={toggle} />
+        </div>
+        {/* Wide screens: the whole month. */}
+        <div className="hidden sidebar:block">
         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-line)]">
           <div className="text-[13px] font-semibold capitalize">
             {MESES[month]} {year}
@@ -182,6 +189,7 @@ export function Habitos() {
               })}
             </tbody>
           </table>
+        </div>
         </div>
       </Card>
 

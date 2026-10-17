@@ -1,6 +1,6 @@
-import { useState } from "react";
 import type { ReactNode } from "react";
 import { NavGlyph, AmbientBackground, JourneyTicker, SyncStatusDot } from "@/ui";
+import { NavIsland } from "./NavIsland";
 import type { Tab } from "@/App";
 import { OfflineBanner } from "@/ui/OfflineBanner";
 import { useUiPrefs } from "@/hooks/useUiPrefs";
@@ -26,11 +26,10 @@ export function Shell({
   onChange: (t: Tab) => void;
   children: ReactNode;
 }) {
-  const [moreOpen, setMoreOpen] = useState(false);
-  // The bottom bar shows the four screens you picked (Perfil › Apariencia); the rest live under "Más".
+  // The island shows the screens you picked (Perfil › Apariencia); the rest live under "Más".
   const { navTabs } = useUiPrefs();
   const label = (k: string) => SIDEBAR_TABS.find((t) => t.key === k)?.label ?? k;
-  const MOBILE_TABS: { key: Tab; label: string }[] = [...navTabs.map((k) => ({ key: k as Tab, label: label(k) })), { key: "mas", label: "Más" }];
+  const MOBILE_TABS: { key: Tab; label: string }[] = navTabs.map((k) => ({ key: k as Tab, label: label(k) }));
   const MORE_TABS = SIDEBAR_TABS.filter((t) => !navTabs.includes(t.key as never));
   // "sábado, 17 de octubre" → only the first letter capital (CSS `capitalize` made it "17 De Octubre").
   const rawDate = new Date().toLocaleDateString("es-CO", {
@@ -105,92 +104,13 @@ export function Shell({
         </header>
         <OfflineBanner />
 
-        <main className="flex-1 px-4 py-5 pb-[calc(6rem_+_env(safe-area-inset-bottom))] sidebar:px-8 sidebar:py-8 sidebar:pb-10 max-w-[1000px] w-full mx-auto">
+        <main className="flex-1 pl-4 pr-[3.5rem] py-5 pb-[calc(2rem_+_env(safe-area-inset-bottom))] sidebar:px-8 sidebar:py-8 sidebar:pb-10 max-w-[1000px] w-full mx-auto">
           {children}
         </main>
       </div>
 
-      {/* ── Mobile bottom nav ─────────────────────────────── */}
-      <nav
-        className="sidebar:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-[rgb(var(--fg-rgb)/0.1)] bg-[rgb(var(--bg-rgb)/0.72)] backdrop-blur-xl backdrop-saturate-150"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-      >
-        <div className="flex">
-          {MOBILE_TABS.map((t) => {
-            const isActive =
-              t.key === "mas"
-                ? MORE_TABS.some((m) => m.key === active)
-                : active === t.key;
-            return (
-              <button
-                key={t.key}
-                onClick={() =>
-                  t.key === "mas" ? setMoreOpen(true) : onChange(t.key)
-                }
-                className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors duration-150 ${
-                  isActive
-                    ? "text-[var(--color-red-ink)]"
-                    : "text-[var(--color-muted)] active:text-[var(--color-ink)]"
-                }`}
-              >
-                <NavGlyph tab={t.key} active={isActive} />
-                <span
-                  className={`text-[12px] font-semibold uppercase tracking-[0.08em] ${
-                    isActive ? "text-[var(--color-red-ink)]" : ""
-                  }`}
-                >
-                  {t.label}
-                </span>
-                {isActive && (
-                  <span className="w-1 h-1 bg-[var(--color-red)] mt-0.5" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </nav>
-
-      {/* ── "Más" bottom sheet ────────────────────────────── */}
-      {moreOpen ? (
-        <div
-          className="sidebar:hidden fixed inset-0 z-40 flex items-end"
-          role="dialog"
-          aria-modal
-        >
-          <div
-            className="absolute inset-0 bg-[var(--color-scrim)]"
-            onClick={() => setMoreOpen(false)}
-          />
-          <div
-            className="relative w-full bg-[var(--color-surface)] border-t border-[var(--color-line-strong)] p-5 enter"
-            style={{ paddingBottom: "calc(1.25rem + env(safe-area-inset-bottom))" }}
-          >
-            <div className="eyebrow mb-4">Más secciones</div>
-            <div className="grid grid-cols-2 gap-2">
-              {MORE_TABS.map((t) => {
-                const isActive = active === t.key;
-                return (
-                  <button
-                    key={t.key}
-                    onClick={() => {
-                      onChange(t.key);
-                      setMoreOpen(false);
-                    }}
-                    className={`tap-target panel-surface flex items-center gap-3 px-4 py-3.5 text-[12px] font-semibold uppercase tracking-[0.1em] transition-all border-l-2 ${
-                      isActive
-                        ? "border-l-[var(--color-red)] text-[var(--color-red-ink)]"
-                        : "border-l-transparent text-[var(--color-ink)] hover:border-l-[var(--color-red)] hover:text-[var(--color-red-ink)]"
-                    }`}
-                  >
-                    <NavGlyph tab={t.key} active={isActive} />
-                    {t.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {/* ── Mobile navigation: the floating island ───────── */}
+      <NavIsland active={active} tabs={MOBILE_TABS} more={MORE_TABS} onChange={onChange} />
     </div>
   );
 }

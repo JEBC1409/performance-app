@@ -21,7 +21,7 @@ export function AppearanceCard() {
   function toggleNav(key: NavKey) {
     const has = prefs.navTabs.includes(key);
     if (has) {
-      if (prefs.navTabs.length <= 2) return showToast("Deja al menos 2 pantallas abajo");
+      if (prefs.navTabs.length <= 2) return showToast("Deja al menos 2 pantallas en la isla");
       setUiPrefs({ navTabs: prefs.navTabs.filter((k) => k !== key) });
     } else {
       if (prefs.navTabs.length >= NAV_SLOTS) return showToast(`Caben ${NAV_SLOTS}: quita una primero`);
@@ -83,7 +83,7 @@ export function AppearanceCard() {
 
       <div className="mt-4">
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-[12px] text-[var(--color-muted)]">Barra de abajo (elige hasta {NAV_SLOTS})</span>
+          <span className="text-[12px] text-[var(--color-muted)]">Isla de navegación (elige hasta {NAV_SLOTS})</span>
           <button onClick={() => setUiPrefs({ navTabs: DEFAULT_NAV })} className="text-[12px] text-[var(--color-muted)] hover:text-[var(--color-red-ink)]">
             Restablecer
           </button>
