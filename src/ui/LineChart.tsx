@@ -10,16 +10,23 @@ export interface LinePoint {
 export function LineChart({
   points,
   height = 150,
-  goalPerStep,
+  goalValues,
   lastValueLabel,
   showTrend = true,
+  unit = "",
+  axis = true,
 }: {
   points: LinePoint[];
   height?: number;
-  goalPerStep?: number;
+  /** An ideal value for each point (same length as `points`), drawn as a dashed line. */
+  goalValues?: number[];
   /** Text for the last point's bubble, when its value alone isn't enough ("12h" total). */
   lastValueLabel?: string;
   showTrend?: boolean;
+  /** Shown after the axis values ("72.4 kg"). */
+  unit?: string;
+  /** Highest and lowest value at the left edge, first and last date underneath. */
+  axis?: boolean;
 }) {
   const [picked, setPicked] = useState<number | null>(null);
   const boxRef = useRef<HTMLDivElement>(null);
@@ -34,6 +41,8 @@ export function LineChart({
   const trend = showTrend ? trendLine(values) : null;
   let min = Math.min(...values);
   let max = Math.max(...values);
+  const lo = min;
+  const hi = max;
   if (min === max) {
     min -= 1;
     max += 1;
@@ -44,11 +53,7 @@ export function LineChart({
   const linePts = points.map((p, i) => `${x(i)},${y(p.value)}`).join(" ");
   const areaPts = `${linePts} ${x(points.length - 1)},${height - pad} ${x(0)},${height - pad}`;
 
-  let goalLinePts = "";
-  if (goalPerStep) {
-    const first = points[0].value;
-    goalLinePts = points.map((_, i) => `${x(i)},${y(first + goalPerStep * i)}`).join(" ");
-  }
+  const goalLinePts = goalValues && goalValues.length === points.length ? goalValues.map((v, i) => `${x(i)},${yClamped(v)}`).join(" ") : "";
 
   const activeIdx = picked ?? points.length - 1;
   const active = points[activeIdx];
@@ -92,7 +97,7 @@ export function LineChart({
             </filter>
           </defs>
           <line x1={pad} y1={height - pad} x2={W - pad} y2={height - pad} stroke="var(--color-line-strong)" strokeWidth="0.6" vectorEffect="non-scaling-stroke" />
-          {goalPerStep ? (
+          {goalLinePts ? (
             <polyline points={goalLinePts} fill="none" stroke="var(--color-muted-2)" strokeWidth="1" strokeDasharray="3,3" vectorEffect="non-scaling-stroke" />
           ) : null}
           <polygon points={areaPts} fill={`url(#${uid}-fade)`} />
@@ -143,6 +148,19 @@ export function LineChart({
           />
         ))}
 
+        {axis ? (
+          <>
+            <span aria-hidden className="num pointer-events-none absolute left-0 top-0 rounded px-1 text-[12px] text-[var(--color-muted-2)]" style={{ background: "rgb(var(--bg-rgb) / 0.55)" }}>
+              {Math.round(hi * 10) / 10}
+              {unit ? " " + unit : ""}
+            </span>
+            <span aria-hidden className="num pointer-events-none absolute bottom-3 left-0 rounded px-1 text-[12px] text-[var(--color-muted-2)]" style={{ background: "rgb(var(--bg-rgb) / 0.55)" }}>
+              {Math.round(lo * 10) / 10}
+              {unit ? " " + unit : ""}
+            </span>
+          </>
+        ) : null}
+
         <div
           role="status"
           className="glass pointer-events-none absolute -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg px-2.5 py-1 text-center"
@@ -152,6 +170,12 @@ export function LineChart({
           <div className="num text-[12px] text-[var(--color-muted)]">{active.label}</div>
         </div>
       </div>
+      {axis ? (
+        <div aria-hidden className="num mt-1 flex justify-between text-[12px] text-[var(--color-muted-2)]">
+          <span>{points[0].label}</span>
+          <span>{points[points.length - 1].label}</span>
+        </div>
+      ) : null}
       {trend ? (
         <div className="mt-1.5 flex items-center gap-1.5 text-[12px] text-[var(--color-muted)]">
           <span className="inline-block w-5 border-t border-dotted border-[rgb(var(--fg-rgb)/0.6)]" />

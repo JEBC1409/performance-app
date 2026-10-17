@@ -19,3 +19,5 @@ export * from "./JourneyTicker";
 export * from "./SyncStatusDot";
 export * from "./CardTitle";
 export * from "./PageHeader";
+export * from "./DeltaChip";
+export * from "./Headline";

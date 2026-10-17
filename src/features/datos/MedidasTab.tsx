@@ -2,7 +2,8 @@ import { EmptyState } from "@/ui/EmptyState";
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
-import { Card, Field, Input, Button, DateField } from "@/ui";
+import { Card, CardTitle, DeltaChip, Field, Headline, Input, Button, DateField } from "@/ui";
+import { LineChart } from "@/ui/LineChart";
 import { todayISO, fmtDateHuman } from "@/lib/date";
 import { showToast } from "@/ui/Toast";
 
@@ -62,16 +63,47 @@ export function MedidasTab() {
       </Card>
 
       <div className="grid sidebar:grid-cols-2 gap-4">
-        <Card padded={false}>
-          <div className="px-4 py-3 border-b border-[var(--color-line)] eyebrow eyebrow-accent">Pecho</div>
-          <MeasureList rows={pechoRows} unit="cm" />
-        </Card>
-        <Card padded={false}>
-          <div className="px-4 py-3 border-b border-[var(--color-line)] eyebrow">Brazo</div>
-          <MeasureList rows={brazoRows} unit="cm" />
-        </Card>
+        <MeasureCard title="Pecho" rows={pechoRows} unit="cm" />
+        <MeasureCard title="Brazo" rows={brazoRows} unit="cm" />
       </div>
     </div>
+  );
+}
+
+/** One measurement: the latest figure big, how it moved, the curve, then every entry. */
+function MeasureCard({ title, rows, unit }: { title: string; rows: { date: string; value: number | null; delta: number | null }[]; unit: string }) {
+  const last = rows[rows.length - 1];
+  const first = rows[0];
+  const sinceFirst = rows.length >= 3 && last?.value != null && first?.value != null ? Math.round((last.value - first.value) * 10) / 10 : null;
+  return (
+    <Card padded={false}>
+      <div className="px-4 pt-4">
+        <CardTitle>{title}</CardTitle>
+        {last && last.value != null ? (
+          <div className="mt-3">
+            <Headline
+              value={last.value}
+              unit={unit}
+              caption={"Último registro · " + fmtDateHuman(last.date)}
+              deltas={
+                <>
+                  <DeltaChip diff={last.delta != null ? Math.round(last.delta * 10) / 10 : null} unit={unit} label="vs registro anterior" />
+                  <DeltaChip diff={sinceFirst} unit={unit} label="desde el primero" />
+                </>
+              }
+            />
+          </div>
+        ) : null}
+        {rows.length >= 2 ? (
+          <div className="mt-4">
+            <LineChart points={rows.map((r) => ({ label: fmtDateHuman(r.date), value: r.value as number }))} height={100} unit={unit} showTrend={false} />
+          </div>
+        ) : null}
+      </div>
+      <div className="mt-3 border-t border-[var(--color-line)]">
+        <MeasureList rows={rows} unit={unit} />
+      </div>
+    </Card>
   );
 }
 

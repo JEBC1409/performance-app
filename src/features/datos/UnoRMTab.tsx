@@ -3,8 +3,8 @@ import { useConfigVersion } from "@/hooks/useConfigVersion";
 import { useMemo } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, type SetRecord } from "@/db/db";
-import { Card, BarChart, type BarPoint } from "@/ui";
-import { startOfWeek, fmtDateHuman } from "@/lib/date";
+import { Card, BarChart, Headline, type BarPoint } from "@/ui";
+import { addDays, startOfWeek, fmtDateHuman, todayISO } from "@/lib/date";
 import { GYM_DIAS, GYM_DAY_ORDER, allExerciseNames, startDate } from "@/data/gym";
 
 /** The working weights you set for each routine exercise (Perfil › Mi rutina),
@@ -47,11 +47,42 @@ export function UnoRMTab() {
   // sets stay in your history and volume, they just don't clutter this view).
   const exercises = useMemo(() => allExerciseNames().filter((name) => STARTS.has(name) || byExercise.has(name)).sort((a, b) => a.localeCompare(b, "es")), [byExercise, STARTS]);
 
+  // How many exercises reached a heavier best weight in the last 28 days than in the 28 before.
+  const rising = useMemo(() => {
+    const today = todayISO();
+    const from = addDays(today, -28);
+    const prevFrom = addDays(today, -56);
+    let up = 0;
+    let compared = 0;
+    byExercise.forEach((list) => {
+      let cur = 0;
+      let prev = 0;
+      list.forEach((st) => {
+        if (st.date >= from) cur = Math.max(cur, st.weight ?? 0);
+        else if (st.date >= prevFrom) prev = Math.max(prev, st.weight ?? 0);
+      });
+      if (cur > 0 && prev > 0) {
+        compared++;
+        if (cur > prev) up++;
+      }
+    });
+    return { up, compared };
+  }, [byExercise]);
+
   return (
     <Card>
       <div className="card-title">Progreso de carga por semana</div>
+      {rising.compared > 0 ? (
+        <div className="mt-3">
+          <Headline
+            value={rising.up}
+            unit={"de " + rising.compared + " ejercicios"}
+            caption="subieron su mejor peso en los últimos 28 días, comparado con los 28 anteriores"
+          />
+        </div>
+      ) : null}
       {exercises.length ? (
-        <div className="mt-3 grid grid-cols-1 sidebar:grid-cols-2 gap-3">
+        <div className="mt-4 grid grid-cols-1 sidebar:grid-cols-2 gap-3">
           {exercises.map((ex) => (
             <LoadProgressCard key={ex} exercise={ex} sets={byExercise.get(ex) ?? []} start={STARTS.get(ex)} />
           ))}

@@ -54,10 +54,10 @@ export function BarChart({
   const highlightIdx = points.findIndex((p) => p.highlight);
   const active = hover ?? (highlightIdx >= 0 ? highlightIdx : points.length - 1);
   const activePoint = points[active];
-  // Past ~15 bars, a label under every single one turns into unreadable
-  // noise — thin out to every 5th, always keeping the highlighted/active
+  // A date under every bar wraps and turns into unreadable
+  // noise past ~7 bars — thin to about five labels, always keeping the highlighted/active
   // ones so "today" stays findable.
-  const showAllLabels = points.length <= 15;
+  const labelEvery = points.length <= 7 ? 1 : Math.ceil(points.length / 5);
 
   const slotW = Math.min(barW * 0.42, 6.5);
   const activeH = Math.max(1.5, (activePoint.value / max) * plotH);
@@ -141,14 +141,14 @@ export function BarChart({
       </div>
       <div className="flex mt-1">
         {points.map((p, i) => {
-          const showLabel = showAllLabels || i === active || p.highlight || i % 5 === 0 || i === points.length - 1;
+          const showLabel = i % labelEvery === 0 || i === active || p.highlight;
           return (
             <button
               key={i}
               onMouseEnter={() => setHover(i)}
               onMouseLeave={() => setHover(null)}
               onClick={() => setHover(i)}
-              className={`text-center text-[12px] num transition-colors ${i === active ? "font-semibold text-[var(--color-ink)]" : "text-[var(--color-muted-2)]"}`}
+              className={`whitespace-nowrap text-center text-[12px] num transition-colors ${i === active ? "font-semibold text-[var(--color-ink)]" : "text-[var(--color-muted-2)]"}`}
               style={{ width: `${barW}%` }}
             >
               {showLabel ? p.label : ""}

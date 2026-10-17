@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
-import { Card, RankBadge } from "@/ui";
+import { Card, DeltaChip, Headline, RankBadge } from "@/ui";
+import { EmptyState } from "@/ui/EmptyState";
 import { Radar } from "@/ui/Radar";
 import { MUSCLE_GROUP_ORDER, MUSCLE_GROUP_LABEL, groupForExercise, type MuscleGroup } from "@/data/muscleGroups";
 import { rankProgress, groupStrengthPct } from "@/lib/muscleRank";
@@ -25,6 +26,20 @@ export function VolumenTab() {
       if (g) c[g]++;
     });
     return c;
+  }, [sets]);
+
+  // All series in the last 28 days against the 28 before — the number the radar is made of.
+  const totals = useMemo(() => {
+    const today = todayISO();
+    const from = addDays(today, -28);
+    const prevFrom = addDays(today, -56);
+    let current = 0;
+    let previous = 0;
+    (sets ?? []).forEach((s) => {
+      if (s.date >= from) current++;
+      else if (s.date >= prevFrom) previous++;
+    });
+    return { current, previous };
   }, [sets]);
 
   const strength = useMemo(() => {
@@ -54,9 +69,28 @@ export function VolumenTab() {
   const activeTier = activeProgress.tier;
   const next = activeProgress.next;
 
+  if (sets && sets.length === 0) {
+    return (
+      <Card>
+        <div className="card-title">Volumen por grupo muscular</div>
+        <EmptyState icon="dumbbell" title="Aún no hay series registradas" hint="Registra tu primera serie en Entreno y aquí verás cuánto trabajas cada grupo muscular y tu rango en cada uno." />
+      </Card>
+    );
+  }
+
+  const busiest = MUSCLE_GROUP_ORDER.reduce((best, g) => (counts[g] > counts[best] ? g : best), MUSCLE_GROUP_ORDER[0]);
+
   return (
     <Card>
       <div className="card-title">Volumen por grupo muscular <span className="text-[12px] font-normal text-[var(--color-muted)]">· últimos 28 días</span></div>
+      <div className="mt-3">
+        <Headline
+          value={totals.current}
+          unit="series"
+          caption={totals.current ? "Más trabajado: " + MUSCLE_GROUP_LABEL[busiest] : "Sin series en los últimos 28 días"}
+          deltas={<DeltaChip diff={totals.previous ? totals.current - totals.previous : null} digits={0} flat={1} label="vs 28 días antes" />}
+        />
+      </div>
       <div className="flex justify-center mt-4">
         <Radar axes={axes} />
       </div>
