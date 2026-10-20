@@ -58,6 +58,45 @@
   }
   addExtra().catch(function () {});
 
+  // Does the phone let this page read the app's database? (Opens it without changing it.)
+  function probeDb() {
+    var el = document.getElementById("dbinfo");
+    function line(k, v) { rows("dbinfo", [[k, v]]); }
+    if (!window.indexedDB) { line("Base de datos", "este navegador no la tiene"); return; }
+    var req;
+    try { req = indexedDB.open("performance-db"); } catch (e) { line("Abrir la base", "ERROR " + (e && e.name) + ": " + (e && e.message)); return; }
+    req.onerror = function () { var e = req.error; line("Abrir la base", "ERROR " + (e && e.name) + ": " + (e && e.message)); };
+    req.onblocked = function () { line("Abrir la base", "bloqueada por otra ventana de la app"); };
+    req.onsuccess = function () {
+      var idb = req.result;
+      var names = Array.prototype.slice.call(idb.objectStoreNames);
+      line("Abrir la base", "bien (versión " + idb.version + ", " + names.length + " tablas)");
+      var chk = ["sets", "habitDays", "weights", "appConfig"].filter(function (n) { return names.indexOf(n) >= 0; });
+      chk.forEach(function (n) {
+        try {
+          var tx = idb.transaction(n, "readonly");
+          var st = tx.objectStore(n);
+          var count = 0;
+          var cur = st.openCursor();
+          cur.onerror = function () { var e = cur.error; line("Leer " + n, "ERROR " + (e && e.name) + ": " + (e && e.message)); };
+          cur.onsuccess = function () {
+            var c = cur.result;
+            if (c) { count++; c.continue(); } else { line("Leer " + n, "bien (" + count + " filas)"); }
+          };
+          tx.onerror = function () { var e = tx.error; if (e) line("Leer " + n, "ERROR " + (e.name) + ": " + (e.message)); };
+        } catch (e) { line("Leer " + n, "ERROR " + (e && e.name) + ": " + (e && e.message)); }
+      });
+      setTimeout(function () { try { idb.close(); } catch (e) {} }, 4000);
+    };
+    if (navigator.storage && navigator.storage.estimate) {
+      navigator.storage.estimate().then(function (est) {
+        var mb = function (n) { return Math.round((n || 0) / 1048576) + " MB"; };
+        line("Espacio usado / permitido", mb(est.usage) + " / " + mb(est.quota));
+      }).catch(function () {});
+    }
+  }
+  probeDb();
+
   var errBox = document.getElementById("errors");
   var errs = [];
   try {
