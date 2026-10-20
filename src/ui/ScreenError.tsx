@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { isDbConnectionError, reopenDb } from "@/db/recover";
+import { checkCloud, restoreFromCloud, type CloudCheck } from "@/db/restore";
 import { repairAndReload } from "@/lib/repair";
 
 const GUARD_KEY = "performance_db_reopen_at";
@@ -23,6 +24,24 @@ export function ScreenError({ error, reset }: { error: Error; reset: () => void 
   const [busy, setBusy] = useState(dbProblem);
   const [failed, setFailed] = useState(false);
   const tried = useRef(false);
+  // "Restaurar desde mi cuenta": null = not started, "checking", or what the cloud holds (or why it can't be used).
+  const [restore, setRestore] = useState<null | "checking" | CloudCheck>(null);
+  const [restoreError, setRestoreError] = useState<string | null>(null);
+
+  async function startRestore() {
+    setRestore("checking");
+    setRestoreError(null);
+    setRestore(await checkCloud());
+  }
+
+  async function confirmRestore() {
+    setRestoreError(null);
+    try {
+      await restoreFromCloud();
+    } catch (e) {
+      setRestoreError(e instanceof Error ? e.message : String(e));
+    }
+  }
 
   async function reopen() {
     setBusy(true);
@@ -72,7 +91,38 @@ export function ScreenError({ error, reset }: { error: Error; reset: () => void 
         <button onClick={() => void repairAndReload()} className="glass tap-target rounded-full px-6 text-[12px] font-semibold uppercase tracking-[0.1em]">
           Reintentar
         </button>
+        {dbProblem && restore === null ? (
+          <button onClick={() => void startRestore()} className="glass tap-target rounded-full px-6 text-[12px] font-semibold uppercase tracking-[0.1em]">
+            Restaurar desde mi cuenta
+          </button>
+        ) : null}
       </div>
+
+      {restore === "checking" ? <p className="mt-3 text-[12px] text-[var(--color-muted)]">Revisando tu cuenta…</p> : null}
+      {restore && restore !== "checking" && !restore.ok ? <p className="mt-3 text-[12px] text-[var(--color-warn)]">{restore.why} No se borró nada.</p> : null}
+      {restore && restore !== "checking" && restore.ok ? (
+        <div className="mt-4 rounded-2xl border border-[var(--color-line-strong)] p-3 text-left" role="group" aria-label="Confirmar restauración">
+          <p className="text-[13px] text-[var(--color-ink)]">
+            En tu cuenta hay {restore.sets} series y {restore.days} días de hábitos.
+          </p>
+          <p className="mt-1.5 text-[12px] text-[var(--color-muted)]">
+            Esto borra los datos guardados en este celular y los vuelve a bajar de tu cuenta. Lo que hayas anotado aquí y no se haya subido se perdería.
+          </p>
+          {restoreError ? (
+            <p className="mt-1.5 text-[12px] text-[var(--color-warn)]">
+              No se pudo: {restoreError}. Si sigue igual, borra los datos del sitio en los ajustes del navegador (en el iPhone: Ajustes → Safari → Avanzado → Datos de sitios web).
+            </p>
+          ) : null}
+          <div className="mt-3 flex gap-2">
+            <button onClick={() => setRestore(null)} className="glass tap-target flex-1 rounded-full text-[12px] font-semibold uppercase tracking-[0.1em]">
+              Cancelar
+            </button>
+            <button onClick={() => void confirmRestore()} className="glass-on tap-target flex-1 rounded-full text-[12px] font-semibold uppercase tracking-[0.1em]">
+              Restaurar
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

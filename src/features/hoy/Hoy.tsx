@@ -1,4 +1,5 @@
 import { Icon } from "@/ui/Icon";
+import { firstByIndex, lastByIndex } from "@/db/safeQuery";
 import { Skeleton } from "@/ui/Skeleton";
 import { useState } from "react";
 import type { ReactNode } from "react";
@@ -53,9 +54,9 @@ export function Hoy({
   }
   const habitDay = useLiveQuery(() => db.habitDays.get(today), [today]);
   const habitDefs = useHabitDefs();
-  const lastWeight = useLiveQuery(() => db.weights.orderBy("date").last(), []);
+  const lastWeight = useLiveQuery(() => lastByIndex(db.weights, "date"), []);
   const firstWeight = useLiveQuery(
-    () => db.weights.orderBy("date").first(),
+    () => firstByIndex(db.weights, "date"),
     []
   );
   const settings = useLiveQuery(() => db.settings.get("app"), []);

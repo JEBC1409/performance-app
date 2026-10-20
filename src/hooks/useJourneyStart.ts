@@ -1,4 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
+import { firstByIndex } from "@/db/safeQuery";
 import { db } from "@/db/db";
 import { todayISO } from "@/lib/date";
 
@@ -8,9 +9,9 @@ import { todayISO } from "@/lib/date";
 export function useJourneyStart(): string {
   const earliest = useLiveQuery(async () => {
     const [firstSet, firstWeight, firstHabit] = await Promise.all([
-      db.sets.orderBy("date").first(),
-      db.weights.orderBy("date").first(),
-      db.habitDays.orderBy("date").first(),
+      firstByIndex(db.sets, "date"),
+      firstByIndex(db.weights, "date"),
+      firstByIndex(db.habitDays, "date"),
     ]);
     const dates = [firstSet?.date, firstWeight?.date, firstHabit?.date].filter((d): d is string => !!d);
     if (!dates.length) return null;

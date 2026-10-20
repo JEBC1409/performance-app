@@ -1,3 +1,4 @@
+import { isRestoring } from "./restore";
 import { db, DEFAULT_SETTINGS, DEFAULT_HABIT_DEFS, type SetRecord } from "./db";
 import type { GymDay } from "@/lib/cycle";
 import { seedMouredev } from "@/data/mouredev";
@@ -78,6 +79,9 @@ function seedSets(): SetRecord[] {
 }
 
 export async function seedIfNeeded(): Promise<void> {
+  // Mid-restore from the cloud: the account's own data is on its way, so seed nothing.
+  if (isRestoring()) return;
+
   // Not gated by the `seeded` flag below (that's only for the one-time demo
   // data) — a brand-new install creates the Dexie database straight at the
   // latest schema version and never runs the v3 upgrade callback that seeds

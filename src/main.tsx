@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import { ErrorBoundary } from "./ui/ErrorBoundary";
 import { initCloudSync } from "./db/cloudSync";
+import { watchRestore } from "./db/restore";
 import { applyUiPrefs } from "./lib/uiPrefs";
 import { initAppConfig } from "./lib/appConfig";
 import { claimServiceWorkerReload } from "./lib/swReload";
@@ -10,6 +11,7 @@ import { logError } from "./lib/errorLog";
 import "./styles/index.css";
 
 initCloudSync();
+watchRestore();
 // Before the first paint, so a saved accent never flashes red.
 applyUiPrefs();
 initAppConfig();

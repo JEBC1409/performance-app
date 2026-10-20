@@ -1,4 +1,5 @@
 import { db, type HabitDayRecord } from "@/db/db";
+import { distinctDates } from "@/db/safeQuery";
 import { addDays, todayISO } from "./date";
 
 const STREAK_WINDOW_DAYS = 28;
@@ -119,7 +120,7 @@ export async function totalActiveDays(): Promise<number> {
  * date index (distinct values), not every row. */
 export async function activeDaysCount(range: "before" | "from", today: string): Promise<number> {
   const before = range === "before";
-  const keys = (c: { uniqueKeys(): Promise<unknown[]> }) => c.uniqueKeys() as Promise<string[]>;
+  const keys = (c: Parameters<typeof distinctDates>[0]) => distinctDates(c);
   const [sets, weights, sleeps, focus, habitDays] = await Promise.all([
     keys(before ? db.sets.where("date").below(today) : db.sets.where("date").aboveOrEqual(today)),
     keys(before ? db.weights.where("date").below(today) : db.weights.where("date").aboveOrEqual(today)),

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { lastByIndex } from "@/db/safeQuery";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
 import { Card, DeltaChip, Headline, RankBadge } from "@/ui";
@@ -13,7 +14,7 @@ import { tierInk } from "@/lib/tierInk";
 
 export function VolumenTab() {
   const sets = useLiveQuery(() => db.sets.toArray(), []);
-  const lastWeight = useLiveQuery(() => db.weights.orderBy("date").last(), []);
+  const lastWeight = useLiveQuery(() => lastByIndex(db.weights, "date"), []);
   const bodyweightKg = lastWeight?.weightKg ?? 0;
   const [selected, setSelected] = useState<MuscleGroup | null>(null);
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { distinctDates } from "@/db/safeQuery";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
 import { addDays, todayISO } from "@/lib/date";
@@ -21,7 +22,7 @@ function readState(): DeloadState {
 /** Suggests a lighter week after several hard ones in a row. */
 export function DeloadCard() {
   const [state, setState] = useState<DeloadState>(readState);
-  const trained = useLiveQuery(async () => (await db.sets.orderBy("date").uniqueKeys()) as string[], []);
+  const trained = useLiveQuery(() => distinctDates(db.sets.orderBy("date")), []);
   const today = todayISO();
   const weeks = trained ? deloadDue(trained, today, state) : null;
   if (weeks == null) return null;

@@ -1,4 +1,5 @@
 import { EmptyState } from "@/ui/EmptyState";
+import { newestFirst } from "@/db/safeQuery";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "@/ui/Icon";
@@ -193,7 +194,7 @@ function FocusView() {
   const sessions = useLiveQuery(() => db.focusSessions.where("date").equals(today).toArray(), [today]);
   // Recent tasks, plus a MoureDev one (blocks named after it count toward that route).
   const recent = useLiveQuery(async () => {
-    const rows = await db.focusSessions.orderBy("createdAt").reverse().limit(40).toArray();
+    const rows = await newestFirst(db.focusSessions, "createdAt", 40);
     return [...new Set(rows.map((r) => r.task))].slice(0, 5);
   }, []);
   const taskChips = useMemo(() => {

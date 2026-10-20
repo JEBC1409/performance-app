@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { NavGlyph, AmbientBackground, JourneyTicker, SyncStatusDot } from "@/ui";
-import { NavIsland } from "./NavIsland";
+import { NavDock } from "./NavDock";
 import type { Tab } from "@/App";
 import { OfflineBanner } from "@/ui/OfflineBanner";
 import { useUiPrefs } from "@/hooks/useUiPrefs";
@@ -26,7 +26,7 @@ export function Shell({
   onChange: (t: Tab) => void;
   children: ReactNode;
 }) {
-  // The island shows the screens you picked (Perfil › Apariencia); the rest live under "Más".
+  // The dock shows the screens you picked (Perfil › Apariencia); the rest live under "Más".
   const { navTabs } = useUiPrefs();
   const label = (k: string) => SIDEBAR_TABS.find((t) => t.key === k)?.label ?? k;
   const MOBILE_TABS: { key: Tab; label: string }[] = navTabs.map((k) => ({ key: k as Tab, label: label(k) }));
@@ -104,13 +104,13 @@ export function Shell({
         </header>
         <OfflineBanner />
 
-        <main className="flex-1 pl-4 pr-[3.5rem] py-5 pb-[calc(2rem_+_env(safe-area-inset-bottom))] sidebar:px-8 sidebar:py-8 sidebar:pb-10 max-w-[1000px] w-full mx-auto">
+        <main className="flex-1 px-4 py-5 pb-[calc(6.5rem_+_env(safe-area-inset-bottom))] sidebar:px-8 sidebar:py-8 sidebar:pb-10 max-w-[1000px] w-full mx-auto">
           {children}
         </main>
       </div>
 
-      {/* ── Mobile navigation: the floating island ───────── */}
-      <NavIsland active={active} tabs={MOBILE_TABS} more={MORE_TABS} onChange={onChange} />
+      {/* ── Mobile navigation: the floating dock ─────────── */}
+      <NavDock active={active} tabs={MOBILE_TABS} more={MORE_TABS} onChange={onChange} />
     </div>
   );
 }

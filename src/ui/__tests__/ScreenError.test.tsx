@@ -2,6 +2,9 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const reopenDb = vi.fn();
+const checkCloud = vi.fn();
+const restoreFromCloud = vi.fn();
+vi.mock("@/db/restore", () => ({ checkCloud: () => checkCloud(), restoreFromCloud: () => restoreFromCloud() }));
 vi.mock("@/db/recover", async (importOriginal) => ({ ...(await importOriginal<typeof import("@/db/recover")>()), reopenDb: () => reopenDb() }));
 
 const { ScreenError } = await import("../ScreenError");
@@ -9,6 +12,8 @@ const { isDbConnectionError } = await import("@/db/recover");
 
 beforeEach(() => {
   reopenDb.mockReset();
+  checkCloud.mockReset();
+  restoreFromCloud.mockReset();
   sessionStorage.clear();
 });
 afterEach(cleanup);
@@ -54,6 +59,28 @@ describe("ScreenError", () => {
     expect(reopenDb).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole("button", { name: /Reabrir datos/i }));
     await waitFor(() => expect(reopenDb).toHaveBeenCalledTimes(2));
+  });
+
+  it("offers to restore from the account, shows what is there, and only wipes after confirming", async () => {
+    reopenDb.mockRejectedValue(new Error("still broken"));
+    checkCloud.mockResolvedValue({ ok: true, sets: 670, days: 40 });
+    restoreFromCloud.mockResolvedValue(undefined);
+    render(<ScreenError error={idbError()} reset={() => {}} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Restaurar desde mi cuenta/i }));
+    expect(await screen.findByText(/670 series y 40 días/)).toBeInTheDocument();
+    expect(restoreFromCloud).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: /^Restaurar$/ }));
+    await waitFor(() => expect(restoreFromCloud).toHaveBeenCalledTimes(1));
+  });
+
+  it("refuses to restore when the cloud has nothing, and wipes nothing", async () => {
+    reopenDb.mockRejectedValue(new Error("still broken"));
+    checkCloud.mockResolvedValue({ ok: false, why: "En la nube no hay datos guardados." });
+    render(<ScreenError error={idbError()} reset={() => {}} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Restaurar desde mi cuenta/i }));
+    expect(await screen.findByText(/no hay datos guardados. No se borró nada/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Restaurar$/ })).toBeNull();
+    expect(restoreFromCloud).not.toHaveBeenCalled();
   });
 
   it("an ordinary error just shows the message", () => {

@@ -62,7 +62,7 @@ export function NarratorBar({ narrator, where, onVoice }: { narrator: Narrator; 
   const playing = narrator.status === "playing";
   return (
     <>
-      <div className="fixed bottom-[calc(0.75rem_+_env(safe-area-inset-bottom))] sidebar:bottom-4 left-0 right-0 z-40 flex justify-center pl-4 pr-[4rem] sidebar:px-4">
+      <div className="fixed bottom-[calc(5.75rem_+_env(safe-area-inset-bottom))] sidebar:bottom-4 left-0 right-0 z-40 flex justify-center px-4">
         <div
           role="group"
           aria-label="Lectura en voz alta"

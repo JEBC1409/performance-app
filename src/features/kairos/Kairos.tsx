@@ -1,4 +1,5 @@
 import { Skeleton } from "@/ui/Skeleton";
+import { newestFirst } from "@/db/safeQuery";
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
@@ -156,7 +157,7 @@ export function Kairos() {
     [readDays],
   );
 
-  const saved = useLiveQuery(() => db.savedVerses.orderBy("createdAt").reverse().toArray(), []);
+  const saved = useLiveQuery(() => newestFirst(db.savedVerses, "createdAt"), []);
   // Which verses of *this* chapter already have something saved — shown as a
   // small dot while reading, so you can see at a glance where you left a note.
   const notedVerses = useMemo(() => new Set((saved ?? []).filter((s) => s.abbrev === abbrev && s.chapter === chapter).map((s) => s.verse)), [saved, abbrev, chapter]);
