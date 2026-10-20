@@ -6,6 +6,7 @@ import { initCloudSync } from "./db/cloudSync";
 import { applyUiPrefs } from "./lib/uiPrefs";
 import { initAppConfig } from "./lib/appConfig";
 import { claimServiceWorkerReload } from "./lib/swReload";
+import { logError } from "./lib/errorLog";
 import "./styles/index.css";
 
 initCloudSync();
@@ -34,8 +35,12 @@ if ("serviceWorker" in navigator) {
 // never loads. Vite reports that; one guarded reload fetches the new build.
 window.addEventListener("vite:preloadError", (e) => {
   e.preventDefault();
+  logError((e as Event & { payload?: unknown }).payload ?? "preloadError", "carga de pantalla");
   if (claimServiceWorkerReload(Date.now(), "performance_preload_reload_at")) window.location.reload();
 });
+
+window.addEventListener("error", (e) => logError(e.error ?? e.message, "error"));
+window.addEventListener("unhandledrejection", (e) => logError(e.reason, "promesa"));
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

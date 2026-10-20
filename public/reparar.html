@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <title>PERFORMANCE · Diagnóstico</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 20px 16px 40px; background: #000; color: #f2f2f4; font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 520px; margin: 0 auto; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    p { margin: 0 0 14px; color: #b4b4bb; }
+    .card { background: #111114; border: 1px solid #2a2a30; border-radius: 16px; padding: 14px 16px; margin: 0 0 14px; }
+    h2 { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #8f8f98; margin: 0 0 8px; }
+    dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; }
+    dt { color: #8f8f98; }
+    dd { margin: 0; word-break: break-word; }
+    .err { font-size: 13px; padding: 8px 0; border-top: 1px solid #2a2a30; word-break: break-word; }
+    .err:first-of-type { border-top: 0; }
+    .err small { display: block; color: #8f8f98; }
+    button, a.btn { display: block; width: 100%; padding: 14px; margin: 0 0 10px; border-radius: 999px; border: 1px solid #3a3a42; background: #1a1a1f; color: #fff; font: inherit; font-weight: 600; text-align: center; text-decoration: none; }
+    button.primary { background: #c81e2b; border-color: #e5434f; }
+    #msg { min-height: 1.4em; color: #7ee2a0; margin: 0 0 10px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Diagnóstico</h1>
+    <p>Esta página no depende de la app: sirve para ver qué pasa en este celular y para repararlo. Tus datos (pesos, series, hábitos) no se tocan.</p>
+
+    <button class="primary" id="repair">Reparar y abrir la app</button>
+    <div id="msg" role="status"></div>
+    <a class="btn" href="/?enter">Abrir la app sin reparar</a>
+
+    <div class="card"><h2>Pantalla</h2><dl id="screen"></dl></div>
+    <div class="card"><h2>Instalación</h2><dl id="install"></dl></div>
+    <div class="card"><h2>Errores recientes</h2><div id="errors"></div></div>
+    <p>Si algo sigue fallando, haz una captura de esta página y mándala.</p>
+  </main>
+  <script src="/reparar.js"></script>
+</body>
+</html>

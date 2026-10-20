@@ -1,6 +1,7 @@
 import { Component } from "react";
 import type { ErrorInfo, ReactNode } from "react";
 import { repairAndReload } from "@/lib/repair";
+import { logError } from "@/lib/errorLog";
 
 interface Props {
   children: ReactNode;
@@ -22,6 +23,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("PERFORMANCE crashed:", error, info.componentStack);
+    logError(error, "pantalla");
   }
 
   reset = () => this.setState({ error: null });
