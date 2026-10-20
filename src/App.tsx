@@ -24,6 +24,7 @@ import { FocusMiniBar } from "@/features/focus/FocusMiniBar";
 import { MusicHost } from "@/features/focus/MusicHost";
 import { flushSync } from "react-dom";
 import { ErrorBoundary } from "@/ui/ErrorBoundary";
+import { repairAndReload } from "@/lib/repair";
 import type { GymDay } from "@/lib/cycle";
 
 // Every screen except Hoy loads on first visit, so the first paint ships far
@@ -190,12 +191,15 @@ export default function App() {
 
   return (
     <Shell active={tab} onChange={setTab}>
+      {/* keyed by screen: one that crashes must not leave every other screen showing its error */}
       <ErrorBoundary
-        fallback={() => (
+        key={tab}
+        fallback={(_reset, error) => (
           <div className="panel-surface p-5 text-center" role="alert">
             <div className="eyebrow eyebrow-accent">No se pudo cargar esta pantalla</div>
-            <p className="mt-2 text-[13px] text-[var(--color-muted)]">Puede ser la conexión. Tus datos están a salvo.</p>
-            <button onClick={() => window.location.reload()} className="glass tap-target mt-4 rounded-full px-6 text-[12px] font-semibold uppercase tracking-[0.1em]">
+            <p className="mt-2 text-[13px] text-[var(--color-muted)]">Puede ser la conexión o una versión vieja guardada. Tus datos están a salvo.</p>
+            <p className="num mt-2 break-words text-[12px] text-[var(--color-muted-2)]">{error.message}</p>
+            <button onClick={() => void repairAndReload()} className="glass tap-target mt-4 rounded-full px-6 text-[12px] font-semibold uppercase tracking-[0.1em]">
               Reintentar
             </button>
           </div>

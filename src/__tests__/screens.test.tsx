@@ -37,15 +37,16 @@ describe("Hoy", () => {
     ]);
     render(<Hoy onStartEntreno={() => {}} onNavigate={() => {}} />);
 
-    const tile = await screen.findByRole("button", { name: /Agua 2L\+/i });
+    // Anchored: on some days the weekly-summary card also mentions the habit by name.
+    const tile = await screen.findByRole("button", { name: /^Agua 2L\+/i });
     expect(tile).toHaveAttribute("aria-pressed", "false");
     fireEvent.click(tile);
 
     await waitFor(async () => expect((await db.habitDays.get(todayISO()))?.done).toEqual(["agua"]));
-    await waitFor(() => expect(screen.getByRole("button", { name: /Agua 2L\+/i })).toHaveAttribute("aria-pressed", "true"));
+    await waitFor(() => expect(screen.getByRole("button", { name: /^Agua 2L\+/i })).toHaveAttribute("aria-pressed", "true"));
 
     // and it toggles back off
-    fireEvent.click(screen.getByRole("button", { name: /Agua 2L\+/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^Agua 2L\+/i }));
     await waitFor(async () => expect((await db.habitDays.get(todayISO()))?.done).toEqual([]));
   });
 

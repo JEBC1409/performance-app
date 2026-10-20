@@ -1,11 +1,12 @@
 import { Component } from "react";
 import type { ErrorInfo, ReactNode } from "react";
+import { repairAndReload } from "@/lib/repair";
 
 interface Props {
   children: ReactNode;
   /** Local fallback for a contained section; without it a crash shows the
    * full-screen "Algo se rompió". Receives a function that retries. */
-  fallback?: (reset: () => void) => ReactNode;
+  fallback?: (reset: () => void, error: Error) => ReactNode;
 }
 
 interface State {
@@ -26,7 +27,7 @@ export class ErrorBoundary extends Component<Props, State> {
   reset = () => this.setState({ error: null });
 
   render() {
-    if (this.state.error && this.props.fallback) return this.props.fallback(this.reset);
+    if (this.state.error && this.props.fallback) return this.props.fallback(this.reset, this.state.error);
     if (this.state.error) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)] px-6">
@@ -37,7 +38,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </p>
             <p className="text-[12px] text-[var(--color-muted-2)] mt-2 num">{this.state.error.message}</p>
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => void repairAndReload()}
               className="btn-primary mt-4 w-full rounded-full border border-[rgb(var(--accent-light-rgb)/0.5)] py-2.5 text-[12.5px] font-semibold uppercase tracking-wide text-white"
             >
               Recargar
