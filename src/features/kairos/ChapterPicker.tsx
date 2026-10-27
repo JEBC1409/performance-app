@@ -9,7 +9,7 @@ function ChevronGlyph() {
   );
 }
 
-const WIDTH = 220;
+const WIDTH = 268;
 const MAX_HEIGHT = 300;
 
 /** Chapter numbers as a badge grid instead of a long native <select> list —
@@ -68,7 +68,7 @@ export function ChapterPicker({ value, count, onChange }: { value: number; count
         type="button"
         onClick={toggle}
         aria-expanded={open}
-        className={`glass flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-[13px] text-[var(--color-ink)] ${open ? "!border-[var(--color-red)]" : ""}`}
+        className={`tap-target flex w-full items-center justify-between gap-2 rounded-xl px-3 text-sm font-semibold text-[var(--color-ink)] ${open ? "glass-sel" : "glass"}`}
       >
         <span className="num">Capítulo {value}</span>
         <ChevronGlyph />
@@ -79,9 +79,9 @@ export function ChapterPicker({ value, count, onChange }: { value: number; count
             <div
               ref={panelRef}
               style={{ position: "fixed", top: pos.top, left: pos.left, width: WIDTH, maxHeight: MAX_HEIGHT }}
-              className="enter z-50 overflow-y-auto rounded-2xl border border-[var(--color-line-strong)] bg-[var(--color-surface)] p-2.5 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.7)]"
+              className="enter surface-2 z-50 overflow-y-auto rounded-2xl p-2.5"
             >
-              <div className="grid grid-cols-6 gap-1.5">
+              <div className="grid grid-cols-5 gap-1.5">
                 {Array.from({ length: count }, (_, i) => i + 1).map((n) => {
                   const isSelected = n === value;
                   return (
@@ -92,7 +92,8 @@ export function ChapterPicker({ value, count, onChange }: { value: number; count
                         onChange(n);
                         setOpen(false);
                       }}
-                      className={`num flex h-7 items-center justify-center rounded-lg text-[12px] transition-colors ${
+                      aria-current={isSelected ? "true" : undefined}
+                      className={`num flex h-11 items-center justify-center rounded-lg text-sm transition-colors ${
                         isSelected ? "glass-on font-semibold" : "glass-flat text-[var(--color-ink)]"
                       }`}
                     >

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { askNotificationPermission } from "@/lib/notifyPermission";
+import { Switch } from "../perfil/Switch";
 import { Button, Card } from "@/ui";
 import { showToast } from "@/ui/Toast";
 import { useNotifyPrefs } from "@/hooks/useScheduleNotifications";
@@ -24,7 +26,7 @@ function Segmented<T extends string | number>({ value, options, onChange, label 
           key={String(o.value)}
           onClick={() => onChange(o.value)}
           aria-pressed={value === o.value}
-          className={`rounded-full px-2 py-2 text-[12px] font-semibold ${
+          className={`tap-target rounded-full px-2 text-sm font-semibold ${
             value === o.value ? "glass-on" : "glass-flat text-[var(--color-muted)] hover:text-[var(--color-ink)]"
           }`}
         >
@@ -48,8 +50,8 @@ export function ScheduleNotifyCard() {
       return;
     }
     let perm = permission;
-    if (perm === "default" && notificationsSupported()) {
-      perm = await Notification.requestPermission();
+    if (perm === "default") {
+      perm = await askNotificationPermission();
       setPermission(perm);
     }
     if (perm === "granted") {
@@ -72,24 +74,15 @@ export function ScheduleNotifyCard() {
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="card-title">Avisos del horario</h2>
-          <p className="mt-1.5 text-[12.5px] leading-snug text-[var(--color-muted)]">Una notificación cuando empieza cada bloque que te toca hoy, para que no dependa de acordarte.</p>
+          <p className="mt-1.5 text-sm leading-snug text-[var(--color-muted)]">Una notificación cuando empieza cada bloque que te toca hoy, para que no dependa de acordarte.</p>
         </div>
-        <button
-          onClick={toggle}
-          role="switch"
-          aria-checked={prefs.enabled}
-          aria-label="Avisos del horario"
-          disabled={permission === "unsupported"}
-          className={`mt-0.5 h-7 w-12 flex-none rounded-full ${prefs.enabled ? "glass-on" : "glass"}`}
-        >
-          <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${prefs.enabled ? "left-[26px]" : "left-0.5"}`} />
-        </button>
+        <Switch checked={prefs.enabled} onChange={() => void toggle()} label="Avisos del horario" disabled={permission === "unsupported"} className="mt-0.5" />
       </div>
 
       {permission === "unsupported" ? (
-        <p className="mt-3 text-[12px] text-[var(--color-muted-2)]">Este navegador no admite notificaciones. En iPhone, instala la app en la pantalla de inicio primero.</p>
+        <p className="mt-3 text-sm leading-snug text-[var(--color-muted)]">Este navegador no admite notificaciones. En iPhone, instala la app en la pantalla de inicio primero.</p>
       ) : permission === "denied" ? (
-        <p className="mt-3 text-[12px] text-[var(--color-red-ink)]">Bloqueaste las notificaciones para este sitio. Habilítalas en los ajustes del navegador para usar los avisos.</p>
+        <p className="mt-3 text-sm leading-snug text-[var(--color-accent-text)]">Bloqueaste las notificaciones para este sitio. Habilítalas en los ajustes del navegador para usar los avisos.</p>
       ) : (
         <>
           {prefs.enabled ? (
@@ -97,7 +90,7 @@ export function ScheduleNotifyCard() {
               <Segmented label="Cuándo avisar" value={prefs.lead} options={LEADS} onChange={(lead) => setNotifyPrefs({ lead })} />
               <Segmented label="Qué avisar" value={prefs.scope} options={SCOPES} onChange={(scope) => setNotifyPrefs({ scope })} />
               <div className="mt-0.5 flex items-center justify-between gap-3">
-                <span className="text-[12px] text-[var(--color-muted)]">
+                <span className="text-sm text-[var(--color-muted)]">
                   {next ? (
                     <>
                       Próximo aviso: <span className="num font-semibold text-[var(--color-ink)]">{fmtMin(next.fireMin)}</span> · {next.event.cell.text}
@@ -106,13 +99,13 @@ export function ScheduleNotifyCard() {
                     "No quedan avisos por hoy"
                   )}
                 </span>
-                <Button className="flex-none px-3 py-1.5 text-[12px]" onClick={test}>
+                <Button className="flex-none px-4" onClick={test}>
                   Probar
                 </Button>
               </div>
             </div>
           ) : null}
-          <p className="mt-3 text-[12px] leading-snug text-[var(--color-muted-2)]">Llegan mientras la app esté abierta o instalada y en ejecución; si el sistema la cierra del todo, no puede avisarte.</p>
+          <p className="mt-3 text-meta leading-snug text-[var(--color-muted)]">Llegan mientras la app esté abierta o instalada y en ejecución; si el sistema la cierra del todo, no puede avisarte.</p>
         </>
       )}
     </Card>

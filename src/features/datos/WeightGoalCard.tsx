@@ -1,56 +1,60 @@
 import { useState } from "react";
 import { useWeightGoal } from "@/hooks/useWeightGoal";
-import { Button, Card, CardTitle, DateField, Field, Input } from "@/ui";
+import { Button, Card, DateField, Field, Input, Sheet } from "@/ui";
 import { addDays, fmtDateFull, todayISO } from "@/lib/date";
 import { fromKg, toKg, unitLabel } from "@/lib/units";
 import type { Unit } from "@/db/db";
 import { projectGoal, sanitizeGoal } from "@/lib/weightGoal";
 import type { WeightPoint } from "@/lib/weightGoal";
 import { showToast } from "@/ui/Toast";
+import { FieldError } from "./components";
 
 const fmt = (n: number) => String(Math.round(Math.abs(n) * 10) / 10);
 
-/** "75 kg by Dec 31": what's left, the pace you need, the pace you have, and when that gets you there. */
+/** "75 kg by Dec 31": what's left, the pace you need, the pace you have, and when that gets you there.
+ * Without a goal it is a single line; the form lives in a sheet so it never pushes the chart away. */
 export function WeightGoalCard({ points, unit }: { points: WeightPoint[]; unit: Unit }) {
   const { goal, save, clear } = useWeightGoal();
   const [editing, setEditing] = useState(false);
-  const [target, setTarget] = useState("");
-  const [by, setBy] = useState(addDays(todayISO(), 90));
   const u = unitLabel(unit);
 
-  async function submit() {
-    const typed = parseFloat(target.replace(",", "."));
-    const g = Number.isNaN(typed) ? null : sanitizeGoal({ targetKg: toKg(typed, unit), byDate: by });
-    if (!g || by <= todayISO()) {
-      showToast("Pon un peso razonable y una fecha futura");
-      return;
-    }
-    await save(g);
-    setEditing(false);
-    showToast("Meta guardada");
-  }
+  const sheet = (
+    <Sheet open={editing} onClose={() => setEditing(false)} title="Meta de peso">
+      <GoalForm
+        unit={unit}
+        initialKg={goal?.targetKg}
+        initialBy={goal?.byDate}
+        onSave={async (g) => {
+          await save(g);
+          setEditing(false);
+          showToast("Meta guardada");
+        }}
+        onClear={
+          goal
+            ? async () => {
+                await clear();
+                setEditing(false);
+                showToast("Meta quitada");
+              }
+            : undefined
+        }
+      />
+    </Sheet>
+  );
 
-  if (!goal || editing) {
+  if (!goal) {
     return (
       <Card>
-        <CardTitle>Meta de peso</CardTitle>
-        <p className="mt-2 text-[12.5px] text-[var(--color-muted)]">Pon el peso al que quieres llegar y la fecha. Con tus registros te digo si vas a tiempo.</p>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <Field label={`Peso meta (${u})`}>
-            <Input inputMode="decimal" value={target} onChange={(e) => setTarget(e.target.value)} placeholder={goal ? String(fromKg(goal.targetKg, unit)) : unit === "lb" ? "165" : "75"} />
-          </Field>
-          <Field label="Para el">
-            <DateField value={by} min={addDays(todayISO(), 1)} onChange={setBy} size="sm" />
-          </Field>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="card-title">Meta de peso</h2>
+            <p className="mt-1 text-sm text-[var(--color-muted)]">Fija un peso y una fecha y te digo si vas a tiempo.</p>
+          </div>
+          <Button variant="secondary" className="flex-none" onClick={() => setEditing(true)}>
+            Fijar meta
+          </Button>
         </div>
-        <Button variant="outline" className="mt-3 w-full" onClick={submit}>
-          Fijar meta
-        </Button>
-        {editing ? (
-          <button onClick={() => setEditing(false)} className="mt-2 text-[12px] text-[var(--color-muted)] underline">
-            Cancelar
-          </button>
-        ) : null}
+        {sheet}
       </Card>
     );
   }
@@ -99,33 +103,91 @@ export function WeightGoalCard({ points, unit }: { points: WeightPoint[]; unit: 
 
   return (
     <Card>
-      <div className="flex items-center justify-between">
-        <CardTitle>Meta de peso</CardTitle>
-        <div className="flex items-center gap-3 text-[12px] text-[var(--color-muted)]">
-          <button onClick={() => setEditing(true)} className="underline">
-            Cambiar
-          </button>
-          <button
-            onClick={async () => {
-              await clear();
-              showToast("Meta quitada");
-            }}
-            className="underline"
-          >
-            Quitar
-          </button>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="card-title">Meta de peso</h2>
+          <div className="mt-1 flex items-baseline gap-2">
+            <span className="num font-[var(--font-display)] text-screen font-light leading-none">{fromKg(goal.targetKg, unit)}</span>
+            <span className="text-sm text-[var(--color-muted)]">
+              {u} · para el {fmtDateFull(goal.byDate)}
+            </span>
+          </div>
         </div>
+        <Button variant="ghost" className="flex-none" onClick={() => setEditing(true)}>
+          Cambiar
+        </Button>
       </div>
-      <div className="mt-2 flex items-baseline gap-2">
-        <span className="num font-[var(--font-display)] text-[28px] font-light leading-none">{fromKg(goal.targetKg, unit)}</span>
-        <span className="text-[12px] text-[var(--color-muted)]">
-          {u} · para el {fmtDateFull(goal.byDate)}
-        </span>
-      </div>
-      <div className="mt-3 text-[14px] font-semibold" style={{ color: tone }}>
+      <div className="mt-3 text-sm font-semibold" style={{ color: tone }}>
         {headline}
       </div>
-      {detail ? <p className="mt-1 text-[12px] leading-snug text-[var(--color-muted)]">{detail}</p> : null}
+      {detail ? <p className="mt-1 text-sm leading-snug text-[var(--color-muted)]">{detail}</p> : null}
+      {sheet}
     </Card>
+  );
+}
+
+function GoalForm({
+  unit,
+  initialKg,
+  initialBy,
+  onSave,
+  onClear,
+}: {
+  unit: Unit;
+  initialKg?: number;
+  initialBy?: string;
+  onSave: (g: NonNullable<ReturnType<typeof sanitizeGoal>>) => Promise<void>;
+  onClear?: () => Promise<void>;
+}) {
+  const u = unitLabel(unit);
+  const [target, setTarget] = useState(initialKg != null ? String(fromKg(initialKg, unit)) : "");
+  const [by, setBy] = useState(initialBy && initialBy > todayISO() ? initialBy : addDays(todayISO(), 90));
+  const [error, setError] = useState("");
+
+  async function submit() {
+    const typed = parseFloat(target.replace(",", "."));
+    const g = Number.isNaN(typed) ? null : sanitizeGoal({ targetKg: toKg(typed, unit), byDate: by });
+    if (!g || by <= todayISO()) {
+      setError("Pon un peso razonable y una fecha futura.");
+      return;
+    }
+    await onSave(g);
+  }
+
+  return (
+    <form
+      className="flex flex-col gap-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void submit();
+      }}
+    >
+      <p className="text-sm text-[var(--color-muted)]">Pon el peso al que quieres llegar y la fecha. Con tus registros te digo si vas a tiempo.</p>
+      <Field label={`Peso meta (${u})`}>
+        <Input
+          autoFocus
+          inputMode="decimal"
+          value={target}
+          aria-invalid={error ? true : undefined}
+          onChange={(e) => {
+            setTarget(e.target.value);
+            setError("");
+          }}
+          placeholder={unit === "lb" ? "165" : "75"}
+        />
+      </Field>
+      <Field label="Para el">
+        <DateField value={by} min={addDays(todayISO(), 1)} onChange={setBy} />
+      </Field>
+      {error ? <FieldError>{error}</FieldError> : null}
+      <Button type="submit" variant="primary" className="w-full">
+        Fijar meta
+      </Button>
+      {onClear ? (
+        <Button type="button" variant="ghost" className="w-full" onClick={() => void onClear()}>
+          Quitar meta
+        </Button>
+      ) : null}
+    </form>
   );
 }

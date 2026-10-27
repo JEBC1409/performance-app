@@ -3,7 +3,7 @@ export type BlockType = "clase" | "gym" | "mouredev" | "ingles" | "dios" | "libr
 export interface HorarioCell {
   text: string;
   type: BlockType;
-  /** The day's must-do block: rendered with a red border + glow. */
+  /** The day's must-do block: rendered with a firmer accent border (no glow). */
   key?: boolean;
   /** Optional/light block: rendered dimmer than a regular one. */
   soft?: boolean;
@@ -63,21 +63,24 @@ export const BLOCK_TINT: Record<BlockType, string> = {
 };
 
 export const BLOCK_BORDER: Record<BlockType, string> = {
-  clase: "rgb(var(--accent-rgb) / 0.55)",
-  gym: "rgb(var(--fg-rgb) / 0.4)",
-  mouredev: "rgb(var(--fg-rgb) / 0.22)",
-  ingles: "rgb(var(--accent-rgb) / 0.55)",
-  dios: "rgb(var(--gold-rgb) / 0.5)",
-  libre: "rgb(var(--fg-rgb) / 0.14)",
+  clase: "rgb(var(--accent-rgb) / 0.75)",
+  gym: "rgb(var(--fg-rgb) / 0.45)",
+  mouredev: "rgb(var(--fg-rgb) / 0.3)",
+  ingles: "rgb(var(--accent-rgb) / 0.75)",
+  dios: "rgb(var(--gold-rgb) / 0.75)",
+  libre: "rgb(var(--fg-rgb) / 0.2)",
   otro: "transparent",
 };
 
+/** Block text is always ink (or muted for the quiet types): a coloured word on a tinted
+ * block measured 2.3-3.5:1 in the light theme. The type's colour lives in the border
+ * and in the dot (BLOCK_COLOR) instead. */
 export const BLOCK_TEXT: Record<BlockType, string> = {
-  clase: "var(--color-red)",
+  clase: "var(--color-ink)",
   gym: "var(--color-ink)",
-  mouredev: "var(--color-muted)",
-  ingles: "var(--color-red)",
-  dios: "var(--color-gold)",
+  mouredev: "var(--color-ink)",
+  ingles: "var(--color-ink)",
+  dios: "var(--color-ink)",
   libre: "var(--color-muted)",
   otro: "var(--color-muted)",
 };

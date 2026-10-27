@@ -7,13 +7,13 @@ import { BLOCK_LABEL, currentHorarioConfig } from "@/data/horario";
 import type { BlockCell, BlockType, HorarioConfig } from "@/data/horario";
 import { saveHorario } from "@/lib/appConfig";
 import { clearBlock, insertRow, removeRow, renameRow, resizeBlock, segAt, setBlock, validTimeLabel } from "@/lib/horarioEdit";
-import { DIAS } from "@/lib/date";
+import { dayName } from "./dayName";
 
 const TYPES = Object.keys(BLOCK_LABEL).filter((t) => t !== "otro") as BlockType[];
 
 function Flag({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" onClick={onClick} aria-pressed={on} className={`rounded-full px-3 py-1.5 text-[12px] font-semibold ${on ? "glass-on" : "glass text-[var(--color-muted)]"}`}>
+    <button type="button" onClick={onClick} aria-pressed={on} className={`tap-target glass rounded-full px-4 text-sm font-semibold ${on ? "" : "text-[var(--color-muted)]"}`}>
       {children}
     </button>
   );
@@ -54,7 +54,7 @@ export function BlockSheet({ day, row, onClose }: { day: number; row: number; on
   const rowsLabel = cfg.times[row];
 
   return (
-    <Sheet open onClose={onClose} title={`${DIAS[day]} · ${rowsLabel}`}>
+    <Sheet open onClose={onClose} title={`${dayName(day)} · ${rowsLabel}`}>
       <div className="flex flex-col gap-4">
         <Field label="¿Qué toca?">
           <Input value={text} maxLength={80} autoFocus placeholder="Ej. Gym" onChange={(e) => setText(e.target.value)} />
@@ -83,10 +83,10 @@ export function BlockSheet({ day, row, onClose }: { day: number; row: number; on
 
         {seg ? (
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => apply(resizeBlock(currentHorarioConfig(), day, row, 1), "La fila de abajo ya está ocupada")} className="glass rounded-full px-3.5 py-2 text-[12px] font-semibold text-[var(--color-muted)]">
+            <button type="button" onClick={() => apply(resizeBlock(currentHorarioConfig(), day, row, 1), "La fila de abajo ya está ocupada")} className="glass tap-target rounded-full px-4 text-sm font-semibold text-[var(--color-muted)]">
               <span className="inline-flex items-center gap-1.5">Alargar una fila <Icon name="arrow-down" size={13} /></span>
             </button>
-            <button type="button" onClick={() => apply(resizeBlock(currentHorarioConfig(), day, row, -1), "El bloque ya ocupa una sola fila")} className="glass rounded-full px-3.5 py-2 text-[12px] font-semibold text-[var(--color-muted)]">
+            <button type="button" onClick={() => apply(resizeBlock(currentHorarioConfig(), day, row, -1), "El bloque ya ocupa una sola fila")} className="glass tap-target rounded-full px-4 text-sm font-semibold text-[var(--color-muted)]">
               <span className="inline-flex items-center gap-1.5">Acortar una fila <Icon name="arrow-up" size={13} /></span>
             </button>
             <button
@@ -96,7 +96,7 @@ export function BlockSheet({ day, row, onClose }: { day: number; row: number; on
                 onClose();
                 showToast("Bloque vaciado");
               }}
-              className="glass rounded-full px-3.5 py-2 text-[12px] font-semibold text-[var(--color-muted)] hover:text-[var(--color-red-ink)]"
+              className="glass tap-target rounded-full px-4 text-sm font-semibold text-[var(--color-muted)] hover:text-[var(--color-accent-text)]"
             >
               Vaciar
             </button>
@@ -149,7 +149,7 @@ export function RowSheet({ row, onClose }: { row: number; onClose: () => void })
             onClose();
             showToast("Fila eliminada");
           }}
-          className="glass self-center rounded-full px-4 py-2 text-[12px] font-semibold text-[var(--color-muted)] hover:text-[var(--color-red-ink)]"
+          className="glass tap-target self-center rounded-full px-5 text-sm font-semibold text-[var(--color-muted)] hover:text-[var(--color-accent-text)]"
         >
           Eliminar fila
         </button>

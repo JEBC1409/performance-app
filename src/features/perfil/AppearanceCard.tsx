@@ -4,6 +4,7 @@ import { useUiPrefs } from "@/hooks/useUiPrefs";
 import { ACCENTS, DEFAULT_NAV, DEFAULT_UI_PREFS, HOME_CARDS, NAV_SLOTS, NAV_TABS, setUiPrefs } from "@/lib/uiPrefs";
 import type { NavKey } from "@/lib/uiPrefs";
 import { showToast } from "@/ui/Toast";
+import { Switch } from "./Switch";
 
 /** Perfil › Apariencia: accent color, "sobrio" mode, and the order of Hoy. */
 export function AppearanceCard() {
@@ -31,11 +32,9 @@ export function AppearanceCard() {
 
   return (
     <Card>
-      <h2 className="card-title">Apariencia</h2>
-
-      <div className="mt-3">
-        <div className="mb-2 text-[12px] text-[var(--color-muted)]">Color de acento</div>
-        <div className="flex flex-wrap gap-3" role="radiogroup" aria-label="Color de acento">
+      <div>
+        <div className="mb-2 text-sm font-medium">Color de acento</div>
+        <div className="grid grid-cols-4 gap-2" role="radiogroup" aria-label="Color de acento">
           {ACCENTS.map((a) => {
             const on = prefs.accent === a.key;
             return (
@@ -45,7 +44,7 @@ export function AppearanceCard() {
                 aria-checked={on}
                 aria-label={a.label}
                 onClick={() => setUiPrefs({ accent: a.key })}
-                className={`glass hit flex h-11 w-11 items-center justify-center rounded-full ${on ? "!border-white" : ""}`}
+                className={`glass flex h-11 w-full items-center justify-center rounded-full ${on ? "!border-[var(--color-ink)] ring-1 ring-[var(--color-ink)]" : ""}`}
               >
                 <span className="h-6 w-6 rounded-full" style={{ background: a.swatch, boxShadow: on ? `0 0 14px ${a.swatch}` : "none" }} />
               </button>
@@ -55,36 +54,28 @@ export function AppearanceCard() {
       </div>
 
       <div className="mt-4">
-        <div className="mb-2 text-[12px] text-[var(--color-muted)]">Tema</div>
+        <div className="mb-2 text-sm font-medium">Tema</div>
         <div className="glass-track grid grid-cols-3 gap-1 rounded-full p-1" role="radiogroup" aria-label="Tema">
           {([["dark", "Oscuro"], ["light", "Claro"], ["auto", "Automático"]] as const).map(([k, label]) => (
-            <button key={k} role="radio" aria-checked={prefs.theme === k} onClick={() => setUiPrefs({ theme: k })} className={`rounded-full py-2 text-[12px] font-semibold ${prefs.theme === k ? "glass-on" : "glass-flat text-[var(--color-muted)]"}`}>
+            <button key={k} role="radio" aria-checked={prefs.theme === k} onClick={() => setUiPrefs({ theme: k })} className={`tap-target rounded-full px-1 text-sm font-semibold ${prefs.theme === k ? "glass-on" : "glass-flat text-[var(--color-muted)]"}`}>
               {label}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <div>
-          <div className="text-[13px] font-semibold">Modo sobrio</div>
-          <div className="text-[12px] leading-snug text-[var(--color-muted)]">Menos brillo y resplandor; bordes neutros.</div>
+      <div className="mt-4 flex min-h-[var(--control-h)] items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-sm font-medium">Modo sobrio</div>
+          <div className="text-meta leading-snug text-[var(--color-muted)]">Menos brillo y resplandor; bordes neutros.</div>
         </div>
-        <button
-          onClick={() => setUiPrefs({ calm: !prefs.calm })}
-          role="switch"
-          aria-checked={prefs.calm}
-          aria-label="Modo sobrio"
-          className={`h-7 w-12 flex-none rounded-full ${prefs.calm ? "glass-on" : "glass"}`}
-        >
-          <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-all ${prefs.calm ? "left-[26px]" : "left-0.5"}`} />
-        </button>
+        <Switch checked={prefs.calm} onChange={(v) => setUiPrefs({ calm: v })} label="Modo sobrio" />
       </div>
 
       <div className="mt-4">
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-[12px] text-[var(--color-muted)]">Barra de navegación (elige hasta {NAV_SLOTS})</span>
-          <button onClick={() => setUiPrefs({ navTabs: DEFAULT_NAV })} className="text-[12px] text-[var(--color-muted)] hover:text-[var(--color-red-ink)]">
+          <span className="text-sm font-medium">Barra de navegación <span className="font-normal text-[var(--color-muted)]">(hasta {NAV_SLOTS})</span></span>
+          <button onClick={() => setUiPrefs({ navTabs: DEFAULT_NAV })} className="hit text-meta text-[var(--color-muted)] hover:text-[var(--color-accent-text)]">
             Restablecer
           </button>
         </div>
@@ -92,7 +83,7 @@ export function AppearanceCard() {
           {NAV_TABS.map((t) => {
             const idx = prefs.navTabs.indexOf(t.key);
             return (
-              <button key={t.key} onClick={() => toggleNav(t.key)} aria-pressed={idx >= 0} className={`rounded-full px-3.5 py-2 text-[12px] font-semibold ${idx >= 0 ? "glass-on" : "glass text-[var(--color-muted)]"}`}>
+              <button key={t.key} onClick={() => toggleNav(t.key)} aria-pressed={idx >= 0} className={`tap-target rounded-full px-3.5 text-sm font-semibold glass ${idx >= 0 ? "" : "text-[var(--color-muted)]"}`}>
                 {idx >= 0 ? `${idx + 1} · ` : ""}
                 {t.label}
               </button>
@@ -101,23 +92,29 @@ export function AppearanceCard() {
         </div>
       </div>
 
-      <div className="mt-4">
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-[12px] text-[var(--color-muted)]">Orden de las tarjetas en Hoy</span>
-          <button onClick={() => setUiPrefs({ homeOrder: DEFAULT_UI_PREFS.homeOrder })} className="text-[12px] text-[var(--color-muted)] hover:text-[var(--color-red-ink)]">
+      <details className="group mt-4 border-t border-[var(--color-line)] pt-1">
+        <summary className="flex min-h-[var(--control-h)] cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium [&::-webkit-details-marker]:hidden">
+          <span>
+            Orden de las tarjetas en Hoy
+            <span className="block text-meta font-normal text-[var(--color-muted)]">Empieza por {label(prefs.homeOrder[0])}</span>
+          </span>
+          <Icon name="chevron-right" size={18} className="flex-none text-[var(--color-muted)] transition-transform group-open:rotate-90" />
+        </summary>
+        <div className="mb-2 flex justify-end">
+          <button onClick={() => setUiPrefs({ homeOrder: DEFAULT_UI_PREFS.homeOrder })} className="hit text-meta text-[var(--color-muted)] hover:text-[var(--color-accent-text)]">
             Restablecer
           </button>
         </div>
         <ul className="flex flex-col gap-1.5">
           {prefs.homeOrder.map((k, i) => (
-            <li key={k} className="glass flex items-center gap-2 rounded-xl px-3 py-1.5">
-              <span className="num w-4 text-[12px] text-[var(--color-muted-2)]">{i + 1}</span>
-              <span className="flex-1 text-[12.5px]">{label(k)}</span>
+            <li key={k} className="glass flex items-center gap-1 rounded-xl py-0.5 pl-3 pr-1">
+              <span className="num w-5 text-meta text-[var(--color-muted-2)]">{i + 1}</span>
+              <span className="flex-1 text-sm">{label(k)}</span>
               <button
                 onClick={() => move(i, -1)}
                 disabled={i === 0}
                 aria-label={`Subir ${label(k)}`}
-                className="glass-flat hit flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-muted)] disabled:opacity-30"
+                className="glass-flat flex h-11 w-11 items-center justify-center rounded-full text-[var(--color-muted)] disabled:opacity-30"
               >
                 <Icon name="arrow-up" size={15} />
               </button>
@@ -125,14 +122,14 @@ export function AppearanceCard() {
                 onClick={() => move(i, 1)}
                 disabled={i === prefs.homeOrder.length - 1}
                 aria-label={`Bajar ${label(k)}`}
-                className="glass-flat hit flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-muted)] disabled:opacity-30"
+                className="glass-flat flex h-11 w-11 items-center justify-center rounded-full text-[var(--color-muted)] disabled:opacity-30"
               >
                 <Icon name="arrow-down" size={15} />
               </button>
             </li>
           ))}
         </ul>
-      </div>
+      </details>
     </Card>
   );
 }

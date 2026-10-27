@@ -1,7 +1,9 @@
-import { useMemo } from "react";
-import { useMoureWeeks } from "@/hooks/useMoureWeeks";
+import { useMemo, useState } from "react";
+import { useMoureWeeks, type MoureWeekView } from "@/hooks/useMoureWeeks";
 import { db } from "@/db/db";
-import { Card, PageHeader, Stat, Button, BarChart, type BarPoint } from "@/ui";
+import { Button, Card, Field, Input, PageHeader, BarChart, type BarPoint } from "@/ui";
+import { Icon } from "@/ui/Icon";
+import { visibleWeekNumbers } from "./visibleWeeks";
 import { MOUREDEV_TARGET_LABEL, MOUREDEV_GOAL_HOURS_PER_WEEK } from "@/data/mouredev";
 
 const DEV_TOOLS = [
@@ -15,21 +17,89 @@ const DEV_TOOLS = [
   { label: "LeetCode", url: "https://leetcode.com" },
 ];
 
+type WeekPatch = Partial<{ date: string; topic: string; hours: number | null; project: string }>;
+
+function WeekRow({ w, open, onToggleOpen, onPatch, onDone }: { w: MoureWeekView; open: boolean; onToggleOpen: () => void; onPatch: (f: WeekPatch) => void; onDone: () => void }) {
+  const hours = w.effectiveHours > 0 ? `${w.effectiveHours} h` : "—";
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onToggleOpen}
+        aria-expanded={open}
+        className="flex min-h-[var(--control-h)] w-full items-center gap-3 px-4 py-1 text-left"
+      >
+        <span className="num w-8 flex-none text-sm font-semibold text-[var(--color-muted)]">S{w.week}</span>
+        <span className={`min-w-0 flex-1 truncate text-sm ${w.topic ? "" : "text-[var(--color-muted)]"}`}>{w.topic || "Sin tema todavía"}</span>
+        <span className="num flex-none text-sm text-[var(--color-muted)]">{hours}</span>
+        <span className="flex w-5 flex-none justify-center text-[var(--color-good)]">
+          {w.done ? (
+            <>
+              <Icon name="check" size={16} />
+              <span className="sr-only">Completada</span>
+            </>
+          ) : null}
+        </span>
+        <Icon name="chevron-right" size={16} className={`flex-none text-[var(--color-muted)] transition-transform duration-150 ${open ? "rotate-90" : ""}`} />
+      </button>
+
+      {open ? (
+        <div className="flex flex-col gap-3 px-4 pb-4 pt-1">
+          <Field label="Tema o módulo">
+            <Input defaultValue={w.topic} placeholder="Ej. Funciones y módulos" maxLength={80} onBlur={(e) => onPatch({ topic: e.target.value })} />
+          </Field>
+          <div className="grid grid-cols-[3fr_2fr] gap-3">
+            <Field label="Fecha">
+              <Input type="date" className="w-full min-w-0" defaultValue={w.date} onChange={(e) => onPatch({ date: e.target.value })} />
+            </Field>
+            <Field label="Horas anotadas">
+              <Input
+                inputMode="decimal"
+                className="num w-full min-w-0"
+                placeholder="0"
+                defaultValue={w.hours ?? ""}
+                onBlur={(e) => {
+                  const n = parseFloat(e.target.value.replace(",", "."));
+                  onPatch({ hours: Number.isFinite(n) && n >= 0 ? n : null });
+                }}
+              />
+            </Field>
+          </div>
+          {w.focusHours > 0 ? <p className="num text-sm text-[var(--color-muted)]">Focus midió {w.focusHours} h en esta semana.</p> : null}
+          <Field label="Proyecto">
+            <Input defaultValue={w.project} placeholder="Ej. Calculadora CLI" maxLength={80} onBlur={(e) => onPatch({ project: e.target.value })} />
+          </Field>
+          <Button selected={w.done} onClick={onDone} className="w-full">
+            {w.done ? "Semana completada" : "Marcar como completada"}
+          </Button>
+        </div>
+      ) : null}
+    </li>
+  );
+}
+
 export function Mouredev() {
   const weeks = useMoureWeeks();
+  const [showAll, setShowAll] = useState(false);
+  // "auto" = the next week to do; after a tap it is the week you chose (or none).
+  const [openWeek, setOpenWeek] = useState<number | null | "auto">("auto");
 
-  const totalHours = Math.round((weeks ?? []).reduce((a, r) => a + r.effectiveHours, 0) * 10) / 10;
-  const doneWeeks = (weeks ?? []).filter((w) => w.done).length;
+  const list = useMemo(() => weeks ?? [], [weeks]);
+  const totalHours = Math.round(list.reduce((a, r) => a + r.effectiveHours, 0) * 10) / 10;
+  const doneWeeks = list.filter((w) => w.done).length;
+  const nextWeek = list.find((w) => !w.done)?.week ?? null;
+  const open = openWeek === "auto" ? nextWeek : openWeek;
 
   const hourPoints: BarPoint[] = useMemo(
-    () =>
-      (weeks ?? [])
-        .filter((w) => w.effectiveHours > 0)
-        .map((w) => ({ label: `S${w.week}`, value: w.effectiveHours, highlight: w.done })),
-    [weeks]
+    () => list.filter((w) => w.effectiveHours > 0).map((w) => ({ label: `S${w.week}`, value: w.effectiveHours, highlight: w.done })),
+    [list],
   );
 
-  async function patch(week: number, fields: Partial<{ date: string; topic: string; hours: number | null; project: string }>) {
+  const visible = useMemo(() => visibleWeekNumbers(list), [list]);
+  const shown = showAll ? list : list.filter((w) => visible.has(w.week));
+  const hidden = list.length - list.filter((w) => visible.has(w.week)).length;
+
+  async function patch(week: number, fields: WeekPatch) {
     await db.moureWeeks.update(week, fields);
   }
 
@@ -41,133 +111,102 @@ export function Mouredev() {
     const last = weeks?.[weeks.length - 1];
     const week = (last?.week ?? 0) + 1;
     await db.moureWeeks.add({ week, date: "", topic: "", hours: null, project: "", done: false });
+    setShowAll(true);
+    setOpenWeek(week);
   }
 
   return (
-    <>
-      {/* ── Decoración lateral (desktop) — fuera del contenedor "enter" para
-         no quedar atrapada por su transform (ver nota en Kairos.tsx). */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed left-0 top-1/3 z-[-1] hidden -rotate-6 select-none font-mono text-[170px] font-bold leading-none text-[var(--color-red-ink)] opacity-[0.07] sidebar:block"
-      >
-        {"</>"}
-      </div>
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed right-2 bottom-16 z-[-1] hidden rotate-6 select-none font-mono text-[150px] font-bold leading-none text-[var(--color-red-ink)] opacity-[0.07] sidebar:block"
-      >
-        {"{ }"}
-      </div>
+    <div className="flex flex-col gap-4 enter">
+      <PageHeader eyebrow="MoureDev" title="Ruta Python" subtitle={MOUREDEV_TARGET_LABEL} />
 
-      <div className="flex flex-col gap-4 enter">
-        <PageHeader eyebrow="MoureDev" title="Ruta Python" subtitle={`${MOUREDEV_TARGET_LABEL} · ~${MOUREDEV_GOAL_HOURS_PER_WEEK}h/semana`} />
-
-        <p className="-mt-1 text-[12px] leading-snug text-[var(--color-muted)]">
-          Los bloques de Focus cuyo nombre diga “MoureDev” o “Python” suman solos a su semana (según la fecha de cada fila). Cada semana cuenta lo mayor entre lo que anotas y lo que mide Focus.
+      <Card className="panel-surface-glow">
+        <div className="eyebrow">Horas totales</div>
+        <div className="mt-1.5 flex items-baseline gap-2">
+          <span className="num font-[var(--font-display)] text-hero font-light tracking-tight text-[var(--color-ink)]">{totalHours}</span>
+          <span className="text-title text-[var(--color-muted)]">h</span>
+        </div>
+        <p className="mt-1 text-sm text-[var(--color-muted)]">
+          {doneWeeks} de {list.length || 24} semanas completas · meta ~{MOUREDEV_GOAL_HOURS_PER_WEEK} h por semana
         </p>
-        <div className="grid grid-cols-2 gap-2.5">
-          <Stat label="Horas totales" value={totalHours} sub={`de ~${MOUREDEV_GOAL_HOURS_PER_WEEK}h/semana`} accent />
-          <Stat label="Semanas completas" value={`${doneWeeks} / ${weeks?.length ?? 24}`} />
+
+        <div className="mt-4">
+          <h2 className="mb-2 text-sm font-semibold">Horas por semana</h2>
+          {hourPoints.length >= 2 ? (
+            <BarChart points={hourPoints} height={100} goalLine={MOUREDEV_GOAL_HOURS_PER_WEEK} unit="h" />
+          ) : (
+            <p className="rounded-xl border border-dashed border-[var(--color-line-strong)] px-3 py-4 text-sm leading-snug text-[var(--color-muted)]">
+              {hourPoints.length
+                ? "Con la segunda semana con horas verás aquí cómo van."
+                : "Aún no hay horas. Anota las de la semana abajo, o haz un bloque de Focus llamado “MoureDev” o “Python” y se suma solo."}
+            </p>
+          )}
         </div>
 
-        {hourPoints.length ? (
-          <Card>
-            <h2 className="card-title">Horas por semana</h2>
-            <div className="mt-3">
-              <BarChart points={hourPoints} height={100} goalLine={MOUREDEV_GOAL_HOURS_PER_WEEK} unit="horas registradas" />
-            </div>
-          </Card>
-        ) : null}
+        <details className="group mt-2 border-t border-[var(--color-line)]">
+          <summary className="flex min-h-[var(--control-h)] cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium [&::-webkit-details-marker]:hidden">
+            ¿Cómo se cuentan las horas?
+            <Icon name="chevron-right" size={16} className="flex-none text-[var(--color-muted)] transition-transform group-open:rotate-90" />
+          </summary>
+          <p className="pb-2 text-sm leading-snug text-[var(--color-muted)]">
+            Los bloques de Focus cuyo nombre diga “MoureDev” o “Python” suman solos a su semana, según la fecha de cada semana. Cada semana cuenta lo mayor entre lo que anotas y lo que mide Focus.
+          </p>
+        </details>
+      </Card>
 
-        <Card>
-          <h2 className="card-title">Herramientas para el desarrollador</h2>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {DEV_TOOLS.map((t) => (
-              <a
-                key={t.label}
-                href={t.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-full border border-[var(--color-line-strong)] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-muted)] transition-colors hover:border-[var(--color-red)] hover:text-[var(--color-red-ink)]"
-              >
-                {t.label}
-              </a>
+      <Card padded={false}>
+        <div className="flex items-baseline justify-between gap-3 px-4 pb-1 pt-4">
+          <h2 className="card-title">Semanas</h2>
+          <span className="num text-sm text-[var(--color-muted)]">
+            {doneWeeks} / {list.length || 24}
+          </span>
+        </div>
+        {weeks === undefined ? (
+          <div className="px-4 py-6 text-sm text-[var(--color-muted)]">Cargando…</div>
+        ) : (
+          <ul className="divide-y divide-[var(--color-line)]">
+            {shown.map((w) => (
+              <WeekRow
+                key={w.week}
+                w={w}
+                open={open === w.week}
+                onToggleOpen={() => setOpenWeek(open === w.week ? null : w.week)}
+                onPatch={(f) => void patch(w.week, f)}
+                onDone={() => void toggleDone(w.week, w.done)}
+              />
             ))}
-          </div>
-        </Card>
+          </ul>
+        )}
+        <div className="flex flex-col gap-2 border-t border-[var(--color-line)] p-3">
+          {hidden > 0 || showAll ? (
+            <Button variant="ghost" className="w-full" onClick={() => setShowAll((v) => !v)} aria-expanded={showAll}>
+              {showAll ? "Ocultar las semanas vacías" : `Ver todas (${hidden} más)`}
+            </Button>
+          ) : null}
+          <Button className="w-full" onClick={addWeek}>
+            + Agregar semana
+          </Button>
+        </div>
+      </Card>
 
-        <Card padded={false} className="panel-surface-glow">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-[12px] min-w-[560px]">
-              <thead>
-                <tr className="text-[12px] uppercase tracking-wide text-[var(--color-muted)] border-b border-[var(--color-line)]">
-                  <th className="text-left px-3 py-2.5">Sem</th>
-                  <th className="text-left px-2 py-2.5">Fecha</th>
-                  <th className="text-left px-2 py-2.5">Tema / módulo</th>
-                  <th className="text-left px-2 py-2.5">Horas</th>
-                  <th className="text-left px-2 py-2.5">Proyecto</th>
-                  <th className="text-center px-2 py-2.5">✓</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(weeks ?? []).map((w) => (
-                  <tr key={w.week} className={`border-t border-[var(--color-line)] ${w.done ? "bg-[var(--color-good-soft)]" : ""}`}>
-                    <td className="num px-3 py-1.5 text-[var(--color-muted)]">{w.week}</td>
-                    <td className="px-1 py-1.5">
-                      <input
-                        type="date"
-                        defaultValue={w.date}
-                        onBlur={(e) => patch(w.week, { date: e.target.value })}
-                        className="bg-transparent px-1.5 py-1 text-[12px] outline-none focus:bg-[var(--color-surface-2)] focus:rounded-lg w-[130px]"
-                      />
-                    </td>
-                    <td className="px-1 py-1.5">
-                      <input
-                        defaultValue={w.topic}
-                        onBlur={(e) => patch(w.week, { topic: e.target.value })}
-                        placeholder="Tema"
-                        className="bg-transparent px-1.5 py-1 text-[12px] outline-none focus:bg-[var(--color-surface-2)] focus:rounded-lg w-full min-w-[160px]"
-                      />
-                    </td>
-                    <td className="px-1 py-1.5">
-                      {w.focusHours > 0 ? <div className="num px-1.5 pt-0.5 text-[12px] text-[var(--color-gold)]" title="Medido por Focus">Focus {w.focusHours} h</div> : null}
-                      <input
-                        defaultValue={w.hours ?? ""}
-                        onBlur={(e) => patch(w.week, { hours: e.target.value ? parseFloat(e.target.value) : null })}
-                        placeholder="0"
-                        inputMode="decimal"
-                        className="num bg-transparent px-1.5 py-1 text-[12px] outline-none focus:bg-[var(--color-surface-2)] focus:rounded-lg w-14"
-                      />
-                    </td>
-                    <td className="px-1 py-1.5">
-                      <input
-                        defaultValue={w.project}
-                        onBlur={(e) => patch(w.week, { project: e.target.value })}
-                        placeholder="Proyecto"
-                        className="bg-transparent px-1.5 py-1 text-[12px] outline-none focus:bg-[var(--color-surface-2)] focus:rounded-lg w-full min-w-[140px]"
-                      />
-                    </td>
-                    <td className="text-center px-2 py-1.5">
-                      <button
-                        onClick={() => toggleDone(w.week, w.done)}
-                        className={`hit h-5 w-5 rounded-full ${
-                          w.done ? "glass !border-[var(--color-good)] !bg-[rgba(47,174,102,0.55)] text-white" : "glass"
-                        }`}
-                      >
-                        {w.done ? "✓" : ""}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="p-3">
-            <Button onClick={addWeek}>+ Agregar semana</Button>
-          </div>
-        </Card>
-      </div>
-    </>
+      <details className="group panel-surface">
+        <summary className="flex min-h-[var(--control-h)] cursor-pointer list-none items-center justify-between gap-3 px-4 [&::-webkit-details-marker]:hidden">
+          <span className="card-title">Herramientas</span>
+          <Icon name="chevron-right" size={16} className="flex-none text-[var(--color-muted)] transition-transform group-open:rotate-90" />
+        </summary>
+        <div className="flex flex-wrap gap-2 px-4 pb-4 pt-1">
+          {DEV_TOOLS.map((t) => (
+            <a
+              key={t.label}
+              href={t.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-[var(--control-h)] items-center rounded-full border border-[var(--color-line-strong)] px-4 text-sm font-semibold text-[var(--color-muted)] transition-colors hover:border-[var(--color-accent-text)] hover:text-[var(--color-accent-text)]"
+            >
+              {t.label}
+            </a>
+          ))}
+        </div>
+      </details>
+    </div>
   );
 }

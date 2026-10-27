@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import Model, { type Muscle, type IExerciseData } from "react-body-highlighter";
+import { Button } from "@/ui";
 import type { MuscleGroup } from "@/data/muscleGroups";
 import { RANK_TIERS, type RankTier } from "@/lib/muscleRank";
 
@@ -60,17 +61,11 @@ export function MuscleBodyDiagram({
 
   return (
     <div className="flex-none flex flex-col items-center gap-2">
-      <div className="flex gap-1 rounded-full border border-[var(--color-line-strong)] p-0.5">
+      <div role="group" aria-label="Lado del cuerpo" className="flex gap-1.5">
         {(["anterior", "posterior"] as View[]).map((v) => (
-          <button
-            key={v}
-            onClick={() => setView(v)}
-            className={`rounded-full px-3 py-1 text-[12px] font-semibold uppercase tracking-wide ${
-              view === v ? "glass-on" : "glass-flat text-[var(--color-muted)]"
-            }`}
-          >
+          <Button key={v} variant="secondary" selected={view === v} onClick={() => setView(v)} className={`!px-4 ${view === v ? "text-[var(--color-accent-text)]" : ""}`}>
             {v === "anterior" ? "Frente" : "Espalda"}
-          </button>
+          </Button>
         ))}
       </div>
       <Model

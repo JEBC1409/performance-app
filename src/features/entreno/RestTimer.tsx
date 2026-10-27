@@ -1,21 +1,7 @@
+import { Button } from "@/ui";
 import type { RestTimerState } from "./useRestTimer";
 
-function DigitBox({ value, urgent }: { value: string; urgent: boolean }) {
-  return (
-    <div
-      className={`num flex h-11 w-11 items-center justify-center rounded-xl border text-[19px] font-bold transition-colors ${
-        urgent ? "border-[var(--color-red)] text-[var(--color-red-ink)]" : "border-[var(--color-line-strong)] text-[var(--color-ink)]"
-      }`}
-      style={{
-        background: "linear-gradient(180deg, rgb(var(--fg-rgb)/0.05), rgb(var(--bg-rgb)/0.3))",
-        boxShadow: "0 1px 0 rgb(var(--fg-rgb)/0.06) inset, 0 -3px 6px -3px rgba(0,0,0,0.6) inset",
-      }}
-    >
-      {value}
-    </div>
-  );
-}
-
+/** The rest countdown floating above the nav while you rest between sets (not in Gym Mode, which has its own). */
 export function RestTimer({
   timer,
   onAdd,
@@ -26,53 +12,45 @@ export function RestTimer({
   onSkip?: () => void;
 }) {
   if (!timer.running) return null;
-  const pct = timer.total > 0 ? (timer.total - timer.remaining) / timer.total : 0;
+  const pct = timer.total > 0 ? Math.min(1, Math.max(0, (timer.total - timer.remaining) / timer.total)) : 0;
   const m = Math.floor(timer.remaining / 60).toString().padStart(2, "0");
   const s = (timer.remaining % 60).toString().padStart(2, "0");
   const urgent = timer.remaining <= 5;
 
   return (
     <div className="fixed bottom-[calc(5.75rem_+_env(safe-area-inset-bottom))] sidebar:bottom-4 left-0 right-0 z-40 flex justify-center px-4">
-      <div
-        className={`flex items-center gap-3 rounded-2xl border px-3.5 py-2.5 ${urgent ? "border-[var(--color-red)]" : "border-[var(--color-line-strong)]"}`}
-        style={{
-          background: "linear-gradient(155deg, rgb(var(--fg-rgb)/0.05), rgb(var(--surface-rgb)/0.85) 55%, rgb(var(--bg-rgb)/0.9) 100%)",
-          boxShadow: `0 18px 40px -20px rgba(0,0,0,0.85), 0 0 ${urgent ? 36 : 22}px -8px rgb(var(--accent-rgb)/${urgent ? 0.75 : 0.4}), 0 1px 0 rgb(var(--fg-rgb)/0.04) inset`,
-          transition: "box-shadow 300ms ease, border-color 300ms ease",
-        }}
-      >
-        <div className="flex flex-col items-center gap-1">
-          <span className={`eyebrow ${urgent ? "text-[var(--color-red-ink)]" : ""}`}>Descanso</span>
-          <div className="relative h-1 w-10 overflow-hidden rounded-full bg-[var(--color-surface-2)]">
-            <div className="h-full rounded-full bg-[var(--color-red)]" style={{ width: `${pct * 100}%`, transition: "width 1s linear" }} />
+      <div className={`surface-2 flex w-full max-w-md flex-col gap-2 rounded-[var(--r-card)] px-4 pb-3 pt-2.5`} style={urgent ? { borderColor: "var(--color-accent-text)" } : undefined} role="timer" aria-live="off" aria-label="Descanso">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col">
+            <span className={`eyebrow ${urgent ? "eyebrow-accent" : ""}`}>Descanso</span>
+            <span className={`num font-[var(--font-display)] text-[34px] font-light leading-none ${urgent ? "pulse text-[var(--color-accent-text)]" : ""}`}>
+              {m}:{s}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => {
+                timer.addTime(30);
+                onAdd?.();
+              }}
+              className="whitespace-nowrap px-4 text-[length:var(--fs-sm)]"
+            >
+              +30 s
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                timer.skip();
+                onSkip?.();
+              }}
+              className="whitespace-nowrap px-4 text-[length:var(--fs-sm)]"
+            >
+              Saltar
+            </Button>
           </div>
         </div>
-
-        <div className={`flex items-center gap-1 ${urgent ? "pulse" : ""}`}>
-          <DigitBox value={m} urgent={urgent} />
-          <span className="num text-[16px] font-bold text-[var(--color-muted-2)]">:</span>
-          <DigitBox value={s} urgent={urgent} />
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <button
-            onClick={() => {
-              timer.addTime(30);
-              onAdd?.();
-            }}
-            className="glass tap-target rounded-full px-3 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)] hover:text-[var(--color-red-ink)]"
-          >
-            +30s
-          </button>
-          <button
-            onClick={() => {
-              timer.skip();
-              onSkip?.();
-            }}
-            className="glass tap-target rounded-full px-3 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)] hover:text-[var(--color-ink)]"
-          >
-            Saltar
-          </button>
+        <div className="h-1.5 overflow-hidden rounded-full bg-[rgb(var(--fg-rgb)/0.1)]">
+          <div className="h-full rounded-full bg-[rgb(var(--accent-solid-rgb))]" style={{ width: `${pct * 100}%`, transition: "width 1s linear" }} />
         </div>
       </div>
     </div>

@@ -17,12 +17,12 @@ export function MoodCard() {
 
   if (answered && !changing) {
     return (
-      <div className="glass enter flex items-center gap-3 rounded-2xl px-4 py-3" role="status">
+      <div className="glass enter flex items-center gap-3 rounded-2xl px-4 py-1" role="status">
         <MoodFace level={answered.value} size={24} className="flex-none text-[var(--color-ink)]" />
-        <span className="min-w-0 flex-1 text-[13px]">
+        <span className="min-w-0 flex-1 text-sm">
           Hoy te sientes <span className="font-semibold">{answered.label.toLowerCase()}</span>
         </span>
-        <button onClick={() => setChanging(true)} className="flex-none text-[12px] text-[var(--color-muted)] underline">
+        <button onClick={() => setChanging(true)} className="tap-target flex-none px-1 text-meta text-[var(--color-muted)] underline underline-offset-2 hover:text-[var(--color-ink)]">
           Cambiar
         </button>
       </div>
@@ -43,10 +43,10 @@ export function MoodCard() {
               void set(today, current === m.value ? null : m.value);
               setChanging(false);
             }}
-            className={`tap-target flex flex-col items-center gap-1 rounded-2xl py-2.5 ${current === m.value ? "glass-on" : "glass"}`}
+            className={`glass tap-target flex flex-col items-center gap-1 rounded-2xl py-2.5 ${current === m.value ? "glass-sel" : ""}`}
           >
-            <MoodFace level={m.value} size={26} className={current === m.value ? "text-white" : "text-[var(--color-muted)]"} />
-            <span className={`text-[12px] uppercase tracking-wide ${current === m.value ? "text-white/90" : "text-[var(--color-muted)]"}`}>{m.label}</span>
+            <MoodFace level={m.value} size={26} className={current === m.value ? "text-[var(--color-ink)]" : "text-[var(--color-muted)]"} />
+            <span className={`text-meta ${current === m.value ? "font-semibold text-[var(--color-ink)]" : "text-[var(--color-muted)]"}`}>{m.label}</span>
           </button>
         ))}
       </div>

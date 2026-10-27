@@ -7,6 +7,7 @@ import { holdScreenAwake } from "@/lib/wakeLock";
 import type { ReactNode } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
+import { askNotificationPermission } from "@/lib/notifyPermission";
 import { PageHeader, Button } from "@/ui";
 import { ErrorBoundary } from "@/ui/ErrorBoundary";
 import { showToast } from "@/ui/Toast";
@@ -32,12 +33,14 @@ interface DialProps {
   progress: number;
   isBreak: boolean;
   live: boolean;
+  /** Shrinks the dial on short screens so the start button stays above the phone's dock. */
+  fit?: boolean;
   children: ReactNode;
 }
 
 /** The hero dial: 60 minute-ticks that light up as time passes, a gradient
  * arc with a glowing head, and a soft breathing halo while it's running. */
-function Dial({ progress, isBreak, live, children }: DialProps) {
+function Dial({ progress, isBreak, live, fit, children }: DialProps) {
   const a = isBreak ? "#2fae66" : "var(--color-red)";
   const b = isBreak ? "#8ff0b8" : "rgb(var(--accent-light-rgb))";
   const gid = isBreak ? "focus-grad-break" : "focus-grad-focus";
@@ -46,7 +49,10 @@ function Dial({ progress, isBreak, live, children }: DialProps) {
   const headY = C - RING_R * Math.cos(angle);
 
   return (
-    <div className="relative mx-auto" style={{ width: SIZE, height: SIZE, maxWidth: "100%" }}>
+    <div
+      className="relative mx-auto"
+      style={{ width: fit ? `min(100%, clamp(220px, calc(100dvh - 574px), ${SIZE}px))` : SIZE, aspectRatio: "1", maxWidth: "100%" }}
+    >
       <div
         aria-hidden
         className={`absolute inset-[14%] rounded-full ${live ? "focus-breathe" : ""}`}
@@ -240,7 +246,7 @@ function FocusView() {
     // chime and ask once for permission to notify when a block ends.
     unlockAudio();
     if (typeof Notification !== "undefined" && Notification.permission === "default") {
-      Notification.requestPermission().catch(() => {});
+      void askNotificationPermission();
     }
     startFocus(t, focusMin);
   }
@@ -261,7 +267,7 @@ function FocusView() {
           onClick={() => setSoundOn(!soundOn)}
           aria-pressed={soundOn}
           aria-label={soundOn ? "Silenciar sonido" : "Activar sonido"}
-          className={`tap-target mt-1 flex h-10 w-10 flex-none items-center justify-center rounded-full ${
+          className={`tap-target mt-1 flex h-11 w-11 flex-none items-center justify-center rounded-full ${
             soundOn ? "glass-accent" : "glass text-[var(--color-muted-2)]"
           }`}
         >
@@ -273,7 +279,7 @@ function FocusView() {
         {/* status row */}
         <div className="flex items-center justify-between">
           <span
-            className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.16em]"
+            className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-meta font-semibold"
             style={{ borderColor: active ? accent : "var(--color-line-strong)", color: active ? accent : "var(--color-muted)" }}
           >
             <span
@@ -284,7 +290,7 @@ function FocusView() {
           </span>
           <div className="flex items-center gap-3">
             {active ? (
-              <button onClick={() => setImmersive(true)} aria-label="Pantalla completa" title="Pantalla completa" className="glass-flat hit flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-ink)]">
+              <button onClick={() => setImmersive(true)} aria-label="Pantalla completa" title="Pantalla completa" className="glass-flat hit flex h-9 w-9 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-ink)]">
                 <Icon name="expand" size={16} />
               </button>
             ) : null}
@@ -309,11 +315,11 @@ function FocusView() {
 
         {/* dial */}
         <div className="mt-2">
-          <Dial progress={progress} isBreak={isBreak} live={timer.status === "running"}>
+          <Dial fit progress={progress} isBreak={isBreak} live={timer.status === "running"}>
             <div className="num font-[var(--font-display)] text-[62px] font-light leading-none tracking-tight">
               {active ? fmtClock(left) : fmtClock(focusMin * 60)}
             </div>
-            <div className="mt-3 text-[12px] font-medium uppercase tracking-[0.22em] text-[var(--color-muted)]">
+            <div className="mt-3 text-sm font-medium text-[var(--color-muted)]">
               {!active ? "minutos" : isBreak ? "respira" : `bloque de ${timer.focusMin} min`}
             </div>
           </Dial>
@@ -323,7 +329,7 @@ function FocusView() {
           <>
             <div className="mt-1 px-2 text-center">
               <div className="eyebrow">{isBreak ? "Ahora" : "Trabajando en"}</div>
-              <div className="mt-1.5 font-[var(--font-display)] text-[18px] leading-snug">
+              <div className="mt-1.5 font-[var(--font-display)] text-title leading-snug">
                 {isBreak ? "Aléjate de la pantalla un momento" : timer.task}
               </div>
             </div>
@@ -335,7 +341,7 @@ function FocusView() {
                   showToast(isBreak ? "Descanso saltado" : "Bloque cancelado");
                 }}
                 aria-label={isBreak ? "Saltar descanso" : "Cancelar bloque"}
-                className="glass tap-target flex h-12 w-12 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-red-ink)]"
+                className="glass tap-target flex h-12 w-12 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-accent-text)]"
               >
                 {isBreak ? <SkipIcon /> : <StopIcon />}
               </button>
@@ -346,7 +352,7 @@ function FocusView() {
                   else pauseFocus();
                 }}
                 aria-label={paused ? "Reanudar" : "Pausar"}
-                className={`tap-target flex h-[68px] w-[68px] items-center justify-center rounded-full text-white ${isBreak ? "glass" : "glass-on"}`}
+                className={`tap-target flex h-[68px] w-[68px] items-center justify-center rounded-full ${isBreak ? "glass text-white" : "glass-on"}`}
                 style={
                   isBreak
                     ? {
@@ -366,7 +372,7 @@ function FocusView() {
                   aria-label={pip.kind ? "Cerrar ventana flotante" : "Abrir ventana flotante"}
                   title="Ventana flotante"
                   className={`tap-target flex h-12 w-12 items-center justify-center rounded-full ${
-                    pip.kind ? "glass-accent" : "glass text-[var(--color-muted)] hover:text-[var(--color-red-ink)]"
+                    pip.kind ? "glass-accent" : "glass text-[var(--color-muted)] hover:text-[var(--color-accent-text)]"
                   }`}
                 >
                   <PipIcon />
@@ -388,17 +394,17 @@ function FocusView() {
                 }}
                 placeholder="Ej. Terminar el módulo de React"
                 maxLength={80}
-                className="w-full rounded-2xl border border-[var(--color-line-strong)] bg-[rgb(var(--fg-rgb)/0.03)] px-4 py-3.5 text-center text-[15px] outline-none transition-colors placeholder:text-[var(--color-muted-2)] focus:border-[var(--color-red)] focus:bg-[rgb(var(--accent-rgb)/0.05)]"
+                className="w-full rounded-2xl border border-[var(--color-line-strong)] bg-[rgb(var(--fg-rgb)/0.03)] px-4 py-3.5 text-center text-base transition-colors placeholder:text-[var(--color-muted-2)] focus:bg-[rgb(var(--accent-rgb)/0.05)]"
               />
             </label>
 
             {taskChips.length ? (
-              <div className="mt-3 flex flex-wrap justify-center gap-1.5">
+              <div className="mt-3 flex flex-wrap justify-center gap-2">
                 {taskChips.map((r) => (
                   <button
                     key={r}
                     onClick={() => setTask(r)}
-                    className="glass max-w-full truncate rounded-full px-3 py-1 text-[12px] text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+                    className="glass min-h-9 max-w-full truncate rounded-full px-3.5 text-sm text-[var(--color-muted)] hover:text-[var(--color-ink)]"
                   >
                     {r}
                   </button>
@@ -429,19 +435,19 @@ function FocusView() {
                       setCustomText(String(m));
                     }}
                     aria-pressed={on}
-                    className={`num rounded-full py-2 text-[13px] font-semibold ${
+                    className={`num tap-target rounded-full text-sm font-semibold ${
                       on ? "glass-on" : "glass-flat text-[var(--color-muted)] hover:text-[var(--color-ink)]"
                     }`}
                   >
                     {m}
-                    <span className="ml-0.5 text-[12px] font-medium opacity-70">m</span>
+                    <span className="ml-0.5 text-meta font-medium opacity-70">m</span>
                   </button>
                 );
               })}
               <button
                 onClick={() => setCustomOn(true)}
                 aria-pressed={customOn}
-                className={`rounded-full py-2 text-[12px] font-semibold ${
+                className={`tap-target rounded-full text-sm font-semibold ${
                   customOn ? "glass-on" : "glass-flat text-[var(--color-muted)] hover:text-[var(--color-ink)]"
                 }`}
               >
@@ -462,21 +468,21 @@ function FocusView() {
                   onBlur={() => setCustomText(String(focusMin))}
                   inputMode="numeric"
                   aria-label="Minutos del bloque"
-                  className="num w-24 rounded-2xl border border-[var(--color-line-strong)] bg-[rgb(var(--fg-rgb)/0.03)] px-3 py-2.5 text-center text-[18px] font-semibold outline-none focus:border-[var(--color-red)]"
+                  className="num w-24 rounded-2xl border border-[var(--color-line-strong)] bg-[rgb(var(--fg-rgb)/0.03)] px-3 py-2.5 text-center text-title font-semibold"
                 />
-                <span className="text-[12px] text-[var(--color-muted)]">
+                <span className="text-sm text-[var(--color-muted)]">
                   minutos
-                  <span className="block text-[12px] text-[var(--color-muted-2)]">
+                  <span className="block text-meta text-[var(--color-muted-2)]">
                     de {MIN_FOCUS_MIN} a {MAX_FOCUS_MIN}
                   </span>
                 </span>
               </label>
             ) : null}
 
-            <Button variant="primary" className="mt-4 w-full py-3.5 text-[13px]" onClick={begin}>
+            <Button variant="primary" className="mt-4 min-h-[52px] w-full text-base" onClick={begin}>
               Empezar bloque
             </Button>
-            <p className="mt-3 text-center text-[12px] text-[var(--color-muted-2)]">
+            <p className="mt-3 text-center text-meta text-[var(--color-muted-2)]">
               Descanso de 5 min tras cada bloque · cada {BLOCKS_PER_SET}, uno largo de 15
             </p>
           </>
@@ -491,7 +497,7 @@ function FocusView() {
               </div>
               <div className={`relative mx-auto flex min-h-full w-full max-w-[940px] flex-col items-center justify-between ${lyricsOn ? "gap-3 md:gap-6" : "gap-6"} ${musicOn ? "lg:max-w-[1320px]" : ""}`}>
                 <div className="flex w-full justify-end">
-                  <button onClick={() => setImmersive(false)} aria-label="Salir de pantalla completa" className="glass hit flex h-10 w-10 items-center justify-center rounded-full text-[var(--color-muted)]">
+                  <button onClick={() => setImmersive(false)} aria-label="Salir de pantalla completa" className="glass tap-target flex h-11 w-11 items-center justify-center rounded-full text-[var(--color-muted)]">
                     <Icon name="close" size={16} />
                   </button>
                 </div>
@@ -507,7 +513,7 @@ function FocusView() {
                     <div className={musicOn ? (lyricsOn ? "-my-[75px] scale-[0.5] md:my-0 md:scale-100" : "-my-6 scale-[0.82] md:my-0 md:scale-100") : ""} style={musicOn ? undefined : { transform: "scale(1.2)", margin: "1.5rem 0" }}>
                       <Dial progress={progress} isBreak={isBreak} live={timer.status === "running"}>
                         <div className="num font-[var(--font-display)] text-[62px] font-light leading-none tracking-tight">{fmtClock(left)}</div>
-                        <div className="mt-3 text-[12px] font-medium uppercase tracking-[0.22em] text-[var(--color-muted)]">{isBreak ? "respira" : `bloque de ${timer.focusMin} min`}</div>
+                        <div className="mt-3 text-sm font-medium text-[var(--color-muted)]">{isBreak ? "respira" : `bloque de ${timer.focusMin} min`}</div>
                       </Dial>
                     </div>
                   </div>
@@ -529,7 +535,7 @@ function FocusView() {
                   <button
                     onClick={paused ? resumeFocus : pauseFocus}
                     aria-label={paused ? "Reanudar" : "Pausar"}
-                    className={`tap-target flex ${lyricsOn ? "h-16 w-16 md:h-20 md:w-20" : "h-20 w-20"} items-center justify-center rounded-full text-white ${isBreak ? "glass" : "glass-on"}`}
+                    className={`tap-target flex ${lyricsOn ? "h-16 w-16 md:h-20 md:w-20" : "h-20 w-20"} items-center justify-center rounded-full ${isBreak ? "glass text-white" : "glass-on"}`}
                     style={isBreak ? { background: "linear-gradient(165deg, rgba(90,235,150,0.5) 0%, rgba(47,174,102,0.42) 55%, rgba(20,110,60,0.5) 100%)", borderColor: "rgba(120,240,170,0.5)" } : undefined}
                   >
                     {paused ? <PlayIcon /> : <PauseIcon />}
@@ -549,12 +555,12 @@ function FocusView() {
           <div>
             <div className="eyebrow">Hoy</div>
             <div className="mt-1.5 flex items-baseline gap-1.5">
-              <span className="num font-[var(--font-display)] text-[34px] font-light leading-none">{todayMinutes}</span>
-              <span className="text-[12px] text-[var(--color-muted)]">min enfocados</span>
+              <span className="num font-[var(--font-display)] text-screen font-light leading-none">{todayMinutes}</span>
+              <span className="text-sm text-[var(--color-muted)]">min enfocados</span>
             </div>
           </div>
           <div className="text-right">
-            <div className="num text-[15px] font-semibold">
+            <div className="num text-base font-semibold">
               {todaySessions.length}
               <span className="text-[var(--color-muted-2)]"> / {BLOCKS_PER_SET}</span>
             </div>
@@ -586,8 +592,8 @@ function FocusView() {
                   <span aria-hidden className="absolute left-[6.5px] top-1/2 h-full w-px bg-[var(--color-line-strong)]" />
                 ) : null}
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-[13.5px]">{s.task}</div>
-                  <div className="num mt-0.5 text-[12px] text-[var(--color-muted)]">
+                  <div className="truncate text-sm">{s.task}</div>
+                  <div className="num mt-0.5 text-meta text-[var(--color-muted)]">
                     {new Date(s.createdAt).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })}
                   </div>
                 </div>
@@ -597,7 +603,7 @@ function FocusView() {
                 <button
                   onClick={() => removeSession(s)}
                   aria-label={`Eliminar ${s.task}`}
-                  className="hit flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted-2)] transition-colors hover:text-[var(--color-red-ink)]"
+                  className="hit flex h-8 w-8 flex-none items-center justify-center rounded-full text-[var(--color-muted)] transition-colors hover:text-[var(--color-accent-text)]"
                 >
                   <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden>
                     <path d="M1 1l8 8M9 1l-8 8" stroke="currentColor" strokeWidth="1.4" />
@@ -622,7 +628,7 @@ export function Focus() {
       fallback={(reset) => (
         <div className="panel-surface p-5 text-center">
           <div className="eyebrow eyebrow-accent">Focus tuvo un problema</div>
-          <p className="mt-2 text-[13px] text-[var(--color-muted)]">El resto de la app sigue bien. Reinicia el temporizador para continuar.</p>
+          <p className="mt-2 text-sm text-[var(--color-muted)]">El resto de la app sigue bien. Reinicia el temporizador para continuar.</p>
           <Button
             variant="primary"
             className="mt-4"

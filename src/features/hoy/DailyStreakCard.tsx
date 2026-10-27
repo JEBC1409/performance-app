@@ -47,18 +47,19 @@ export function DailyStreakCard() {
         <div className="flex items-center gap-3">
           <FlameGlyph size={30} className={`flex-none ${data.streak > 0 ? "flame-glow" : "text-[var(--color-muted-2)]"}`} />
           <div>
-            <div className="num text-[24px] font-bold leading-none">
+            <div className="num text-screen font-bold leading-none">
               {data.streak}
-              <span className="ml-1 text-[12px] font-medium text-[var(--color-muted)]">{data.streak === 1 ? "día" : "días"}</span>
+              <span className="ml-1 text-sm font-medium text-[var(--color-muted)]">{data.streak === 1 ? "día" : "días"}</span>
             </div>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className="text-[12px] uppercase tracking-wide text-[var(--color-muted-2)]">Racha de constancia</span>
+            <div className="mt-1 flex items-center gap-2">
+              <span className="text-meta text-[var(--color-muted)]">Racha de constancia</span>
               <span
-                className="flex items-center gap-0.5 text-[12px]"
+                className="flex items-center gap-1 text-meta"
                 style={{ color: FREEZE_COLOR }}
                 title={`${data.freezesAvailable} comodines disponibles este mes`}
+                aria-label={`${data.freezesAvailable} ${data.freezesAvailable === 1 ? "comodín disponible" : "comodines disponibles"} este mes`}
               >
-                <FreezeGlyph size={8} />
+                <FreezeGlyph size={12} />
                 {data.freezesAvailable}
               </span>
             </div>
@@ -67,17 +68,23 @@ export function DailyStreakCard() {
         <RankBadge tier={tier} size={40} />
       </div>
 
-      <div className="mt-3.5 flex gap-1.5">
+      <div className="mt-3.5 flex gap-1.5" role="list" aria-label="Esta semana">
         {week.map((d) => (
-          <div key={d.date} className="flex flex-1 flex-col items-center gap-1">
+          <div
+            key={d.date}
+            role="listitem"
+            aria-current={d.isToday ? "date" : undefined}
+            aria-label={`${d.label}: ${d.done ? "con actividad" : d.frozen ? "cubierto con comodín" : d.isFuture ? "por venir" : d.isToday ? "hoy, sin actividad todavía" : "sin actividad"}`}
+            className="flex flex-1 flex-col items-center gap-1"
+          >
             <div
-              className={`flex h-7 w-full items-center justify-center rounded-lg border text-[12px] transition-colors ${
+              className={`flex h-8 w-full items-center justify-center rounded-lg border text-meta transition-colors ${
                 d.done
                   ? "border-[var(--color-good)] bg-[var(--color-good-soft)] text-[var(--color-good)]"
                   : d.frozen
                     ? "text-[var(--color-ink)]"
                     : d.isToday
-                      ? "border-[var(--color-red)] text-[var(--color-red-ink)]"
+                      ? "border-[var(--color-accent-text)] text-[var(--color-accent-text)]"
                       : "border-[var(--color-line-strong)] text-[var(--color-muted-2)]"
               }`}
               style={d.frozen ? { borderColor: FREEZE_COLOR, background: `${FREEZE_COLOR}26`, color: FREEZE_COLOR } : undefined}
@@ -85,7 +92,7 @@ export function DailyStreakCard() {
             >
               {d.done ? <Icon name="check" size={13} /> : d.frozen ? <FreezeGlyph size={10} /> : d.isFuture ? "" : d.isToday ? "…" : "·"}
             </div>
-            <span className={`text-[8.5px] uppercase ${d.isToday ? "text-[var(--color-red-ink)]" : "text-[var(--color-muted-2)]"}`}>{d.label}</span>
+            <span className={`text-meta leading-none ${d.isToday ? "font-semibold text-[var(--color-accent-text)]" : "text-[var(--color-muted)]"}`}>{d.label}</span>
           </div>
         ))}
       </div>
@@ -102,7 +109,7 @@ export function DailyStreakCard() {
             }
           }}
           aria-expanded={open}
-          className="flex w-full items-center justify-between gap-3 text-left text-[12px]"
+          className="tap-target -mb-2 flex w-full items-center justify-between gap-3 text-left text-meta"
         >
           <span className="font-semibold" style={{ color: tierInk(tier.color) }}>
             {tier.label}

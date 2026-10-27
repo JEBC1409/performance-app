@@ -27,14 +27,14 @@ export function FocusMiniBar({ visible, onOpen }: { visible: boolean; onOpen: ()
             </svg>
           </span>
           <span className="text-left leading-none">
-            <span className="num block text-[15px] font-semibold">{fmtClock(left)}</span>
+            <span className="num block text-base font-semibold">{fmtClock(left)}</span>
             <span className="mt-0.5 block max-w-[110px] truncate text-[12px] text-[var(--color-muted)]">{isBreak ? "Descanso" : paused ? `En pausa · ${timer.task}` : timer.task}</span>
           </span>
         </button>
         <button
           onClick={paused ? resumeFocus : pauseFocus}
           aria-label={paused ? "Reanudar" : "Pausar"}
-          className="glass-flat hit flex h-8 w-8 flex-none items-center justify-center rounded-full text-[var(--color-ink)]"
+          className="glass-flat hit flex h-9 w-9 flex-none items-center justify-center rounded-full text-[var(--color-ink)]"
         >
           {paused ? (
             <svg width="12" height="12" viewBox="0 0 20 20" aria-hidden>

@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { db, DEFAULT_SETTINGS } from "@/db/db";
+import { db, DEFAULT_SETTINGS, type SetRecord } from "@/db/db";
+import { addSetWithNextIndex } from "@/db/setsWrite";
+import { logError } from "@/lib/errorLog";
 import { GYM_DAY_ORDER, GYM_DIAS, CARDIO_NOTA, startDate, targetSetsForDay } from "@/data/gym";
 import { Tabs, PageHeader, Card, Sheet, DateField, Button } from "@/ui";
+import { Icon } from "@/ui/Icon";
 import { showToast } from "@/ui/Toast";
-import { todayISO, fmtDateHuman } from "@/lib/date";
+import { addDays, todayISO, fmtDateHuman } from "@/lib/date";
 import { buildDailySummary } from "@/lib/dailySummary";
 import { slotAfter, type GymDay } from "@/lib/cycle";
 import { reviewSession } from "@/lib/sessionReview";
@@ -22,10 +25,11 @@ import { useSwipe } from "@/hooks/useSwipe";
 import { useDefaultGymDay } from "@/hooks/useCycle";
 import { useSessionSets, useLastSession } from "./useEntrenoData";
 import { ExerciseCard } from "./ExerciseCard";
-import { ExercisePhotoEditor } from "./ExercisePhoto";
+import { cardLayout, showStallBadges, showStallSummary } from "./layout";
 import { resolvePhoto, useExercisePhotos } from "./photos";
 import { ExerciseLogForm, type LogSetPayload } from "./ExerciseLogForm";
 import { useRestTimer } from "./useRestTimer";
+import { guardedSave } from "./saveSet";
 import { useLiveQuery } from "dexie-react-hooks";
 import type { ExerciseTarget } from "@/data/gym";
 
@@ -73,6 +77,8 @@ export function Entreno({
   const [reviewOpen, setReviewOpen] = useState(false);
   const [gymOpen, setGymOpen] = useState(false);
   const timer = useRestTimer();
+  // True while a set is being written: a second tap in that window is ignored.
+  const saving = useRef(false);
   const photos = useExercisePhotos();
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const restSec = settings?.defaultRestSec ?? DEFAULT_SETTINGS.defaultRestSec;
@@ -82,7 +88,8 @@ export function Entreno({
   // Everything logged before this session's date — all that stall, progress and
   // review checks look at. A range query, so logging a set today doesn't re-read
   // (or recompute over) the whole history.
-  const allSets = useLiveQuery(() => db.sets.where("date").below(sessionDate).toArray(), [sessionDate]);
+  // (`<= the day before` instead of `< sessionDate`: Dexie re-runs a live query for a write at the open end of `below`, which re-read the whole history on every set logged.)
+  const allSets = useLiveQuery(() => db.sets.where("date").belowOrEqual(addDays(sessionDate, -1)).toArray(), [sessionDate]);
   // Exercises of this day whose last few sessions (before this one) never beat what came before.
   const stalls = useMemo(() => {
     const out = new Map<string, Stall>();
@@ -120,11 +127,18 @@ export function Entreno({
     [reviewOpen, allSets, sessionSets, day, sessionDate],
   );
 
+  // A "start this session" request from elsewhere (the home screen) points this screen at that day and
+  // date. Applied while rendering, from the request itself, instead of in an effect that sets state;
+  // the effect only tells the parent the request was taken.
+  const [handledStart, setHandledStart] = useState<typeof autoStart>(null);
+  if (autoStart && autoStart !== handledStart) {
+    setHandledStart(autoStart);
+    setDay(autoStart.day);
+    setSessionDate(autoStart.date);
+  }
   useEffect(() => {
     if (autoStart) {
       seeded.current = true;
-      setDay(autoStart.day);
-      setSessionDate(autoStart.date);
       onConsumeAutoStart();
     }
   }, [autoStart, onConsumeAutoStart]);
@@ -137,22 +151,39 @@ export function Entreno({
   const target = targetSetsForDay(day);
   const done = sessionSets.length;
   const pct = target > 0 ? Math.min(1, done / target) : 0;
+  const doneByExercise = useMemo(() => {
+    const out = new Map<string, number>();
+    for (const s of sessionSets) out.set(s.exercise, (out.get(s.exercise) ?? 0) + 1);
+    return out;
+  }, [sessionSets]);
+  // Stalled exercises still to do today. Many badges at once is noise, so past a few they fold into one line.
+  const stalledOpenList = GYM_DIAS[day].ex.filter((ex) => stalls.has(ex.name) && (doneByExercise.get(ex.name) ?? 0) < ex.series);
+  const stallSessions = Math.max(0, ...stalledOpenList.map((ex) => stalls.get(ex.name)?.sessions ?? 0));
+  const [stallsOpen, setStallsOpen] = useState(false);
 
-  async function logSet(exerciseName: string, payload: LogSetPayload) {
-    const existing = sessionSets.filter((s) => s.exercise === exerciseName).length;
+  /** Resolves `true` once the set is really stored, `false` if it was not (busy or failed), so the form that asked can say so. */
+  async function logSet(exerciseName: string, payload: LogSetPayload): Promise<boolean> {
     const record = personalRecord([...(allSets ?? []), ...sessionSets].filter((s) => s.exercise === exerciseName), { weight: payload.weight, reps: payload.reps });
-    await db.sets.add({
-      date: sessionDate,
-      day,
-      exercise: exerciseName,
-      setIndex: existing + 1,
-      weight: payload.weight,
-      reps: payload.reps,
-      toFailure: payload.toFailure || null,
-      rpe: payload.rpe,
-      note: payload.note,
-      createdAt: Date.now(),
-    });
+    // setIndex is worked out inside the write's transaction from what is really stored.
+    const saved = await guardedSave(saving, () =>
+      addSetWithNextIndex({
+        date: sessionDate,
+        day,
+        exercise: exerciseName,
+        weight: payload.weight,
+        reps: payload.reps,
+        toFailure: payload.toFailure || null,
+        rpe: payload.rpe,
+        note: payload.note,
+        createdAt: Date.now(),
+      }),
+    );
+    if (saved.status === "busy") return false;
+    if (saved.status === "error") {
+      logError(saved.error, "logSet");
+      showToast("No se pudo guardar la serie. Inténtalo de nuevo.");
+      return false;
+    }
     if (record) {
       const what = record.kind === "1rm" ? `${payload.weight} kg × ${payload.reps} (1RM est. ${record.estimate} kg)` : `${payload.reps} reps`;
       showToast(`Nuevo récord en ${exerciseName}: ${what}`);
@@ -168,6 +199,7 @@ export function Entreno({
       setGymOpen(false);
       setReviewOpen(true);
     }
+    return true;
   }
 
   async function updateSet(id: number, payload: LogSetPayload) {
@@ -214,7 +246,7 @@ export function Entreno({
         subtitle={GYM_DIAS[day].grupo}
         right={
           <label className="flex flex-col items-end gap-1">
-            <span className="text-[12px] text-[var(--color-muted)] uppercase tracking-wide">Fecha</span>
+            <span className="text-[length:var(--fs-meta)] text-[var(--color-muted)]">Fecha</span>
             <DateField value={sessionDate} max={today} onChange={setSessionDate} size="sm" />
           </label>
         }
@@ -226,51 +258,91 @@ export function Entreno({
         onChange={setDay}
       />
 
-      <Button variant="primary" className="w-full py-3.5 text-[13px]" onClick={() => setGymOpen(true)}>
-        Modo gimnasio
+      <Button variant="primary" className="h-14 w-full text-[length:var(--fs-body)]" onClick={() => setGymOpen(true)}>
+        <Icon name="expand" size={18} /> Modo gimnasio
       </Button>
 
       <div>
-        <div className="flex items-center justify-between text-[12px] text-[var(--color-muted)] mb-1.5 num">
+        <div className="num mb-1.5 flex items-center justify-between text-[length:var(--fs-sm)] text-[var(--color-muted)]">
           <span>Progreso de la sesión</span>
           <span>
             {done} / {target} series
           </span>
         </div>
-        <div className="h-1.5 rounded-full bg-[var(--color-surface-2)] overflow-hidden">
-          <div className="h-full rounded-full bg-[var(--color-red)]" style={{ width: `${pct * 100}%`, transition: "width 300ms ease-out" }} />
+        <div
+          className="h-2 overflow-hidden rounded-full bg-[var(--color-surface-2)]"
+          role="progressbar"
+          aria-label="Series de la sesión"
+          aria-valuemin={0}
+          aria-valuemax={target}
+          aria-valuenow={Math.min(done, target)}
+        >
+          <div className="h-full rounded-full bg-[rgb(var(--accent-solid-rgb))]" style={{ width: `${pct * 100}%`, transition: "width 300ms ease-out" }} />
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sidebar:grid-cols-3 gap-3">
-        {GYM_DIAS[day].ex.map((ex) => {
-          const doneCount = sessionSets.filter((s) => s.exercise === ex.name).length;
-          return <ExerciseCard key={ex.name} exercise={ex} done={doneCount} stalled={stalls.has(ex.name)} ready={readyUps.get(ex.name)} onOpen={() => setOpenExercise(ex)} photo={resolvePhoto(ex.name, photos.get(ex.name))} />;
-        })}
+      {showStallSummary(stalledOpenList.length) ? (
+        <div className="panel-surface">
+          <button
+            onClick={() => setStallsOpen((o) => !o)}
+            aria-expanded={stallsOpen}
+            className="flex min-h-[var(--control-h)] w-full items-center justify-between gap-3 px-3.5 py-2 text-left text-[length:var(--fs-sm)]"
+          >
+            <span>
+              <strong className="font-semibold text-[var(--color-warn)]">{stalledOpenList.length} ejercicios</strong> sin progreso en las últimas {stallSessions} sesiones
+            </span>
+            <span className={`flex-none text-[var(--color-muted)] transition-transform ${stallsOpen ? "rotate-90" : ""}`} aria-hidden>
+              <Icon name="chevron-right" size={16} />
+            </span>
+          </button>
+          {stallsOpen ? (
+            <ul className="flex flex-col border-t border-[var(--color-line)]">
+              {stalledOpenList.map((ex) => (
+                <li key={ex.name}>
+                  <button onClick={() => setOpenExercise(ex)} className="flex min-h-[var(--control-h)] w-full items-center justify-between gap-3 px-3.5 text-left text-[length:var(--fs-sm)] hover:bg-[rgb(var(--fg-rgb)/0.05)]">
+                    <span className="min-w-0 truncate">{ex.name}</span>
+                    <span className="flex-none text-[var(--color-muted)]">Ver consejo</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className="grid grid-cols-6 gap-3">
+        {GYM_DIAS[day].ex.map((ex, i, all) => (
+          <ExerciseCard
+            key={ex.name}
+            exercise={ex}
+            done={doneByExercise.get(ex.name) ?? 0}
+            stalled={showStallBadges(stalledOpenList.length) && stalls.has(ex.name)}
+            ready={readyUps.get(ex.name)}
+            onOpen={() => setOpenExercise(ex)}
+            photo={resolvePhoto(ex.name, photos.get(ex.name))}
+            layout={cardLayout(i, all.length)}
+          />
+        ))}
       </div>
 
       {done > 0 ? (
-        <Button variant="primary" className="w-full py-3" onClick={() => setReviewOpen(true)}>
-          Cierre de sesión
-        </Button>
-      ) : null}
-
-      {done > 0 ? (
-        <button
-          onClick={copySummary}
-          className="glass tap-target w-full rounded-full py-2.5 text-[12px] font-semibold uppercase tracking-wide"
-        >
-          Copiar resumen ({fmtDateHuman(sessionDate)})
-        </button>
+        <div className="flex flex-col gap-2">
+          <Button variant={done >= target ? "primary" : "secondary"} className="w-full" onClick={() => setReviewOpen(true)}>
+            Cierre de sesión
+          </Button>
+          <Button variant="ghost" className="w-full" onClick={copySummary}>
+            Copiar resumen ({fmtDateHuman(sessionDate)})
+          </Button>
+        </div>
       ) : null}
 
       <Card>
         <h2 className="card-title">Cardio</h2>
-        <p className="text-[12.5px] text-[var(--color-muted)] mt-1.5">{CARDIO_NOTA}</p>
+        <p className="mt-1.5 text-[length:var(--fs-sm)] text-[var(--color-muted)]">{CARDIO_NOTA}</p>
       </Card>
 
       {gymOpen ? (
-        <GymMode day={day} date={sessionDate} exercises={GYM_DIAS[day].ex} sessionSets={sessionSets} timer={timer} onLogSet={logSet} onClose={() => setGymOpen(false)} />
+        <GymMode day={day} date={sessionDate} exercises={GYM_DIAS[day].ex} sessionSets={sessionSets} priorSets={allSets} timer={timer} onLogSet={logSet} onClose={() => setGymOpen(false)} />
       ) : null}
 
       <SessionReviewSheet
@@ -281,7 +353,7 @@ export function Entreno({
         onGoDay={setDay}
       />
 
-      <Sheet open={!!openExercise} onClose={() => setOpenExercise(null)} title="Registrar serie">
+      <Sheet open={!!openExercise} onClose={() => setOpenExercise(null)} title={openExercise?.name ?? "Registrar serie"}>
         {openExercise ? (
           <ExerciseDetail
             day={day}
@@ -292,6 +364,7 @@ export function Entreno({
             onUpdateSet={updateSet}
             onDeleteSet={deleteSet}
             allSessionSets={sessionSets}
+            priorSets={allSets}
           />
         ) : null}
       </Sheet>
@@ -308,22 +381,22 @@ function ExerciseDetail({
   onUpdateSet,
   onDeleteSet,
   allSessionSets,
+  priorSets,
 }: {
   stall: Stall | null;
   day: GymDay;
   date: string;
   exercise: ExerciseTarget;
-  onLogSet: (payload: LogSetPayload) => void;
-  onUpdateSet: (id: number, payload: LogSetPayload) => void;
+  onLogSet: (payload: LogSetPayload) => Promise<boolean>;
+  onUpdateSet: (id: number, payload: LogSetPayload) => Promise<void>;
   onDeleteSet: (id: number) => void;
   allSessionSets: ReturnType<typeof useSessionSets>;
+  /** Everything logged before `date`, already loaded by the screen. */
+  priorSets: SetRecord[] | undefined;
 }) {
-  const lastSession = useLastSession(exercise.name, date);
+  const lastSession = useLastSession(exercise.name, date, { priorSets });
   const sets = allSessionSets.filter((s) => s.exercise === exercise.name && s.day === day).sort((a, b) => a.setIndex - b.setIndex);
   return (
-    <>
-      <ExercisePhotoEditor name={exercise.name} />
-      <ExerciseLogForm exercise={exercise} stall={stall} sets={sets} lastSession={lastSession} onLogSet={onLogSet} onUpdateSet={onUpdateSet} onDeleteSet={onDeleteSet} />
-    </>
+    <ExerciseLogForm exercise={exercise} stall={stall} sets={sets} lastSession={lastSession} onLogSet={onLogSet} onUpdateSet={onUpdateSet} onDeleteSet={onDeleteSet} />
   );
 }

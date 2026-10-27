@@ -52,35 +52,35 @@ export function VerseReview() {
       <CardTitle right={due.length ? `${due.length} por repasar` : `${learning} memorizando`}>Repaso de versículos</CardTitle>
       {passage ? (
         <div className="mt-3">
-          <div className="num text-[12px] font-semibold uppercase tracking-wide text-[var(--color-gold)]">
+          <div className="num text-sm font-semibold text-[var(--color-gold)]">
             {passage.bookName} {passage.chapter}:{passage.verse}
           </div>
           {revealed ? (
             <>
               <p className="mt-2 text-[15px] leading-relaxed">{passage.text}</p>
-              <p className="mt-3 text-[12px] text-[var(--color-muted)]">¿Lo dijiste bien?</p>
+              <p className="mt-3 text-sm text-[var(--color-muted)]">¿Lo dijiste bien?</p>
               <div className="mt-2 flex gap-2">
-                <button onClick={() => void answer(true)} className="glass-on tap-target flex-1 rounded-full py-2.5 text-[12px] font-semibold uppercase tracking-wide">
+                <button onClick={() => void answer(true)} className="glass-on tap-target flex-1 rounded-full text-sm font-semibold">
                   Lo sabía
                 </button>
-                <button onClick={() => void answer(false)} className="glass tap-target flex-1 rounded-full py-2.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)]">
+                <button onClick={() => void answer(false)} className="glass tap-target flex-1 rounded-full text-sm font-semibold text-[var(--color-muted)]">
                   Aún no
                 </button>
               </div>
             </>
           ) : (
             <>
-              <p className="mt-2 text-[13px] text-[var(--color-muted)]">Dilo de memoria, en voz alta o en tu mente. Luego míralo.</p>
-              <button onClick={() => setRevealed(true)} className="glass tap-target mt-3 w-full rounded-full py-2.5 text-[12px] font-semibold uppercase tracking-wide">
+              <p className="mt-2 text-sm text-[var(--color-muted)]">Dilo de memoria, en voz alta o en tu mente. Luego míralo.</p>
+              <button onClick={() => setRevealed(true)} className="glass tap-target mt-3 w-full rounded-full text-sm font-semibold">
                 Ver el versículo
               </button>
             </>
           )}
         </div>
       ) : due.length && !bible ? (
-        <p className="mt-2 text-[13px] text-[var(--color-muted)]">Cargando…</p>
+        <p className="mt-2 text-sm text-[var(--color-muted)]">Cargando…</p>
       ) : (
-        <p className="mt-2 text-[13px] text-[var(--color-good)]">Listo por hoy ✓</p>
+        <p className="mt-2 text-sm text-[var(--color-good)]">Listo por hoy ✓</p>
       )}
     </Card>
   );

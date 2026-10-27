@@ -1,7 +1,8 @@
 import { HORARIO } from "@/data/horario";
 import { useSwipe } from "@/hooks/useSwipe";
 import { currentBlockInfo } from "@/lib/scheduleBlock";
-import { DIAS, DIAS_CORTO, jsDowToIndex } from "@/lib/date";
+import { DIAS_CORTO, jsDowToIndex } from "@/lib/date";
+import { dayName } from "./dayName";
 import { BlockChip } from "./BlockChip";
 
 /** The schedule of one weekday as a vertical timeline — what the phone shows
@@ -31,20 +32,20 @@ export function DayTimeline({ day, onDay, editing, onPick }: { day: number; onDa
             role="tab"
             aria-selected={day === i}
             onClick={() => onDay(i)}
-            className={`relative rounded-full py-2 text-[12px] font-semibold uppercase ${day === i ? "glass-on" : "glass-flat text-[var(--color-muted)]"}`}
+            className={`tap-target relative rounded-full text-sm font-semibold ${day === i ? "glass-on" : "glass-flat text-[var(--color-muted)]"}`}
           >
             {d}
-            {i === todayCol ? <span aria-hidden className="absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[var(--color-red)]" /> : null}
+            {i === todayCol ? <span aria-hidden className={`absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full ${day === i ? "bg-[var(--text-on-accent)]" : "bg-[var(--color-accent-text)]"}`} /> : null}
           </button>
         ))}
       </div>
 
       <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="font-[var(--font-display)] text-[18px]">{DIAS[day]}</h2>
+        <h2 className="card-title">{dayName(day)}</h2>
         {isToday ? <span className="eyebrow eyebrow-accent">Hoy</span> : null}
       </div>
 
-      {items.length === 0 ? <p className="py-8 text-center text-[13px] text-[var(--color-muted)]">Nada en el horario este día.</p> : null}
+      {items.length === 0 ? <p className="py-8 text-center text-sm text-[var(--color-muted)]">Nada en el horario este día.</p> : null}
 
       <ol className="relative flex flex-col gap-2.5">
         {items.map(({ row, span, time, cell }) => {
@@ -53,8 +54,8 @@ export function DayTimeline({ day, onDay, editing, onPick }: { day: number; onDa
           return (
             <li key={row} className={`flex items-stretch gap-3 ${past ? "opacity-50" : ""}`}>
               <div className="flex w-[62px] flex-none flex-col items-end pt-2.5">
-                <span className={`num text-[12px] font-medium ${current ? "text-[var(--color-red-ink)]" : "text-[var(--color-muted)]"}`}>{time}</span>
-                {current ? <span className="mt-1 rounded-full bg-[var(--color-red)] px-1.5 py-px text-[12px] font-bold uppercase tracking-wider text-white">Ahora</span> : null}
+                <span className={`num text-[12px] font-medium ${current ? "text-[var(--color-accent-text)]" : "text-[var(--color-muted)]"}`}>{time}</span>
+                {current ? <span className="mt-1 rounded-full bg-[rgb(var(--accent-solid-rgb))] px-2 py-px text-meta font-bold text-[var(--text-on-accent)]">Ahora</span> : null}
               </div>
               <span aria-hidden className="relative flex w-3 flex-none justify-center">
                 <span className={`absolute bottom-[-10px] top-0 w-px ${current ? "bg-[var(--color-red)]" : "bg-[var(--color-line-strong)]"}`} />

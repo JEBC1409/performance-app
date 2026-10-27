@@ -51,3 +51,32 @@ describe("Kairos · Leer", () => {
     expect(screen.getByText(/· aquí vas/i)).toBeInTheDocument();
   });
 });
+
+describe("Kairos · barra de herramientas", () => {
+  it("keeps the reader first: search and plan are icon buttons that open panels, not blocks above the text", async () => {
+    // jsdom has no scrollIntoView; picking a result scrolls to the verse.
+    Element.prototype.scrollIntoView = vi.fn();
+    render(<Kairos />);
+    await screen.findByText(/Este vino á Jesús de noche\./);
+
+    expect(screen.queryByRole("searchbox")).toBeNull();
+    expect(screen.getByRole("button", { name: /^Plan de lectura/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Buscar en la Biblia" }));
+    const dialog = await screen.findByRole("dialog", { name: /Buscar en la Biblia/i });
+    fireEvent.change(within(dialog).getByRole("searchbox"), { target: { value: "cierto" } });
+
+    const hit = await within(dialog).findByRole("button", { name: /Juan 1:3/ });
+    fireEvent.click(hit);
+    // Picking a result closes the panel and clears the query.
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  it("opens the plan in a sheet with the plan choices", async () => {
+    render(<Kairos />);
+    await screen.findByText(/Este vino á Jesús de noche\./);
+    fireEvent.click(await screen.findByRole("button", { name: /^Plan de lectura/i }));
+    const dialog = await screen.findByRole("dialog", { name: /Plan de lectura/i });
+    expect(within(dialog).getByRole("radio", { name: /^Marcos/ })).toBeInTheDocument();
+  });
+});

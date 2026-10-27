@@ -50,6 +50,16 @@ describe("Hoy", () => {
     await waitFor(async () => expect((await db.habitDays.get(todayISO()))?.done).toEqual([]));
   });
 
+  it("keeps naming the day you are training once a set is logged (the cycle's own slot moves on)", async () => {
+    // One logged session already moves the cycle to B; today's set belongs to A and the card must still say A.
+    await db.sets.add({ date: todayISO(), day: "A", exercise: "Pullover en polea", setIndex: 1, weight: 20, reps: 8, toFailure: null, rpe: null, note: "", createdAt: Date.now() });
+    render(<Hoy onStartEntreno={() => {}} onNavigate={() => {}} />);
+    const label = await screen.findByText(/series hechas hoy/i);
+    const card = label.closest(".panel-surface") as HTMLElement;
+    expect(within(card).getByText(GYM_DIAS.A.nombre.charAt(0) + GYM_DIAS.A.nombre.slice(1).toLowerCase(), { exact: false })).toBeInTheDocument();
+    expect(within(card).queryByText(GYM_DIAS.B.nombre, { exact: false })).toBeNull();
+  });
+
   it("shows the three day rings and the routine's day", async () => {
     render(<Hoy onStartEntreno={() => {}} onNavigate={() => {}} />);
     expect(await screen.findByLabelText(/Anillos del día/i)).toBeInTheDocument();

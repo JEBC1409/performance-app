@@ -48,13 +48,13 @@ export function MusicLists({ current, playOnSelect = true, allowNone = false, co
 
   return (
     <div>
-      <div className="mb-2 text-[12px] uppercase tracking-wide text-[var(--color-muted)]">{compact ? "Música de este bloque" : "Mis listas"}</div>
+      <div className="eyebrow mb-2">{compact ? "Música de este bloque" : "Mis listas"}</div>
       <div className="flex flex-wrap items-center gap-2">
         {allowNone ? (
           <button
             onClick={() => clearMusic()}
             aria-pressed={current == null}
-            className={`rounded-full px-3 py-1.5 text-[12px] font-semibold ${current == null ? "glass-on" : "glass text-[var(--color-muted)]"}`}
+            className={`glass tap-target rounded-full px-4 text-sm font-semibold ${current == null ? "" : "text-[var(--color-muted)]"}`}
           >
             Sin música
           </button>
@@ -62,12 +62,12 @@ export function MusicLists({ current, playOnSelect = true, allowNone = false, co
         {lists.map((l) => {
           const active = l.url === current;
           return (
-            <span key={l.url} className={`flex items-center rounded-full ${active ? "glass-on" : "glass"}`}>
-              <button onClick={() => choose(l.url)} aria-pressed={active} className={`max-w-[11rem] truncate rounded-full py-1.5 pl-3 text-[12px] font-semibold ${compact ? "pr-3" : "pr-2"} ${active ? "" : "text-[var(--color-muted)]"}`}>
+            <span key={l.url} className={`flex min-h-[var(--control-h)] items-center rounded-full ${active ? "glass-sel" : "glass"}`}>
+              <button onClick={() => choose(l.url)} aria-pressed={active} className={`min-h-[var(--control-h)] max-w-[11rem] truncate rounded-full pl-4 text-sm font-semibold ${compact ? "pr-4" : "pr-2"} ${active ? "" : "text-[var(--color-muted)]"}`}>
                 {l.name}
               </button>
               {compact ? null : (
-                <button onClick={() => removeList(l.url)} aria-label={`Quitar la lista ${l.name}`} className="hit mr-1 flex h-6 w-6 items-center justify-center rounded-full text-[13px] opacity-70">
+                <button onClick={() => removeList(l.url)} aria-label={`Quitar la lista ${l.name}`} className="hit mr-1.5 flex h-8 w-8 items-center justify-center rounded-full text-base opacity-70">
                   ×
                 </button>
               )}
@@ -79,7 +79,9 @@ export function MusicLists({ current, playOnSelect = true, allowNone = false, co
             onClick={() => {
               setLink(current);
               setAdding(true);
-            }} className="glass rounded-full px-3 py-1.5 text-[12px] font-semibold text-[var(--color-muted)]">
+            }}
+            className="glass tap-target rounded-full px-4 text-sm font-semibold text-[var(--color-muted)]"
+          >
             + Guardar esta lista
           </button>
         ) : null}
@@ -89,7 +91,7 @@ export function MusicLists({ current, playOnSelect = true, allowNone = false, co
               setLink("");
               setAdding(true);
             }}
-            className="glass rounded-full px-3 py-1.5 text-[12px] font-semibold text-[var(--color-muted)]"
+            className="glass tap-target rounded-full px-4 text-sm font-semibold text-[var(--color-muted)]"
           >
             + Nueva lista
           </button>
@@ -100,35 +102,41 @@ export function MusicLists({ current, playOnSelect = true, allowNone = false, co
         <div className="mt-3 flex flex-col gap-2 rounded-2xl border border-[var(--color-line-strong)] p-3">
           <div className="flex flex-wrap gap-1.5" role="group" aria-label="Ideas de nombre">
             {MOODS.map((m) => (
-              <button key={m} onClick={() => setName(m)} className="glass rounded-full px-2.5 py-1 text-[12px] text-[var(--color-muted)] hover:text-[var(--color-ink)]">
+              <button key={m} onClick={() => setName(m)} className="glass min-h-9 rounded-full px-3.5 text-sm text-[var(--color-muted)] hover:text-[var(--color-ink)]">
                 {m}
               </button>
             ))}
           </div>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            maxLength={24}
-            placeholder="Nombre (cómo te sientes o qué vas a hacer)"
-            aria-label="Nombre de la lista"
-            className="rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-red)]"
-          />
+          <label className="flex flex-col gap-1.5">
+            <span className="text-meta font-medium text-[var(--color-muted)]">Nombre</span>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={24}
+              placeholder="Cómo te sientes o qué vas a hacer"
+              aria-label="Nombre de la lista"
+              className="rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-3 py-2 text-base"
+            />
+          </label>
           {current != null && !currentSaved ? (
-            <button onClick={() => setLink(current)} className="self-start text-[12px] text-[var(--color-muted)] underline">
+            <button onClick={() => setLink(current)} className="tap-target self-start rounded-full pr-3 text-sm text-[var(--color-muted)] underline">
               Usar la lista que suena ahora
             </button>
           ) : null}
-          <input
-            value={link}
-            onChange={(e) => setLink(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && add()}
-            inputMode="url"
-            placeholder="https://music.youtube.com/playlist?list=…"
-            aria-label="Enlace de la lista"
-            className="rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-red)]"
-          />
+          <label className="flex flex-col gap-1.5">
+            <span className="text-meta font-medium text-[var(--color-muted)]">Enlace</span>
+            <input
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && add()}
+              inputMode="url"
+              placeholder="https://music.youtube.com/playlist?list=…"
+              aria-label="Enlace de la lista"
+              className="rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-3 py-2 text-base"
+            />
+          </label>
           <div className="flex gap-2">
-            <button onClick={() => add()} className="btn-primary tap-target rounded-full px-5 text-[12px] font-semibold uppercase tracking-wide text-white">
+            <button onClick={() => add()} className="btn-primary tap-target rounded-full px-5 text-sm font-semibold">
               Guardar lista
             </button>
             <button
@@ -137,14 +145,14 @@ export function MusicLists({ current, playOnSelect = true, allowNone = false, co
                 setName("");
                 setLink("");
               }}
-              className="text-[12px] text-[var(--color-muted)] underline"
+              className="tap-target rounded-full px-3 text-sm text-[var(--color-muted)] underline"
             >
               Cancelar
             </button>
           </div>
         </div>
       ) : null}
-      {full ? <p className="mt-2 text-[12px] text-[var(--color-muted-2)]">Máximo {MAX_LISTS} listas: quita una para agregar otra.</p> : null}
+      {full ? <p className="mt-2 text-meta text-[var(--color-muted)]">Máximo {MAX_LISTS} listas: quita una para agregar otra.</p> : null}
     </div>
   );
 }

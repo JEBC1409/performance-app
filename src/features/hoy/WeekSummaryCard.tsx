@@ -33,24 +33,24 @@ export function WeekSummaryCard({ onOpenDatos }: { onOpenDatos: () => void }) {
         hintDatosTab("semana");
         onOpenDatos();
       }}
-      className="panel-surface panel-surface-glow enter flex w-full flex-col gap-3 px-4 py-3.5 text-left"
+      className="panel-surface enter flex w-full flex-col gap-3 px-4 py-3.5 text-left"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="eyebrow eyebrow-accent">{dow === 1 ? "Semana pasada" : "Domingo"}</div>
-          <div className="mt-1 font-[var(--font-display)] text-[15px]">Tu resumen de la semana</div>
+          <div className="card-title mt-1">Tu resumen de la semana</div>
         </div>
-        <Icon name="arrow-right" size={18} className="mt-1 flex-none text-[var(--color-red-ink)]" />
+        <Icon name="arrow-right" size={18} className="mt-1 flex-none text-[var(--color-accent-text)]" />
       </div>
       <div className="grid grid-cols-4 gap-2">
         {stats.map(([label, value]) => (
           <div key={label}>
             <div className="num font-[var(--font-display)] text-[20px] font-light leading-none">{value}</div>
-            <div className="mt-1 text-[12px] uppercase tracking-wide text-[var(--color-muted)]">{label}</div>
+            <div className="mt-1 text-meta text-[var(--color-muted)]">{label}</div>
           </div>
         ))}
       </div>
-      <p className="text-[12.5px] leading-snug text-[var(--color-muted)]">
+      <p className="text-sm leading-snug text-[var(--color-muted)]">
         <span className="font-semibold text-[var(--color-ink)]">Para mejorar: </span>
         {weekTip(cur, prev)}
       </p>

@@ -10,12 +10,16 @@ import { parseRepRange, suggestFromStart, suggestNext } from "@/lib/progression"
 import { holdScreenAwake } from "@/lib/wakeLock";
 import { Button } from "@/ui";
 import { BigStepper } from "./BigStepper";
+import { StepChip } from "./StepChip";
 import { WEIGHT_STEPS, fmtNum as fmt, readStep, writeStep } from "./stepperConfig";
-import type { LogSetPayload } from "./ExerciseLogForm";
+import type { LogSetPayload, LogSetResult } from "./ExerciseLogForm";
 import { resolvePhoto, useExercisePhotos } from "./photos";
 import { seedWeightReps } from "./setSeed";
 import type { RestTimerState } from "./useRestTimer";
 import { useLastSession } from "./useEntrenoData";
+import { useSavedFlash } from "./useSavedFlash";
+
+type GymTimer = RestTimerState & { addTime: (s: number) => void; skip: () => void };
 
 /** One exercise at a time, big and thumb-friendly: weight and reps steppers,
  * one huge Save button, and the rest timer front and center. Keeps the screen
@@ -25,6 +29,7 @@ export function GymMode({
   date,
   exercises,
   sessionSets,
+  priorSets,
   timer,
   onLogSet,
   onClose,
@@ -33,8 +38,10 @@ export function GymMode({
   date: string;
   exercises: ExerciseTarget[];
   sessionSets: SetRecord[];
-  timer: RestTimerState & { addTime: (s: number) => void; skip: () => void };
-  onLogSet: (exerciseName: string, payload: LogSetPayload) => void;
+  /** Everything logged before `date`, already loaded by the Entreno screen (undefined while it loads). */
+  priorSets?: SetRecord[];
+  timer: GymTimer;
+  onLogSet: (exerciseName: string, payload: LogSetPayload) => LogSetResult | Promise<LogSetResult>;
   onClose: () => void;
 }) {
   const [idx, setIdx] = useState(() => {
@@ -69,38 +76,48 @@ export function GymMode({
         <div className="ambient-glow" />
       </div>
 
-      <header className="flex items-center justify-between gap-3 px-4 pb-2" style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}>
-        <button onClick={onClose} aria-label="Salir del modo gimnasio" className="glass hit flex h-10 w-10 flex-none items-center justify-center rounded-full text-[var(--color-muted)]">
-          <svg width="12" height="12" viewBox="0 0 10 10" aria-hidden>
-            <path d="M1 1l8 8M9 1l-8 8" stroke="currentColor" strokeWidth="1.4" />
-          </svg>
+      <header className="flex items-center justify-between gap-3 px-4 pb-2" style={{ paddingTop: "calc(0.5rem + env(safe-area-inset-top))" }}>
+        {/* A small exit up here for the thumb that wanders; the main one is "Salir" in the footer, where the thumb rests. */}
+        <button onClick={onClose} aria-label="Salir del modo gimnasio" className="glass hit flex h-11 w-11 flex-none items-center justify-center rounded-full text-[var(--color-muted)]">
+          <Icon name="close" size={18} />
         </button>
         <div className="min-w-0 flex-1 text-center">
           <div className="eyebrow eyebrow-accent">Día {day} · modo gimnasio</div>
-          <div className="num mt-0.5 text-[12px] text-[var(--color-muted)]">
+          <div className="num mt-0.5 text-[length:var(--fs-meta)] text-[var(--color-muted)]">
             Ejercicio {idx + 1}/{exercises.length} · {totalDone}/{totalTarget} series
           </div>
         </div>
-        <span className="h-10 w-10 flex-none" aria-hidden />
+        <span className="h-11 w-11 flex-none" aria-hidden />
       </header>
 
-      <div className="mx-4 h-1 overflow-hidden rounded-full bg-[var(--color-surface-2)]">
-        <div className="h-full rounded-full bg-[var(--color-red)]" style={{ width: `${totalTarget ? (totalDone / totalTarget) * 100 : 0}%`, transition: "width 300ms ease-out" }} />
+      <div
+        className="mx-4 h-1.5 overflow-hidden rounded-full bg-[var(--color-surface-2)]"
+        role="progressbar"
+        aria-label="Series de la sesión"
+        aria-valuemin={0}
+        aria-valuemax={totalTarget}
+        aria-valuenow={Math.min(totalDone, totalTarget)}
+      >
+        <div className="h-full rounded-full bg-[rgb(var(--accent-solid-rgb))]" style={{ width: `${totalTarget ? Math.min(100, (totalDone / totalTarget) * 100) : 0}%`, transition: "width 300ms ease-out" }} />
       </div>
 
-      <GymExercise key={ex.name} ex={ex} date={date} sets={sessionSets.filter((s) => s.exercise === ex.name)} timer={timer} doneCount={doneCount} onLogSet={onLogSet} />
+      <GymExercise key={ex.name} ex={ex} date={date} sets={sessionSets.filter((s) => s.exercise === ex.name)} priorSets={priorSets} timer={timer} doneCount={doneCount} onLogSet={onLogSet} />
 
-      <footer className="flex items-center gap-3 px-4 pt-2" style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
-        <button onClick={() => go(-1)} disabled={idx === 0} className="glass tap-target flex flex-1 items-center justify-center gap-2 rounded-full py-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-muted)] disabled:opacity-30">
+      <footer className="flex items-center gap-2 px-4 pt-2" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}>
+        <Button onClick={() => go(-1)} disabled={idx === 0} className="flex-1 px-3 text-[length:var(--fs-sm)]">
           <Icon name="arrow-left" size={15} /> Anterior
-        </button>
-        <button
+        </Button>
+        <Button variant="ghost" onClick={onClose} className="flex-none px-4 text-[length:var(--fs-sm)]">
+          Salir
+        </Button>
+        <Button
+          variant={doneCount >= ex.series ? "primary" : "secondary"}
           onClick={() => go(1)}
           disabled={idx === exercises.length - 1}
-          className={`tap-target flex flex-1 items-center justify-center gap-2 rounded-full py-3 text-[12px] font-semibold uppercase tracking-[0.1em] disabled:opacity-30 ${doneCount >= ex.series ? "glass-on" : "glass text-[var(--color-muted)]"}`}
+          className="flex-1 px-3 text-[length:var(--fs-sm)]"
         >
           Siguiente <Icon name="arrow-right" size={15} />
-        </button>
+        </Button>
       </footer>
     </div>,
     document.body,
@@ -111,6 +128,7 @@ function GymExercise({
   ex,
   date,
   sets,
+  priorSets,
   timer,
   doneCount,
   onLogSet,
@@ -118,31 +136,46 @@ function GymExercise({
   ex: ExerciseTarget;
   date: string;
   sets: SetRecord[];
-  timer: RestTimerState & { addTime: (s: number) => void; skip: () => void };
+  priorSets: SetRecord[] | undefined;
+  timer: GymTimer;
   doneCount: number;
-  onLogSet: (exerciseName: string, payload: LogSetPayload) => void;
+  onLogSet: (exerciseName: string, payload: LogSetPayload) => LogSetResult | Promise<LogSetResult>;
 }) {
   const photos = useExercisePhotos();
-  const last = useLastSession(ex.name, date);
+  // Same strategy as the exercise sheet: from the sets Entreno already holds when logging for today,
+  // from this one exercise's rows in the database otherwise.
+  const last = useLastSession(ex.name, date, { priorSets });
   const range = parseRepRange(ex.repsLabel);
   const hasStart = ex.startKg != null || ex.startReps != null;
+  const lastKey = last?.date ?? null;
   const suggestion = useMemo(
     () => (hasStart && (!last || last.date < startDate(ex)) ? suggestFromStart(range, ex.startKg, ex.startReps) : last ? suggestNext(range, last.sets) : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [ex.name, last?.date],
+    [ex.name, lastKey],
   );
 
   // What the steppers open on: what you just did today, else the suggestion, else last time's best set.
   const seed = useMemo(
     () => seedWeightReps(sets, suggestion, last, range && range !== "fail" ? range.min : 8),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [lastKey, suggestion],
   );
 
   const [weight, setWeight] = useState<number | null>(seed.weight);
   const [reps, setReps] = useState<number>(seed.reps ?? 8);
   const [failure, setFailure] = useState(false);
   const [step, setStep] = useState(readStep);
+  const [savedMsg, flashSaved] = useSavedFlash();
+  // The last session can arrive after this opened: until a control is touched, re-seed from it.
+  const [seededFor, setSeededFor] = useState(lastKey);
+  const [touched, setTouched] = useState(false);
+  if (lastKey !== seededFor) {
+    setSeededFor(lastKey);
+    if (!touched && sets.length === 0) {
+      setWeight(seed.weight);
+      setReps(seed.reps ?? 8);
+    }
+  }
   const bodyweight = seed.weight == null && ex.startKg == null && !last?.sets.some((st) => st.weight != null);
   const complete = doneCount >= ex.series;
   const photo = resolvePhoto(ex.name, photos.get(ex.name));
@@ -153,112 +186,138 @@ function GymExercise({
     writeStep(next);
   }
 
-  function save() {
-    onLogSet(ex.name, { weight, reps, toFailure: failure, rpe: null, note: "" });
+  async function save() {
+    const ok = await onLogSet(ex.name, { weight, reps, toFailure: failure, rpe: null, note: "" });
+    if (ok === false) return; // not saved: keep the numbers so the retry is one tap
     haptic(30);
     setFailure(false);
+    flashSaved(`Serie ${doneCount + 1} guardada`);
   }
 
   const m = Math.floor(timer.remaining / 60).toString().padStart(2, "0");
   const s = (timer.remaining % 60).toString().padStart(2, "0");
+  const urgent = timer.remaining <= 5;
 
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pt-3">
-      <div className="flex items-center gap-3">
-        {photo.src ? <img src={photo.src} alt="" className="h-16 w-16 flex-none rounded-2xl border border-[var(--color-line)] object-cover" /> : null}
-        <div className="min-w-0">
-          <h2 className="font-[var(--font-display)] text-[22px] leading-tight">{ex.name}</h2>
-          <div className="num mt-0.5 text-[12px] text-[var(--color-muted)]">
-            {ex.series}×{ex.repsLabel}
-            {ex.loadNote ? <span className="text-[var(--color-muted-2)]"> · {ex.loadNote}</span> : null}
+    <div className="relative flex min-h-0 flex-1 flex-col">
+      {/* Everything you read or set scrolls here; the timer and the save button below never do,
+          so on a small phone "Guardar serie" is always on screen. */}
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pt-3 pb-2">
+        <div className="flex items-center gap-3">
+          {photo.src ? <img src={photo.src} alt="" className="h-16 w-16 flex-none rounded-2xl border border-[var(--color-line)] object-cover [@media(max-height:700px)]:hidden" /> : null}
+          <div className="min-w-0">
+            <h2 className="font-[var(--font-display)] text-[length:var(--fs-title)] leading-tight">{ex.name}</h2>
+            <div className="num mt-0.5 text-[length:var(--fs-meta)] text-[var(--color-muted)]">
+              {ex.series}×{ex.repsLabel}
+              {ex.loadNote ? <span> · {ex.loadNote}</span> : null}
+            </div>
+          </div>
+          <div className="ml-auto flex-none text-right">
+            <div className="num font-[var(--font-display)] text-[26px] font-light leading-none" style={{ color: complete ? "var(--color-good)" : undefined }}>
+              {doneCount}/{ex.series}
+            </div>
+            <div className="eyebrow mt-1">series</div>
           </div>
         </div>
-        <div className="ml-auto flex-none text-right">
-          <div className="num font-[var(--font-display)] text-[26px] font-light leading-none" style={{ color: complete ? "var(--color-good)" : undefined }}>
-            {doneCount}/{ex.series}
+
+        {suggestion ? (
+          <div className="glass flex items-center gap-3 rounded-2xl py-2 pl-3.5 pr-2">
+            <div className="min-w-0 flex-1">
+              <div className="eyebrow eyebrow-accent">Hoy</div>
+              <div className="num text-[length:var(--fs-title)] font-semibold leading-tight">{suggestion.weight != null ? `${fmt(suggestion.weight)} kg × ${suggestion.reps}` : `${suggestion.reps} reps`}</div>
+            </div>
+            <button
+              onClick={() => {
+                setTouched(true);
+                setWeight(suggestion.weight);
+                setReps(suggestion.reps);
+              }}
+              className="glass-accent btn flex-none rounded-full px-5 text-[length:var(--fs-sm)]"
+            >
+              Usar
+            </button>
           </div>
-          <div className="eyebrow mt-1">series</div>
-        </div>
+        ) : null}
+
+        {!bodyweight ? (
+          <BigStepper
+            label="Peso"
+            value={weight != null ? fmt(weight) : "—"}
+            unit="kg"
+            onMinus={() => {
+              setTouched(true);
+              setWeight((w) => Math.max(0, Math.round(((w ?? 0) - step) * 10) / 10));
+            }}
+            onPlus={() => {
+              setTouched(true);
+              setWeight((w) => Math.round(((w ?? 0) + step) * 10) / 10);
+            }}
+            chip={<StepChip step={step} onCycle={cycleStep} />}
+          />
+        ) : null}
+        <BigStepper
+          label="Repeticiones"
+          value={String(reps)}
+          onMinus={() => {
+            setTouched(true);
+            setReps((r) => Math.max(0, r - 1));
+          }}
+          onPlus={() => {
+            setTouched(true);
+            setReps((r) => r + 1);
+          }}
+        />
+
+        {sets.length ? (
+          <div className="flex flex-wrap gap-1.5" aria-label="Series de hoy">
+            {sets.map((st, i) => (
+              <span key={st.id ?? i} className="glass num rounded-full px-3 py-1 text-[length:var(--fs-meta)]">
+                {st.weight != null ? `${fmt(st.weight)}×` : ""}
+                {st.reps ?? "—"}
+                {st.toFailure ? <span className="text-[var(--color-accent-text)]"> AF</span> : null}
+              </span>
+            ))}
+          </div>
+        ) : null}
       </div>
 
-      {suggestion ? (
-        <div className="glass flex items-center gap-3 rounded-2xl px-3.5 py-2.5">
-          <div className="min-w-0 flex-1">
-            <div className="eyebrow eyebrow-accent">Hoy</div>
-            <div className="num text-[17px] font-semibold leading-tight">{suggestion.weight != null ? `${fmt(suggestion.weight)} kg × ${suggestion.reps}` : `${suggestion.reps} reps`}</div>
-          </div>
-          <button
-            onClick={() => {
-              setWeight(suggestion.weight);
-              setReps(suggestion.reps);
-            }}
-            className="glass-accent tap-target rounded-full px-4 py-2 text-[12px] font-semibold uppercase tracking-[0.1em]"
-          >
-            Usar
-          </button>
-        </div>
-      ) : null}
-
-      {!bodyweight ? (
-        <BigStepper
-          label="Peso"
-          value={weight != null ? fmt(weight) : "—"}
-          unit="kg"
-          onMinus={() => setWeight((w) => Math.max(0, Math.round(((w ?? 0) - step) * 10) / 10))}
-          onPlus={() => setWeight((w) => Math.round(((w ?? 0) + step) * 10) / 10)}
-          chip={
-            <button onClick={cycleStep} className="glass-flat rounded-full px-2.5 py-1 text-[12px] font-semibold text-[var(--color-muted)]" aria-label={`Paso de peso ${step} kilos; toca para cambiar`}>
-              paso {fmt(step)}
-            </button>
-          }
-        />
-      ) : null}
-      <BigStepper label="Repeticiones" value={String(reps)} onMinus={() => setReps((r) => Math.max(0, r - 1))} onPlus={() => setReps((r) => r + 1)} />
-
-      {sets.length ? (
-        <div className="flex flex-wrap gap-1.5" aria-label="Series de hoy">
-          {sets.map((st, i) => (
-            <span key={st.id ?? i} className="glass num rounded-full px-3 py-1 text-[12px]">
-              {st.weight != null ? `${fmt(st.weight)}×` : ""}
-              {st.reps ?? "—"}
-              {st.toFailure ? <span className="text-[var(--color-red-ink)]"> AF</span> : null}
-            </span>
-          ))}
-        </div>
-      ) : null}
-
-      <div className="mt-auto flex flex-col gap-2 pb-1 pt-1">
+      <div className="flex flex-col gap-2 px-4 pt-1">
         {timer.running ? (
-          <div className="glass-track flex items-center justify-between gap-3 rounded-3xl px-4 py-3" role="timer" aria-live="off">
-            <div>
-              <div className={`eyebrow ${timer.remaining <= 5 ? "eyebrow-accent" : ""}`}>Descanso</div>
-              <div className={`num font-[var(--font-display)] text-[44px] font-light leading-none ${timer.remaining <= 5 ? "pulse text-[var(--color-red-ink)]" : ""}`}>
+          <div className="glass-track flex items-center justify-between gap-3 rounded-3xl py-2 pl-4 pr-2" role="timer" aria-live="off" aria-label="Descanso">
+            <div className="flex flex-col">
+              <span className={`eyebrow ${urgent ? "eyebrow-accent" : ""}`}>Descanso</span>
+              <span className={`num font-[var(--font-display)] text-[34px] font-light leading-none ${urgent ? "pulse text-[var(--color-accent-text)]" : ""}`}>
                 {m}:{s}
-              </div>
+              </span>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => timer.addTime(30)} className="glass tap-target rounded-full px-4 text-[12px] font-semibold">
-                +30s
-              </button>
-              <button onClick={timer.skip} className="glass tap-target rounded-full px-4 text-[12px] font-semibold text-[var(--color-muted)]">
+              <Button onClick={() => timer.addTime(30)} className="whitespace-nowrap px-4 text-[length:var(--fs-sm)]">
+                +30 s
+              </Button>
+              <Button variant="ghost" onClick={timer.skip} className="whitespace-nowrap px-4 text-[length:var(--fs-sm)]">
                 Saltar
-              </button>
+              </Button>
             </div>
           </div>
         ) : null}
 
         <div className="flex gap-2">
-          <button
-            onClick={() => setFailure((f) => !f)}
-            aria-pressed={failure}
-            className={`tap-target flex-none rounded-full px-5 text-[12px] font-semibold uppercase tracking-[0.1em] ${failure ? "glass-on" : "glass text-[var(--color-muted)]"}`}
-          >
+          <Button selected={failure} onClick={() => setFailure((f) => !f)} className="h-16 flex-none px-5 text-[length:var(--fs-sm)] [@media(max-height:700px)]:h-14">
             Al fallo
-          </button>
-          <Button variant="primary" className="h-16 flex-1 text-[15px]" onClick={save}>
-            Guardar serie
+          </Button>
+          <Button variant="primary" className="h-16 flex-1 text-[length:var(--fs-body)] [@media(max-height:700px)]:h-14" onClick={save}>
+            {savedMsg ? (
+              <>
+                <Icon name="check" size={22} /> {savedMsg}
+              </>
+            ) : (
+              "Guardar serie"
+            )}
           </Button>
         </div>
+        <span role="status" aria-live="polite" className="sr-only">
+          {savedMsg ?? ""}
+        </span>
       </div>
     </div>
   );

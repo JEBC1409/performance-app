@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { lastByIndex } from "@/db/safeQuery";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
-import { Card, DeltaChip, Headline, RankBadge } from "@/ui";
+import { Card, CardTitle, DeltaChip, Headline, RankBadge } from "@/ui";
+import { SkeletonCard } from "@/ui/Skeleton";
 import { EmptyState } from "@/ui/EmptyState";
 import { Radar } from "@/ui/Radar";
 import { MUSCLE_GROUP_ORDER, MUSCLE_GROUP_LABEL, groupForExercise, type MuscleGroup } from "@/data/muscleGroups";
@@ -13,6 +14,7 @@ import { MuscleBodyDiagram } from "./MuscleBodyDiagram";
 import { tierInk } from "@/lib/tierInk";
 
 export function VolumenTab() {
+  // The whole history on purpose: a group's rank comes from your best lift ever (groupStrengthPct).
   const sets = useLiveQuery(() => db.sets.toArray(), []);
   const lastWeight = useLiveQuery(() => lastByIndex(db.weights, "date"), []);
   const bodyweightKg = lastWeight?.weightKg ?? 0;
@@ -63,58 +65,62 @@ export function VolumenTab() {
 
   const axes = useMemo(() => {
     const max = Math.max(...Object.values(counts), 1);
-    return MUSCLE_GROUP_ORDER.map((g) => ({ label: MUSCLE_GROUP_LABEL[g], value: counts[g] / max, raw: counts[g] }));
+    return MUSCLE_GROUP_ORDER.map((g) => ({ label: `${MUSCLE_GROUP_LABEL[g]} ${counts[g]}`, value: counts[g] / max }));
   }, [counts]);
 
-  const activeGroup = selected ?? MUSCLE_GROUP_ORDER.reduce((best, g) => (counts[g] > counts[best] ? g : best), MUSCLE_GROUP_ORDER[0]);
+  const busiest = MUSCLE_GROUP_ORDER.reduce((best, g) => (counts[g] > counts[best] ? g : best), MUSCLE_GROUP_ORDER[0]);
+  const activeGroup = selected ?? busiest;
   const activeProgress = progressByGroup[activeGroup];
   const activeTier = activeProgress.tier;
   const next = activeProgress.next;
 
-  if (sets && sets.length === 0) {
+  if (!sets) return <SkeletonCard lines={4} />;
+
+  if (sets.length === 0) {
     return (
       <Card>
-        <div className="card-title">Volumen por grupo muscular</div>
+        <h2 className="card-title">Volumen por grupo muscular</h2>
         <EmptyState icon="dumbbell" title="Aún no hay series registradas" hint="Registra tu primera serie en Entreno y aquí verás cuánto trabajas cada grupo muscular y tu rango en cada uno." />
       </Card>
     );
   }
 
-  const busiest = MUSCLE_GROUP_ORDER.reduce((best, g) => (counts[g] > counts[best] ? g : best), MUSCLE_GROUP_ORDER[0]);
-
   return (
-    <Card>
-      <div className="card-title">Volumen por grupo muscular <span className="text-[12px] font-normal text-[var(--color-muted)]">· últimos 28 días</span></div>
-      <div className="mt-3">
-        <Headline
-          value={totals.current}
-          unit="series"
-          caption={totals.current ? "Más trabajado: " + MUSCLE_GROUP_LABEL[busiest] : "Sin series en los últimos 28 días"}
-          deltas={<DeltaChip diff={totals.previous ? totals.current - totals.previous : null} digits={0} flat={1} label="vs 28 días antes" />}
-        />
-      </div>
-      <div className="flex justify-center mt-4">
-        <Radar axes={axes} />
-      </div>
+    <div className="flex flex-col gap-4">
+      <Card className="panel-surface-glow">
+        <CardTitle right="últimos 28 días">Volumen por grupo</CardTitle>
+        <div className="mt-3">
+          <Headline
+            value={totals.current}
+            unit="series"
+            caption={totals.current ? "Más trabajado: " + MUSCLE_GROUP_LABEL[busiest] : "Sin series en los últimos 28 días"}
+            deltas={<DeltaChip diff={totals.previous ? totals.current - totals.previous : null} digits={0} flat={1} label="vs 28 días antes" />}
+          />
+        </div>
+        <div className="mt-4 flex justify-center">
+          <Radar axes={axes} />
+        </div>
+      </Card>
 
-      <div className="mt-5 flex flex-col sidebar:flex-row gap-5 items-center sidebar:items-start">
-        <MuscleBodyDiagram rankByGroup={rankByGroup} selected={selected} onSelect={setSelected} />
+      <Card>
+        <CardTitle>Rango por grupo</CardTitle>
+        <div className="mt-4 flex flex-col items-center gap-5 sidebar:flex-row sidebar:items-start">
+          <MuscleBodyDiagram rankByGroup={rankByGroup} selected={selected} onSelect={setSelected} />
 
-        <div className="w-full flex-1">
-          <div className="panel-surface panel-surface-glow p-4">
+          <div className="w-full flex-1">
             <div className="flex items-center gap-3">
               <RankBadge tier={activeTier} size={48} />
-              <div className="flex-1">
-                <div className="text-[12px] uppercase tracking-wide text-[var(--color-muted)]">{MUSCLE_GROUP_LABEL[activeGroup]}</div>
-                <div className="text-[15px] font-bold leading-tight" style={{ color: tierInk(activeTier.color) }}>
+              <div className="min-w-0 flex-1">
+                <div className="text-meta text-[var(--color-muted)]">{MUSCLE_GROUP_LABEL[activeGroup]}</div>
+                <div className="text-base font-bold leading-tight" style={{ color: tierInk(activeTier.color) }}>
                   {activeTier.label}
                 </div>
-                <div className="num mt-0.5 text-[12px] text-[var(--color-muted-2)]">
+                <div className="num mt-0.5 text-meta text-[var(--color-muted)]">
                   {bodyweightKg > 0 ? (
                     <>
-                      1RM est. {roundKg(strength[activeGroup].bestKg)}kg
+                      1RM est. {roundKg(strength[activeGroup].bestKg)} kg
                       {next
-                        ? ` · faltan ${roundKg((activeProgress.gapToNext ?? 0) * strength[activeGroup].bestCeiling * bodyweightKg)}kg para ${next.label}`
+                        ? ` · faltan ${roundKg((activeProgress.gapToNext ?? 0) * strength[activeGroup].bestCeiling * bodyweightKg)} kg para ${next.label}`
                         : " · rango máximo"}
                     </>
                   ) : (
@@ -124,7 +130,7 @@ export function VolumenTab() {
               </div>
             </div>
             {next ? (
-              <div className="mt-3 h-1.5 rounded-full bg-[var(--color-surface-2)] overflow-hidden">
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[var(--color-surface-2)]">
                 <div
                   className="h-full rounded-full"
                   style={{
@@ -135,22 +141,25 @@ export function VolumenTab() {
                 />
               </div>
             ) : null}
-          </div>
 
-          <div className="mt-3 grid grid-cols-3 gap-2">
-            {MUSCLE_GROUP_ORDER.map((g) => (
-              <button
-                key={g}
-                onClick={() => setSelected(g)}
-                className={`panel-surface flex flex-col items-center gap-1 p-2.5 transition-colors ${activeGroup === g ? "panel-surface-glow" : ""}`}
-              >
-                <RankBadge tier={rankByGroup[g]} size={28} />
-                <span className="text-[12px] uppercase tracking-wide text-[var(--color-muted)]">{MUSCLE_GROUP_LABEL[g]}</span>
-              </button>
-            ))}
+            <div role="group" aria-label="Grupo muscular" className="mt-4 grid grid-cols-3 gap-2">
+              {MUSCLE_GROUP_ORDER.map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  aria-pressed={activeGroup === g}
+                  onClick={() => setSelected(g)}
+                  className="glass flex min-h-[var(--control-h)] flex-col items-center justify-center gap-1 rounded-xl px-1.5 py-2"
+                >
+                  <RankBadge tier={rankByGroup[g]} size={28} />
+                  <span className="text-meta font-medium">{MUSCLE_GROUP_LABEL[g]}</span>
+                  <span className="text-meta text-[var(--color-muted)]">{rankByGroup[g].label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 }

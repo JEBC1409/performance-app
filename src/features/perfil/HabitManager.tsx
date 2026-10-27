@@ -55,17 +55,18 @@ export function HabitManager() {
   return (
     <Card>
       <h2 className="card-title">Hábitos</h2>
-      <p className="text-[12px] text-[var(--color-muted)] mt-1.5">
+      <p className="mt-1.5 text-sm leading-snug text-[var(--color-muted)]">
         Agrega, renombra o quita los hábitos que sigues cada día — pueden cambiar de un mes a otro.
       </p>
 
       <div className="flex flex-col gap-2 mt-3">
         {list.map((h) => (
-          <div key={h.key} className="flex items-center gap-2.5 rounded-xl border border-[var(--color-line-strong)] px-3 py-2.5">
+          <div key={h.key} className="flex min-h-[var(--control-h)] items-center gap-2.5 rounded-xl border border-[var(--color-line-strong)] py-0.5 pl-3 pr-1">
             <HabitGlyph icon={h.icon} active size={12} className="flex-none" />
             {editingKey === h.key ? (
               <input
                 autoFocus
+                aria-label="Nombre del hábito"
                 value={editLabel}
                 onChange={(e) => setEditLabel(e.target.value)}
                 onBlur={saveEdit}
@@ -73,10 +74,10 @@ export function HabitManager() {
                   if (e.key === "Enter") (e.target as HTMLInputElement).blur();
                   if (e.key === "Escape") setEditingKey(null);
                 }}
-                className="min-w-0 flex-1 bg-transparent text-[13px] outline-none border-b border-[var(--color-red)]"
+                className="min-h-[var(--control-h)] min-w-0 flex-1 border-b border-[var(--color-accent-text)] bg-transparent text-base outline-none"
               />
             ) : (
-              <button type="button" onClick={() => startEdit(h)} className="min-w-0 flex-1 truncate text-left text-[13px] hover:text-[var(--color-red-ink)]">
+              <button type="button" onClick={() => startEdit(h)} className="min-h-[var(--control-h)] min-w-0 flex-1 truncate text-left text-sm hover:text-[var(--color-accent-text)]">
                 {h.label}
               </button>
             )}
@@ -84,19 +85,19 @@ export function HabitManager() {
               type="button"
               onClick={() => removeHabit(h.key, h.label)}
               aria-label={`Eliminar ${h.label}`}
-              className="glass hit flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-red-ink)]"
+              className="glass-flat flex h-11 w-11 flex-none items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-accent-text)]"
             >
-              <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden>
+              <svg width="12" height="12" viewBox="0 0 10 10" aria-hidden>
                 <path d="M1 1l8 8M9 1l-8 8" stroke="currentColor" strokeWidth="1.4" />
               </svg>
             </button>
           </div>
         ))}
-        {!list.length ? <div className="py-2 text-[12px] text-[var(--color-muted-2)]">Sin hábitos todavía.</div> : null}
+        {!list.length ? <div className="py-2 text-sm text-[var(--color-muted)]">Sin hábitos todavía.</div> : null}
       </div>
 
       <div className="mt-3 flex flex-col gap-2.5 border-t border-[var(--color-line)] pt-3">
-        <div className="flex gap-1.5">
+        <div role="group" aria-label="Icono del hábito" className="flex gap-2">
           {HABIT_ICONS.map((icon) => (
             <button
               key={icon}
@@ -104,9 +105,7 @@ export function HabitManager() {
               onClick={() => setNewIcon(icon)}
               aria-label={icon}
               aria-pressed={newIcon === icon}
-              className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-                newIcon === icon ? "glass-on" : "glass"
-              }`}
+              className="glass flex h-11 w-11 items-center justify-center rounded-xl"
             >
               <HabitGlyph icon={icon} active={newIcon === icon} size={12} />
             </button>
@@ -120,7 +119,8 @@ export function HabitManager() {
               if (e.key === "Enter") addHabit();
             }}
             placeholder="Nuevo hábito…"
-            className="min-w-0 flex-1 rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-3 py-2 text-[13px] outline-none focus:border-[var(--color-red)]"
+            aria-label="Nombre del nuevo hábito"
+            className="min-h-[var(--control-h)] min-w-0 flex-1 rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-3 text-base"
           />
           <Button variant="primary" onClick={addHabit} disabled={!newLabel.trim()}>
             Agregar

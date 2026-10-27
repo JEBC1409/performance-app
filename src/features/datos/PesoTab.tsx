@@ -1,25 +1,31 @@
-import { EmptyState } from "@/ui/EmptyState";
 import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db, DEFAULT_SETTINGS } from "@/db/db";
-import { Card, CardTitle, Chip, Button, Field, Input, DateField, BarChart, DeltaChip, Headline, type BarPoint } from "@/ui";
-import { LineChart } from "@/ui/LineChart";
+import { db, DEFAULT_SETTINGS, type Unit } from "@/db/db";
+import { Button, Card, Chip, DateField, DeltaChip, Field, Headline, Input, LineChart, Sheet } from "@/ui";
+import { EmptyState } from "@/ui/EmptyState";
 import { evaluateRate } from "@/lib/weightProjection";
 import { changeOver } from "@/lib/changes";
-import { todayISO, fmtDateHuman, startOfWeek } from "@/lib/date";
+import { todayISO, fmtDateHuman } from "@/lib/date";
 import { fromKg, toKg, unitLabel } from "@/lib/units";
 import { showToast } from "@/ui/Toast";
 import { WeightGoalCard } from "./WeightGoalCard";
+import { EntryList, FieldError, Segmented } from "./components";
+import { RANGES, windowSeries, type Range } from "./series";
+
+/** Most recent readings kept in memory: a bit over a year of daily weigh-ins. */
+const MAX_ROWS = 400;
 
 export function PesoTab() {
-  const rows = useLiveQuery(() => db.weights.orderBy("date").toArray(), []);
+  const rowsDesc = useLiveQuery(() => db.weights.orderBy("date").reverse().limit(MAX_ROWS).toArray(), []);
+  const rows = useMemo(() => (rowsDesc ? rowsDesc.slice().reverse() : undefined), [rowsDesc]);
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const goal = settings?.weeklyGoalKg ?? DEFAULT_SETTINGS.weeklyGoalKg;
   const unit = settings?.unit ?? DEFAULT_SETTINGS.unit;
   const u = unitLabel(unit);
 
-  const [date, setDate] = useState(todayISO());
-  const [weight, setWeight] = useState("");
+  const [range, setRange] = useState<Range>(90);
+  const [sheet, setSheet] = useState(false);
+  const today = todayISO();
 
   const kgPoints = useMemo(
     () =>
@@ -28,58 +34,48 @@ export function PesoTab() {
         .map((r) => ({ date: r.date, weight: r.weightKg as number })),
     [rows],
   );
-  // The ideal path: where you'd be if you gained exactly your weekly goal since the first reading.
-  const idealPoints = useMemo(() => {
-    if (!kgPoints.length) return [];
-    const t0 = new Date(kgPoints[0].date + "T00:00:00").getTime();
-    return kgPoints.map((p) => kgPoints[0].weight + goal * ((new Date(p.date + "T00:00:00").getTime() - t0) / (7 * 86_400_000)));
-  }, [kgPoints, goal]);
-  const displayPoints = kgPoints.map((p) => ({ label: fmtDateHuman(p.date), value: fromKg(p.weight, unit) }));
+  const dated = useMemo(() => kgPoints.map((p) => ({ date: p.date, value: p.weight })), [kgPoints]);
+
+  // What the chart draws: the chosen period (a year is averaged per week), and the
+  // ideal path from its first point at your weekly goal.
+  const windowed = useMemo(() => windowSeries(dated, range, today), [dated, range, today]);
+  const chartPoints = windowed.map((p) => ({ label: fmtDateHuman(p.date), value: fromKg(p.value, unit) }));
+  const idealValues = useMemo(() => {
+    if (!windowed.length) return [];
+    const t0 = new Date(windowed[0].date + "T00:00:00").getTime();
+    return windowed.map((p) => fromKg(windowed[0].value + goal * ((new Date(p.date + "T00:00:00").getTime() - t0) / (7 * 86_400_000)), unit));
+  }, [windowed, goal, unit]);
+
+  // An ideal path that has run far from where you are only squashes the chart against its top edge: leave it out.
+  const showIdeal = idealValues.length > 0 && Math.abs(idealValues[idealValues.length - 1] - chartPoints[chartPoints.length - 1].value) <= fromKg(3, unit);
+
   const alert = kgPoints.length >= 2 ? evaluateRate(kgPoints) : null;
-  const last = rows && rows.length ? rows[rows.length - 1] : null;
-  const today = todayISO();
-  // Change over the last week and month, in the unit you use. With a gain goal,
-  // going up is the win; with a loss goal, going down.
-  const week = changeOver(kgPoints.map((p) => ({ date: p.date, value: p.weight })), 7, today);
-  const month = changeOver(kgPoints.map((p) => ({ date: p.date, value: p.weight })), 30, today);
+  const last = kgPoints.length ? kgPoints[kgPoints.length - 1] : null;
+  const lastRow = rows && rows.length ? rows[rows.length - 1] : null;
+  // Change over the last week and month. With a gain goal, going up is the win;
+  // with a loss goal, going down.
+  const week = changeOver(dated, 7, today);
+  const month = changeOver(dated, 30, today);
   const goodDirection = goal >= 0 ? "up" : "down";
   const perWeek = month ? fromKg(month.diff, unit) / (30 / 7) : null;
-
-  const weeklyAvgPoints: BarPoint[] = useMemo(() => {
-    const byWeek = new Map<string, number[]>();
-    kgPoints.forEach((p) => {
-      const wk = startOfWeek(p.date);
-      if (!byWeek.has(wk)) byWeek.set(wk, []);
-      byWeek.get(wk)!.push(p.weight);
-    });
-    const weeks = Array.from(byWeek.keys()).sort();
-    return weeks.map((wk, i) => {
-      const vals = byWeek.get(wk)!;
-      const avgKg = vals.reduce((a, b) => a + b, 0) / vals.length;
-      return { label: fmtDateHuman(wk), value: fromKg(avgKg, unit), highlight: i === weeks.length - 1 };
-    });
-  }, [kgPoints, unit]);
-
-  async function addEntry() {
-    const typed = parseFloat(weight.replace(",", "."));
-    if (Number.isNaN(typed)) return;
-    const kg = toKg(typed, unit);
-    const existing = await db.weights.where("date").equals(date).first();
-    if (existing) await db.weights.update(existing.id!, { weightKg: kg });
-    else await db.weights.add({ date, weightKg: kg, pechoCm: null, brazoCm: null, note: "" });
-    setWeight("");
-    showToast("Peso guardado");
-  }
+  const idealText = (goal >= 0 ? "+" : "") + fromKg(goal, unit) + " " + u + "/semana";
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
-        <CardTitle>Peso corporal</CardTitle>
-        {last && last.weightKg != null ? (
+      <Card className="panel-surface-glow">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="card-title">Peso corporal</h2>
+          {last ? (
+            <Button variant="secondary" onClick={() => setSheet(true)}>
+              Anotar
+            </Button>
+          ) : null}
+        </div>
+        {last ? (
           <>
             <div className="mt-3">
               <Headline
-                value={fromKg(last.weightKg, unit)}
+                value={fromKg(last.weight, unit)}
                 unit={u}
                 caption={"Último registro · " + fmtDateHuman(last.date)}
                 deltas={
@@ -90,84 +86,112 @@ export function PesoTab() {
                 }
               />
             </div>
-            <div className="mt-4 grid grid-cols-1 sidebar:grid-cols-[1.3fr_1fr] gap-4">
-              <div>
-                <LineChart points={displayPoints} height={130} unit={u} goalValues={idealPoints.map((v) => fromKg(v, unit))} lastValueLabel={fromKg(last.weightKg, unit) + " " + u} />
-              </div>
-              <div>
-                <div className="mb-1 text-[12px] uppercase tracking-wide text-[var(--color-muted-2)]">Promedio semanal</div>
-                <BarChart points={weeklyAvgPoints} height={110} unit="" />
-              </div>
+            <Segmented className="mt-4" label="Periodo de la gráfica" items={RANGES} value={range} onChange={setRange} />
+            <div className="mt-3">
+              {windowed.length >= 2 ? (
+                <LineChart points={chartPoints} height={150} unit={u} goalValues={showIdeal ? idealValues : undefined}lastValueLabel={fromKg(last.weight, unit) + " " + u} />
+              ) : (
+                <p className="py-6 text-center text-sm text-[var(--color-muted)]">Con dos registros en este periodo verás la curva. Prueba uno más largo.</p>
+              )}
+              {range === 365 && windowed.length >= 2 ? <p className="mt-1 text-meta text-[var(--color-muted-2)]">Promedio de cada semana</p> : null}
             </div>
-            <p className="num mt-3 text-[12px] text-[var(--color-muted)]">
+            <p className="num mt-3 text-sm text-[var(--color-muted)]">
               {perWeek != null ? (
                 <>
-                  Ritmo de 30 días: <span className="font-semibold text-[var(--color-ink)]">{(perWeek >= 0 ? "+" : "") + perWeek.toFixed(2)} {u}/semana</span> · ideal {goal >= 0 ? "+" : ""}
-                  {fromKg(goal, unit)} {u}/semana
+                  Ritmo de 30 días: <span className="font-semibold text-[var(--color-ink)]">{(perWeek >= 0 ? "+" : "") + perWeek.toFixed(2)} {u}/semana</span> · ideal {idealText}
                 </>
               ) : (
-                <>Ritmo ideal {goal >= 0 ? "+" : ""}{fromKg(goal, unit)} {u}/semana. Con registros de más de 30 días verás tu ritmo real.</>
+                <>Ritmo ideal {idealText}. Con registros de más de 30 días verás tu ritmo real.</>
               )}
             </p>
+            {alert?.overPace ? (
+              <div className="mt-3">
+                <Chip tone="bad">{alert.suggestion}</Chip>
+              </div>
+            ) : null}
           </>
         ) : (
           <EmptyState
             icon="scale"
             title="Aún no hay peso registrado"
             hint="Anota tu primer peso y aquí verás el número, cómo cambia cada semana y tu tendencia."
-            action={{
-              label: "Anotar mi peso",
-              onClick: () => {
-                const el = document.getElementById("peso-input");
-                el?.scrollIntoView({ behavior: "smooth", block: "center" });
-                (el as HTMLInputElement | null)?.focus();
-              },
-            }}
+            action={{ label: "Anotar mi peso", onClick: () => setSheet(true) }}
           />
         )}
-        {alert?.overPace ? (
-          <div className="mt-3">
-            <Chip tone="bad">{alert.suggestion}</Chip>
-          </div>
-        ) : null}
       </Card>
 
       <WeightGoalCard points={kgPoints.map((p) => ({ date: p.date, kg: p.weight }))} unit={unit} />
 
-      <Card>
-        <CardTitle>Registrar peso</CardTitle>
-        <div className="grid grid-cols-2 gap-2 mt-3">
-          <Field label="Fecha">
-            <DateField value={date} max={todayISO()} onChange={setDate} size="sm" />
-          </Field>
-          <Field label={`Peso (${u})`}>
-            <Input id="peso-input" inputMode="decimal" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder={unit === "lb" ? "158.7" : "72.0"} />
-          </Field>
-        </div>
-        <Button variant="primary" className="w-full mt-3" onClick={addEntry}>
-          Guardar
-        </Button>
-      </Card>
+      {lastRow ? (
+        <Card padded={false}>
+          <div className="border-b border-[var(--color-line)] px-4 py-3">
+            <h2 className="card-title">Registro</h2>
+          </div>
+          <EntryList
+            noun="registros"
+            rows={(rows ?? [])
+              .slice()
+              .reverse()
+              .map((r) => ({ key: r.id ?? r.date, date: fmtDateHuman(r.date), value: r.weightKg != null ? `${fromKg(r.weightKg, unit)} ${u}` : "—" }))}
+          />
+        </Card>
+      ) : null}
 
-      <Card padded={false}>
-        <div className="px-4 py-3 border-b border-[var(--color-line)]">
-          <CardTitle>Registro</CardTitle>
-        </div>
-        <div className="divide-y divide-[var(--color-line)]">
-          {(rows ?? [])
-            .slice()
-            .reverse()
-            .map((r) => (
-              <div key={r.id} className="flex items-center justify-between px-4 py-2.5 text-[12.5px]">
-                <span className="text-[var(--color-muted)] num">{fmtDateHuman(r.date)}</span>
-                <span className="num font-semibold">
-                  {r.weightKg != null ? fromKg(r.weightKg, unit) : "—"} {u}
-                </span>
-              </div>
-            ))}
-          {!rows?.length ? <EmptyState compact icon="scale" title="Sin registros de peso" hint="Anota tu peso arriba; pesarte a la misma hora da la mejor tendencia." /> : null}
-        </div>
-      </Card>
+      <Sheet open={sheet} onClose={() => setSheet(false)} title="Anotar peso">
+        <WeightForm unit={unit} onDone={() => setSheet(false)} />
+      </Sheet>
     </div>
+  );
+}
+
+function WeightForm({ unit, onDone }: { unit: Unit; onDone: () => void }) {
+  const u = unitLabel(unit);
+  const [date, setDate] = useState(todayISO());
+  const [weight, setWeight] = useState("");
+  const [error, setError] = useState("");
+
+  async function save() {
+    const typed = parseFloat(weight.replace(",", "."));
+    if (Number.isNaN(typed) || typed <= 0) {
+      setError("Escribe tu peso, por ejemplo " + (unit === "lb" ? "158,7" : "72,5") + ".");
+      return;
+    }
+    const kg = toKg(typed, unit);
+    const existing = await db.weights.where("date").equals(date).first();
+    if (existing) await db.weights.update(existing.id!, { weightKg: kg });
+    else await db.weights.add({ date, weightKg: kg, pechoCm: null, brazoCm: null, note: "" });
+    showToast("Peso guardado");
+    onDone();
+  }
+
+  return (
+    <form
+      className="flex flex-col gap-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        void save();
+      }}
+    >
+      <Field label="Fecha">
+        <DateField value={date} max={todayISO()} onChange={setDate} />
+      </Field>
+      <Field label={`Peso (${u})`}>
+        <Input
+          autoFocus
+          inputMode="decimal"
+          value={weight}
+          aria-invalid={error ? true : undefined}
+          onChange={(e) => {
+            setWeight(e.target.value);
+            setError("");
+          }}
+          placeholder={unit === "lb" ? "158.7" : "72.5"}
+        />
+      </Field>
+      {error ? <FieldError>{error}</FieldError> : null}
+      <Button type="submit" variant="primary" className="w-full">
+        Guardar
+      </Button>
+    </form>
   );
 }

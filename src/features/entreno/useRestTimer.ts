@@ -1,5 +1,6 @@
 import { useCallback, useSyncExternalStore } from "react";
 import { useNow } from "@/hooks/useFocusTimer";
+import { askNotificationPermission } from "@/lib/notifyPermission";
 import { addRest, getRestState, restRemaining, skipRest, startRest, subscribeRest } from "@/lib/restTimer";
 
 export interface RestTimerState {
@@ -16,7 +17,7 @@ function askNotificationsOnce(): void {
   try {
     if (typeof Notification === "undefined" || Notification.permission !== "default" || localStorage.getItem(ASKED_KEY)) return;
     localStorage.setItem(ASKED_KEY, "1");
-    Notification.requestPermission().catch(() => {});
+    void askNotificationPermission();
   } catch {
     /* optional */
   }

@@ -39,6 +39,14 @@ export function BookPicker({ value, onChange, books }: { value: string; onChange
     setOpen((o) => !o);
   }
 
+  // Open on the book you're in, not at Génesis.
+  useEffect(() => {
+    if (!open) return;
+    const panel = panelRef.current;
+    const el = panel?.querySelector<HTMLElement>('[aria-current="true"]');
+    if (panel && el) panel.scrollTop = el.offsetTop - panel.clientHeight / 2 + el.offsetHeight / 2;
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
@@ -72,7 +80,8 @@ export function BookPicker({ value, onChange, books }: { value: string; onChange
         type="button"
         onClick={toggle}
         aria-expanded={open}
-        className={`glass flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-[13px] text-[var(--color-ink)] ${open ? "!border-[var(--color-red)]" : ""}`}
+        aria-label={`Libro: ${current?.name ?? value}`}
+        className={`tap-target flex w-full items-center justify-between gap-2 rounded-xl px-3 text-sm font-semibold text-[var(--color-ink)] ${open ? "glass-sel" : "glass"}`}
       >
         <span className="truncate">{current?.name ?? value}</span>
         <ChevronGlyph />
@@ -83,11 +92,11 @@ export function BookPicker({ value, onChange, books }: { value: string; onChange
             <div
               ref={panelRef}
               style={{ position: "fixed", top: pos.top, left: pos.left, width: WIDTH, maxHeight: MAX_HEIGHT }}
-              className="enter z-50 flex flex-col overflow-y-auto rounded-2xl border border-[var(--color-line-strong)] bg-[var(--color-surface)] py-1.5 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.7)]"
+              className="enter surface-2 z-50 flex flex-col overflow-y-auto rounded-2xl py-1.5"
             >
               {(["AT", "NT"] as const).map((testament) => (
                 <div key={testament}>
-                  <div className="sticky top-0 z-10 bg-[var(--color-surface)] px-3.5 pb-1.5 pt-2.5 text-[12px] font-semibold uppercase tracking-[0.14em] text-[var(--color-muted-2)]">
+                  <div className="eyebrow sticky top-0 z-10 bg-[rgb(var(--raised-rgb))] px-3.5 pb-1.5 pt-2.5">
                     {testament === "AT" ? "Antiguo Testamento" : "Nuevo Testamento"}
                   </div>
                   {books
@@ -102,8 +111,9 @@ export function BookPicker({ value, onChange, books }: { value: string; onChange
                             onChange(b.abbrev);
                             setOpen(false);
                           }}
-                          className={`flex w-full items-center px-3.5 py-1.5 text-left text-[12.5px] transition-colors ${
-                            isSelected ? "bg-[rgb(var(--accent-rgb)/0.14)] text-[var(--color-red-ink)] font-semibold" : "text-[var(--color-ink)] hover:bg-[rgb(var(--fg-rgb)/0.06)]"
+                          aria-current={isSelected ? "true" : undefined}
+                          className={`flex min-h-[var(--control-h)] w-full items-center px-3.5 text-left text-sm transition-colors ${
+                            isSelected ? "bg-[rgb(var(--accent-rgb)/0.14)] text-[var(--color-accent-text)] font-semibold" : "text-[var(--color-ink)] hover:bg-[rgb(var(--fg-rgb)/0.06)]"
                           }`}
                         >
                           {b.name}

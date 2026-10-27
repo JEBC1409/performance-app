@@ -1,24 +1,28 @@
 import { Icon } from "@/ui/Icon";
-import { firstByIndex, lastByIndex } from "@/db/safeQuery";
 import { Skeleton } from "@/ui/Skeleton";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, DEFAULT_SETTINGS } from "@/db/db";
-import { Card, Eyebrow, Stat, HabitGlyph, Button, Sheet, DateField } from "@/ui";
+import { useFirstDates, useLastWeight, useTodayActivity } from "@/hooks/useRecentActivity";
+import { Card, Eyebrow, HabitGlyph, Button, Sheet, DateField } from "@/ui";
 import { DailyStreakCard } from "./DailyStreakCard";
 import { DayRings } from "./DayRings";
-import { PrioritiesCard } from "./PrioritiesCard";
+import { CloseDaySheet, PrioritiesCard } from "./PrioritiesCard";
 import { InsightsCard } from "./InsightsCard";
 import { DeloadCard } from "./DeloadCard";
 import { MoodCard } from "./MoodCard";
 import { WeekSummaryCard } from "./WeekSummaryCard";
+import { pickHeroAction } from "./heroAction";
 import { useUiPrefs } from "@/hooks/useUiPrefs";
 import { useConfigVersion } from "@/hooks/useConfigVersion";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { usePriorities } from "@/hooks/usePriorities";
 import type { HomeCard } from "@/lib/uiPrefs";
+import { planFor } from "@/lib/priorities";
 import { useHabitDefs } from "@/hooks/useHabitDefs";
 import { useMoureWeeks } from "@/hooks/useMoureWeeks";
-import { GYM_DAY_ORDER, GYM_DIAS } from "@/data/gym";
+import { GYM_DAY_ORDER, GYM_DIAS, targetSetsForDay } from "@/data/gym";
 import { todayISO, DIAS, jsDowToIndex } from "@/lib/date";
 import { currentBlockInfo } from "@/lib/scheduleBlock";
 import { habitForBlock, toggleHabitDay } from "@/lib/habits";
@@ -32,6 +36,14 @@ import { showToast } from "@/ui/Toast";
 import type { Tab } from "@/App";
 import type { GymDay } from "@/lib/cycle";
 
+/** Routine names are stored in capitals ("PUSH"); inside a sentence or a button they read as shouting. */
+const sentence = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s);
+
+/** The decorative side figures only fit in the empty margin of a wide window (the column is 1000px). */
+const MASCOT_QUERY = "(min-width: 1180px)";
+const MASCOT_CLASS =
+  "pointer-events-none fixed bottom-0 z-[-1] h-[62vh] w-[calc((100vw-1000px)/2-16px)] max-w-[220px] object-contain object-bottom mix-blend-screen opacity-50";
+
 export function Hoy({
   onStartEntreno,
   onNavigate,
@@ -41,9 +53,11 @@ export function Hoy({
 }) {
   const today = todayISO();
   const slot = useCycleSlot();
-  const { homeOrder } = useUiPrefs();
+  const { homeOrder, calm } = useUiPrefs();
+  const showMascots = useMediaQuery(MASCOT_QUERY) && !calm;
   useConfigVersion(); // routine / schedule edits re-render this screen
   const [startPrompt, setStartPrompt] = useState(false);
+  const [closing, setClosing] = useState(false);
   const [pickedDay, setPickedDay] = useState<GymDay>("A");
   const [pickedDate, setPickedDate] = useState(today);
 
@@ -52,13 +66,16 @@ export function Hoy({
     setPickedDate(today);
     setStartPrompt(true);
   }
-  const habitDay = useLiveQuery(() => db.habitDays.get(today), [today]);
+  // Today's habit row, the newest and the first weight: read once for the whole screen
+  // (shared with the rings, streak, cycle and insights) instead of one query each.
+  const todayData = useTodayActivity();
+  const habitDay = todayData?.habitDays.find((h) => h.date === today);
+  const setsToday = useMemo(() => todayData?.sets.filter((s) => s.date === today), [todayData, today]);
+  const focusMin = useMemo(() => (todayData?.focus ?? []).filter((f) => f.date === today).reduce((a, f) => a + f.minutes, 0), [todayData, today]);
   const habitDefs = useHabitDefs();
-  const lastWeight = useLiveQuery(() => lastByIndex(db.weights, "date"), []);
-  const firstWeight = useLiveQuery(
-    () => firstByIndex(db.weights, "date"),
-    []
-  );
+  const priorities = usePriorities();
+  const lastWeight = useLastWeight();
+  const firstWeight = useFirstDates()?.weights;
   const settings = useLiveQuery(() => db.settings.get("app"), []);
   const unit = settings?.unit ?? DEFAULT_SETTINGS.unit;
   const moureWeeks = useMoureWeeks();
@@ -82,6 +99,7 @@ export function Hoy({
   const habitList = habitDefs ?? [];
   const habitsCompleted = habitList.filter((h) => habitDay?.done.includes(h.key)).length;
   const habitsTotal = habitList.length;
+  const habitsLeft = habitsTotal - habitsCompleted;
 
   async function checkHabit(key: string) {
     const on = await toggleHabitDay(today, key);
@@ -108,63 +126,108 @@ export function Hoy({
     }
   }
 
+  function goToHabits() {
+    const el = document.getElementById("hoy-habits");
+    if (!el) return;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+    el.querySelector<HTMLButtonElement>('button[aria-pressed="false"]')?.focus({ preventScroll: true });
+  }
+
   const blockTitle = nowCell ? nowCell.text : "Bloque libre / fuera de horario";
   const blockTime = row ? row.time : null;
 
-  /** The one thing worth doing right now, as a button. */
+  // What counts as "training today": the day already being logged, else the cycle's day.
+  const trainedDay: GymDay | null = setsToday?.[0]?.day ?? (slot === "rest" ? null : slot);
+  // The session card names the day you are actually training: logging a set advances the cycle's own slot, which must not rename today's session.
+  const shownDay: GymDay | "rest" = setsToday?.[0]?.day ?? slot;
+  const setsDone = setsToday?.length ?? 0;
+  const setsTarget = trainedDay ? targetSetsForDay(trainedDay) : 0;
+  const restDay = slot === "rest" && setsDone === 0;
+  const plan = planFor(priorities.state, today);
+  const loaded = todayData !== undefined && habitDefs !== undefined;
+  const trainName = sentence(GYM_DIAS[trainedDay ?? (slot === "rest" ? "A" : slot)].nombre);
+
+  const heroKind = pickHeroAction({
+    hasBlockHabit: !!blockHabit,
+    blockType: nowCell?.type,
+    blockQuiet: nowCell?.quiet,
+    restDay,
+    setsDone,
+    setsTarget,
+    habitsDone: habitsCompleted,
+    habitsTotal,
+    dayClosed: !!plan.close,
+  });
+
+  /** The one thing worth doing right now: a single primary button (never two on this screen). */
   let heroAction: ReactNode = null;
-  if (blockHabit) {
+  if (!loaded) {
+    heroAction = <Skeleton className="mt-4 h-11 w-full rounded-full" />;
+  } else if (heroKind === "block-habit" && blockHabit) {
     heroAction = (
-      <button
-        onClick={() => checkHabit(blockHabit.key)}
-        aria-pressed={blockHabitDone}
-        className={`tap-target mt-4 flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-[13px] font-semibold uppercase tracking-[0.1em] ${
-          blockHabitDone ? "glass text-[var(--color-good)]" : "glass-on"
-        }`}
-      >
+      <Button variant="primary" selected={blockHabitDone} onClick={() => checkHabit(blockHabit.key)} className="mt-4 w-full">
         {blockHabitDone ? (
           <>
-            <Icon name="check" size={15} className="pop" /> {blockHabit.label} hecho
+            <Icon name="check" size={16} className="pop" /> {blockHabit.label} hecho
           </>
         ) : (
           <>Marcar {blockHabit.label}</>
         )}
-      </button>
-    );
-  } else if (nowCell?.type === "gym") {
-    heroAction = (
-      <Button variant="primary" className="mt-4 w-full py-3.5 text-[13px]" onClick={openStartPrompt}>
-        {slot === "rest" ? "Elegir entreno" : `Iniciar ${GYM_DIAS[slot].nombre}`}
       </Button>
     );
-  } else if (nowCell && !nowCell.quiet && (nowCell.type === "mouredev" || nowCell.type === "clase" || nowCell.type === "ingles")) {
+  } else if (heroKind === "train") {
     heroAction = (
-      <button onClick={() => onNavigate("focus")} className="glass tap-target mt-4 w-full rounded-full py-3.5 text-[13px] font-semibold uppercase tracking-[0.1em]">
+      <Button variant="primary" className="mt-4 w-full" onClick={openStartPrompt}>
+        {restDay ? "Elegir entreno" : setsDone > 0 ? `Continuar ${trainName}` : `Iniciar ${trainName}`}
+      </Button>
+    );
+  } else if (heroKind === "focus") {
+    heroAction = (
+      <Button variant="primary" className="mt-4 w-full" onClick={() => onNavigate("focus")}>
         Empezar un bloque de Focus
-      </button>
+      </Button>
+    );
+  } else if (heroKind === "habits") {
+    heroAction = (
+      <Button variant="primary" className="mt-4 w-full" onClick={goToHabits}>
+        Marcar hábitos
+      </Button>
+    );
+  } else if (heroKind === "close") {
+    heroAction = (
+      <Button variant="primary" className="mt-4 w-full" onClick={() => setClosing(true)}>
+        Revisar y cerrar el día
+      </Button>
+    );
+  } else {
+    heroAction = (
+      <p className="mt-4 flex items-center gap-2 text-sm text-[var(--color-muted)]">
+        <Icon name="check" size={16} className="text-[var(--color-good)]" /> Día cerrado. Buen trabajo.
+      </p>
     );
   }
 
   const hero = (
     <div className="panel-surface panel-surface-glow enter">
       <div className="px-4 pt-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-red)] glow-dot" />
+            <span aria-hidden className="w-1.5 h-1.5 rounded-full bg-[var(--color-red)] glow-dot" />
             <span className="eyebrow eyebrow-accent">{DIAS[jsDowToIndex(new Date().getDay())]} · Ahora</span>
           </div>
           <button
             onClick={() => onNavigate("horario")}
-            className="text-[12px] text-[var(--color-muted)] hover:text-[var(--color-red-ink)] uppercase tracking-[0.12em] transition-colors"
+            className="tap-target -my-2 -mr-2 inline-flex items-center gap-1 px-2 text-meta text-[var(--color-muted)] transition-colors hover:text-[var(--color-ink)]"
           >
-            Ver horario <Icon name="arrow-right" size={12} className="ml-1 inline" />
+            Ver horario <Icon name="arrow-right" size={12} />
           </button>
         </div>
-        <h1 className="mt-3 font-[var(--font-display)] text-[24px] leading-tight tracking-tight">{blockTitle}</h1>
-        {blockTime ? <div className="num mt-1 text-[12px] text-[var(--color-muted)]">{blockTime}</div> : null}
+        <h1 className="mt-2 font-[var(--font-display)] text-screen font-semibold tracking-tight">{blockTitle}</h1>
+        {blockTime ? <div className="num mt-1 text-sm text-[var(--color-muted)]">{blockTime}</div> : null}
         {heroAction}
       </div>
-      <div className="mt-4 border-t border-[var(--color-line)] px-4 py-3 text-[12px] leading-tight text-[var(--color-muted)]">
+      <div className="mt-4 border-t border-[var(--color-line)] px-4 py-3 text-sm leading-tight text-[var(--color-muted)]">
         {nextCell ? (
           <>
             Siguiente{nextRow?.time ? ` (${nextRow.time})` : ""}: <span className="font-semibold text-[var(--color-ink)]">{nextCell.text}</span>
@@ -182,48 +245,39 @@ export function Hoy({
     rings: <DayRings key="rings" habitsDone={habitsCompleted} habitsTotal={habitsTotal} slot={slot} />,
 
     session: (
-      // Only the "Ahora" card above carries the accent glow: two glowing cards at once stop saying which one matters.
-      <div key="session" className="panel-surface enter enter-delay-1">
-        <div className="px-4 pt-4 pb-3 border-b border-[var(--color-line)]">
-          <div className="card-title">Sesión del día</div>
+      // Only the "Ahora" card above carries the accent glow and the primary button: two of either stop saying which one matters.
+      <div key="session" className="panel-surface enter enter-delay-1 flex items-center gap-3 p-4">
+        <div
+          aria-hidden
+          className={`flex h-11 w-11 flex-none items-center justify-center rounded-xl font-[var(--font-display)] text-base font-semibold ${
+            shownDay === "rest" ? "border border-[var(--color-line-strong)] text-[var(--color-muted)]" : "bg-[rgb(var(--accent-solid-rgb))] text-[color:var(--text-on-accent)]"
+          }`}
+        >
+          {shownDay === "rest" ? "Z" : shownDay}
         </div>
-        <div className="px-4 py-3">
-          {slot === "rest" ? (
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 border border-[var(--color-line-strong)] flex items-center justify-center flex-none">
-                  <span className="eyebrow text-[12px]">Z</span>
-                </div>
-                <div>
-                  <div className="font-[var(--font-display)] text-[13px] tracking-[0.06em]">Descanso</div>
-                  <div className="text-[12px] text-[var(--color-muted)] mt-0.5">Ciclo A → B → C → descanso. Hoy toca recuperar.</div>
-                </div>
-              </div>
-              <Button variant="outline" onClick={openStartPrompt}>
-                Elegir ciclo
-              </Button>
-            </div>
+        <div className="min-w-0 flex-1">
+          <div className="eyebrow">Sesión del día</div>
+          {shownDay === "rest" ? (
+            <>
+              <div className="font-[var(--font-display)] text-base font-semibold leading-tight">Descanso</div>
+              <div className="text-meta text-[var(--color-muted)]">Hoy toca recuperar. Ciclo A → B → C → descanso.</div>
+            </>
           ) : (
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-[var(--color-red)] flex items-center justify-center flex-none">
-                  <span className="font-[var(--font-display)] text-[12px] text-white tracking-wide">{slot}</span>
-                </div>
-                <div>
-                  <div className="font-[var(--font-display)] text-[13px] tracking-[0.06em]">{GYM_DIAS[slot].nombre}</div>
-                  <div className="text-[12px] text-[var(--color-muted)] mt-0.5">{GYM_DIAS[slot].grupo}</div>
-                </div>
+            <>
+              <div className="font-[var(--font-display)] text-base font-semibold leading-tight">{sentence(GYM_DIAS[shownDay].nombre)}</div>
+              <div className="truncate text-meta text-[var(--color-muted)]">
+                {setsDone > 0 ? `${setsDone}/${setsTarget} series hechas hoy` : GYM_DIAS[shownDay].grupo}
               </div>
-              <Button variant="primary" onClick={openStartPrompt}>
-                Iniciar
-              </Button>
-            </div>
+            </>
           )}
         </div>
+        <Button variant="secondary" onClick={openStartPrompt} className="flex-none">
+          {shownDay === "rest" ? "Elegir ciclo" : setsDone > 0 ? "Continuar" : "Iniciar"}
+        </Button>
       </div>
     ),
 
-    priorities: <PrioritiesCard key="priorities" />,
+    priorities: <PrioritiesCard key="priorities" priorities={priorities} onCloseDay={() => setClosing(true)} />,
 
     insights: (
       <div key="insights" className="flex flex-col gap-4 empty:hidden">
@@ -236,44 +290,67 @@ export function Hoy({
     streak: <DailyStreakCard key="streak" />,
 
     habits: (
-      <div key="habits" className="panel-surface enter enter-delay-2">
-        <div className="px-4 pt-4 pb-3 border-b border-[var(--color-line)] flex items-center justify-between">
-          <div className="card-title">Hábitos de hoy</div>
-          <span className="num text-[12px] text-[var(--color-muted)]">
-            <span className="font-semibold text-[var(--color-ink)]">{habitsCompleted}</span>/{habitsTotal}
-          </span>
+      <div key="habits" id="hoy-habits" className="panel-surface enter enter-delay-2 scroll-mt-4">
+        <div className="px-4 pt-4 pb-3 border-b border-[var(--color-line)] flex items-center justify-between gap-3">
+          <h2 className="card-title">Hábitos de hoy</h2>
+          {/* The count itself is in the rings: here only what is still open. */}
+          {habitsTotal > 0 ? (
+            <span className={`num text-meta ${habitsLeft === 0 ? "font-semibold text-[var(--color-good)]" : "text-[var(--color-muted)]"}`}>
+              {habitsLeft === 0 ? "Todos hechos" : habitsLeft === 1 ? "Falta 1" : `Faltan ${habitsLeft}`}
+            </span>
+          ) : null}
         </div>
-        <div className="px-4 py-3 grid grid-cols-2 gap-2">
-          {habitList.map((h) => {
-            const on = !!habitDay?.done.includes(h.key);
-            return (
-              <button
-                key={h.key}
-                onClick={() => checkHabit(h.key)}
-                aria-pressed={on}
-                className={`tap-target flex items-center gap-2.5 rounded-full px-3 py-2 text-left ${on ? "glass-on" : "glass"}`}
-              >
-                <span className={`flex h-7 w-7 flex-none items-center justify-center rounded-full ${on ? "bg-[rgb(var(--fg-rgb)/0.22)] pop" : "bg-[rgb(var(--fg-rgb)/0.06)]"}`}>
-                  <HabitGlyph icon={h.icon} active={on} activeColor="#fff" size={12} />
-                </span>
-                <span className={`text-[12px] font-semibold uppercase tracking-wide leading-tight ${on ? "text-white" : "text-[var(--color-muted)]"}`}>{h.label}</span>
-              </button>
-            );
-          })}
-        </div>
+        {habitDefs && !habitList.length ? (
+          <p className="px-4 py-4 text-sm text-[var(--color-muted)]">Aún no tienes hábitos. Créalos en Perfil, en Hábitos y avisos, y aparecerán aquí para marcarlos con un toque.</p>
+        ) : (
+          <div className="px-4 py-3 grid grid-cols-2 gap-2">
+            {habitList.map((h) => {
+              const on = !!habitDay?.done.includes(h.key);
+              return (
+                <button
+                  key={h.key}
+                  onClick={() => checkHabit(h.key)}
+                  aria-pressed={on}
+                  className="glass tap-target flex items-center gap-2.5 rounded-2xl px-3 py-2 text-left"
+                >
+                  <span
+                    aria-hidden
+                    className={`flex h-7 w-7 flex-none items-center justify-center rounded-full ${
+                      on ? "bg-[rgb(var(--accent-solid-rgb))] text-[color:var(--text-on-accent)] pop" : "bg-[rgb(var(--fg-rgb)/0.08)]"
+                    }`}
+                  >
+                    {on ? <Icon name="check" size={14} /> : <HabitGlyph icon={h.icon} size={12} />}
+                  </span>
+                  <span className="text-sm font-medium leading-tight">{h.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     ),
 
+    // Habits live in the rings and in their own card; weight and MoureDev hours are the two numbers that only show up here.
     stats: (
-      <div key="stats" className="grid grid-cols-3 gap-2.5 enter enter-delay-3">
-        <Stat
-          label="Peso actual"
-          value={lastWeight?.weightKg != null ? `${fromKg(lastWeight.weightKg, unit)}` : "—"}
-          sub={weightDelta ? `${weightDelta > 0 ? "+" : ""}${fromKg(weightDelta, unit).toFixed(1)} ${unitLabel(unit)} desde inicio` : unitLabel(unit)}
-          accent
-        />
-        <Stat label="Horas MoureDev" value={moureHours ?? 0} sub="acumuladas" />
-        <Stat label="Hábitos" value={`${habitsCompleted}/${habitsTotal}`} sub="marcados hoy" />
+      <div key="stats" className="panel-surface enter enter-delay-3 grid grid-cols-2 divide-x divide-[var(--color-line)]">
+        <div className="flex flex-col gap-1 p-4">
+          <div className="eyebrow">Peso actual</div>
+          <div className="num font-[var(--font-display)] text-title font-semibold leading-none text-[var(--color-accent-text)]">
+            {lastWeight?.weightKg != null ? `${fromKg(lastWeight.weightKg, unit)} ${unitLabel(unit)}` : "—"}
+          </div>
+          <div className="text-meta leading-tight text-[var(--color-muted)]">
+            {lastWeight?.weightKg == null
+              ? "Sin registros todavía"
+              : weightDelta
+                ? `${weightDelta > 0 ? "+" : "−"}${Math.abs(fromKg(weightDelta, unit)).toFixed(1)} ${unitLabel(unit)} desde inicio`
+                : "Igual que al inicio"}
+          </div>
+        </div>
+        <div className="flex flex-col gap-1 p-4">
+          <div className="eyebrow">Horas MoureDev</div>
+          <div className="num font-[var(--font-display)] text-title font-semibold leading-none">{moureHours ?? 0} h</div>
+          <div className="text-meta leading-tight text-[var(--color-muted)]">acumuladas</div>
+        </div>
       </div>
     ),
 
@@ -283,15 +360,15 @@ export function Hoy({
           <Eyebrow gold>Versículo del día</Eyebrow>
           <button
             onClick={() => onNavigate("kairos")}
-            className="text-[12px] text-[var(--color-muted)] hover:text-[var(--color-gold)] uppercase tracking-[0.12em] transition-colors"
+            className="tap-target -my-2 -mr-2 inline-flex items-center gap-1 px-2 text-meta text-[var(--color-muted)] transition-colors hover:text-[var(--color-ink)]"
           >
-            Oración <Icon name="arrow-right" size={12} className="ml-1 inline" />
+            Ir a Oración <Icon name="arrow-right" size={12} />
           </button>
         </div>
         {verse ? (
           <div>
-            <p className="text-[13px] leading-relaxed text-[var(--color-ink)]">{verse.text}</p>
-            <div className="text-[12px] text-[var(--color-muted)] mt-2.5 num">
+            <p className="text-base leading-relaxed text-[var(--color-ink)]">{verse.text}</p>
+            <div className="text-meta text-[var(--color-muted)] mt-2.5 num">
               {verse.bookName} {verse.chapter}:{verse.verse}
             </div>
           </div>
@@ -308,19 +385,13 @@ export function Hoy({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* ── Mascotas laterales (desktop, en el margen vacío junto al contenido) ── */}
-      <img
-        src="/images/berserk.jpg"
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none fixed bottom-0 left-2 z-[-1] hidden h-[62vh] max-w-[220px] object-contain object-bottom mix-blend-screen opacity-90 sidebar:block"
-      />
-      <img
-        src="/images/mentzer.webp"
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none fixed bottom-0 right-2 z-[-1] hidden h-[62vh] max-w-[220px] object-contain object-bottom mix-blend-screen opacity-90 sidebar:block"
-      />
+      {/* Side figures: only where there is a real empty margin (wide window, not in calm mode), so a phone never downloads them. */}
+      {showMascots ? (
+        <>
+          <img src="/images/berserk.jpg" alt="" aria-hidden="true" loading="lazy" decoding="async" className={`${MASCOT_CLASS} left-2`} />
+          <img src="/images/mentzer.webp" alt="" aria-hidden="true" loading="lazy" decoding="async" className={`${MASCOT_CLASS} right-2`} />
+        </>
+      ) : null}
 
       {hero}
       {sundayCard}
@@ -329,36 +400,44 @@ export function Hoy({
         {homeOrder.map((k) => cards[k])}
       </div>
 
-      <button onClick={copyDailySummary} className="glass tap-target w-full rounded-full py-2.5 text-[12px] font-semibold uppercase tracking-wide">
+      <Button variant="ghost" onClick={copyDailySummary} className="w-full">
         Copiar resumen del día
-      </button>
+      </Button>
+
+      <CloseDaySheet
+        open={closing}
+        onClose={() => setClosing(false)}
+        priorities={priorities}
+        habitsDone={habitsCompleted}
+        habitsTotal={habitsTotal}
+        focusMin={focusMin}
+      />
 
       <Sheet open={startPrompt} onClose={() => setStartPrompt(false)} title="Empezar entreno">
         <div className="flex flex-col gap-4">
           <div>
-            <div className="text-[12px] text-[var(--color-muted)] mb-2 uppercase tracking-wide">¿Qué día vas a entrenar?</div>
+            <div className="mb-2 text-sm text-[var(--color-muted)]">¿Qué día vas a entrenar?</div>
             <div className="flex gap-2">
               {GYM_DAY_ORDER.map((d) => (
                 <button
                   key={d}
                   onClick={() => setPickedDay(d)}
-                  className={`flex-1 rounded-xl px-3 py-3 text-center ${
-                    pickedDay === d ? "glass-on" : "glass text-[var(--color-muted)]"
-                  }`}
+                  aria-pressed={pickedDay === d}
+                  className="glass tap-target flex-1 rounded-xl px-3 py-3 text-center"
                 >
-                  <div className="font-[var(--font-display)] text-[13px]">Día {d}</div>
-                  <div className="text-[12px] mt-0.5">{GYM_DIAS[d].nombre}</div>
+                  <div className="font-[var(--font-display)] text-sm font-semibold">Día {d}</div>
+                  <div className="mt-0.5 text-meta">{sentence(GYM_DIAS[d].nombre)}</div>
                 </button>
               ))}
             </div>
           </div>
           <label className="flex flex-col gap-1.5">
-            <span className="text-[12px] text-[var(--color-muted)] uppercase tracking-wide">Fecha</span>
+            <span className="text-sm text-[var(--color-muted)]">Fecha</span>
             <DateField value={pickedDate} max={today} onChange={setPickedDate} />
           </label>
           <Button
             variant="primary"
-            className="w-full py-3"
+            className="w-full"
             onClick={() => {
               setStartPrompt(false);
               // Choosing today's day means "this is where I am in the cycle": remember it,

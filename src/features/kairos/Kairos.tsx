@@ -15,7 +15,7 @@ import { shareVerse } from "@/lib/verseImage";
 import { VerseReview } from "./VerseReview";
 import { BIBLE_BOOKS } from "@/data/bible/books";
 import { getChapter, chapterCount } from "@/data/bible/loader";
-import { Eyebrow, PageHeader, Card, Sheet, Field, Input, Button, FlameGlyph } from "@/ui";
+import { PageHeader, Card, Sheet, Field, Input, Button, FlameGlyph } from "@/ui";
 import { Icon } from "@/ui/Icon";
 import { Section } from "@/ui/Section";
 import { confirmAction } from "@/lib/confirm";
@@ -24,14 +24,14 @@ import { currentStreak } from "@/lib/streak";
 import { todayISO } from "@/lib/date";
 import { BookPicker } from "./BookPicker";
 import { ChapterPicker } from "./ChapterPicker";
-import { MarkReadChip, ReadingPlanCard } from "./ReadingPlan";
+import { MarkReadChip, ReadingPlanButton } from "./ReadingPlan";
 import { ListenButton, NarratorBar, VoiceSheet } from "./NarratorUI";
 
 type View = "leer" | "guardados";
 
 function BookmarkGlyph({ filled = false, className = "" }: { filled?: boolean; className?: string }) {
   return (
-    <svg width="11" height="11" viewBox="0 0 10 10" className={className} aria-hidden>
+    <svg width="14" height="14" viewBox="0 0 10 10" className={className} aria-hidden>
       <path
         d="M2.5 1h5a.5.5 0 0 1 .5.5v7l-3-2-3 2v-7a.5.5 0 0 1 .5-.5Z"
         fill={filled ? "currentColor" : "none"}
@@ -39,6 +39,15 @@ function BookmarkGlyph({ filled = false, className = "" }: { filled?: boolean; c
         strokeWidth="1"
         strokeLinejoin="round"
       />
+    </svg>
+  );
+}
+
+function SearchGlyph() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M15.5 15.5 20 20" />
     </svg>
   );
 }
@@ -53,6 +62,7 @@ export function Kairos() {
   const [query, setQuery] = useState("");
   const [scrollToVerse, setScrollToVerse] = useState<number | null>(null);
   const [bibleQuery, setBibleQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const deferredBibleQuery = useDeferredValue(bibleQuery);
   const { highlights, set: setHighlight } = useBibleHighlights();
   const review = useVerseReview();
@@ -68,6 +78,11 @@ export function Kairos() {
       setChapter(settings.readingProgress.chapter);
     }
   }, [settings]);
+
+  function closeSearch() {
+    setSearchOpen(false);
+    setBibleQuery("");
+  }
 
   async function markHere() {
     await db.settings.put({ ...(settings ?? DEFAULT_SETTINGS), readingProgress: { abbrev, chapter } });
@@ -226,6 +241,17 @@ export function Kairos() {
     setNote("");
   }
 
+  const pickedKey = pickedVerse ? verseKey(abbrev, chapter, pickedVerse.verse) : "";
+  const streakLine =
+    bibleStreak > 0 ? (
+      <span className="inline-flex items-center gap-1.5 align-middle">
+        <FlameGlyph size={14} className="flame-glow flex-none" />
+        <span>
+          <span className="num font-semibold text-[var(--color-ink)]">{bibleStreak}</span> {bibleStreak === 1 ? "día seguido leyendo" : "días seguidos leyendo"}
+        </span>
+      </span>
+    ) : null;
+
   return (
     <>
       {/* ── Decoración lateral (desktop, en el margen vacío) — fuera del
@@ -246,33 +272,33 @@ export function Kairos() {
         className="kairos-knight-img pointer-events-none fixed bottom-0 right-2 z-[-1] hidden h-[60vh] max-w-[220px] object-contain object-bottom sidebar:block"
       />
 
-      <div className="flex flex-col gap-4 enter">
-        <PageHeader gold eyebrow="Oración" title="Biblia · Reina-Valera 1909" />
+      <div className="flex flex-col gap-3 enter">
+        <PageHeader
+          gold
+          eyebrow="Oración · Reina-Valera 1909"
+          title="Biblia"
+          subtitle={streakLine}
+          right={
+            view === "leer" ? (
+              <div className="flex items-center gap-2">
+                <button onClick={() => setSearchOpen(true)} aria-label="Buscar en la Biblia" className="glass flex h-11 w-11 flex-none items-center justify-center rounded-full text-[var(--color-ink)]">
+                  <SearchGlyph />
+                </button>
+                <ReadingPlanButton onOpen={openChapter} />
+              </div>
+            ) : null
+          }
+        />
 
-        <div className="glass-track flex gap-1 p-1 rounded-full">
-          <button
-            onClick={() => setView("leer")}
-            className={`tap-target flex-1 rounded-full py-2 text-[12px] font-semibold uppercase tracking-wide ${view === "leer" ? "glass-on" : "glass-flat text-[var(--color-muted)]"}`}
-          >
+        <div className="glass-track flex gap-1 rounded-full p-1" role="group" aria-label="Vista">
+          <button onClick={() => setView("leer")} aria-pressed={view === "leer"} className="glass-flat tap-target flex-1 rounded-full text-sm font-semibold text-[var(--color-muted)]">
             Leer
           </button>
-          <button
-            onClick={() => setView("guardados")}
-            className={`tap-target flex-1 rounded-full py-2 text-[12px] font-semibold uppercase tracking-wide ${view === "guardados" ? "glass-on" : "glass-flat text-[var(--color-muted)]"}`}
-          >
+          <button onClick={() => setView("guardados")} aria-pressed={view === "guardados"} className="glass-flat tap-target flex-1 rounded-full text-sm font-semibold text-[var(--color-muted)]">
             Guardados ({saved?.length ?? 0})
-            {dueKeys(review.state, todayISO()).length ? <span className="ml-1.5 inline-block h-2 w-2 rounded-full bg-[var(--color-gold)]" aria-label="Tienes versículos por repasar" /> : null}
+            {dueKeys(review.state, todayISO()).length ? <span role="img" className="ml-1.5 inline-block h-2 w-2 rounded-full bg-[var(--color-gold)]" aria-label="Tienes versículos por repasar" /> : null}
           </button>
         </div>
-
-        {bibleStreak > 0 ? (
-          <div className="flex items-center gap-2 px-1">
-            <FlameGlyph size={16} className="flame-glow flex-none" />
-            <span className="text-[12px] text-[var(--color-muted)]">
-              <span className="num font-semibold text-[var(--color-ink)]">{bibleStreak}</span> {bibleStreak === 1 ? "día seguido leyendo" : "días seguidos leyendo"}
-            </span>
-          </div>
-        ) : null}
 
         {view === "leer" ? (
           loading ? (
@@ -283,8 +309,6 @@ export function Kairos() {
             </div>
           ) : (
             <>
-              <ReadingPlanCard onOpen={openChapter} />
-
               {bookmark && !isAtBookmark ? (
                 <button
                   onClick={() => {
@@ -292,109 +316,63 @@ export function Kairos() {
                     setChapter(bookmark.chapter);
                     setScrollToVerse(bookmark.verse ?? null);
                   }}
-                  className="glass-gold flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-left"
+                  className="glass-gold tap-target flex items-center gap-2 rounded-xl px-3.5 text-left"
                 >
-                  <BookmarkGlyph filled className="flex-none text-[var(--color-red-ink)]" />
-                  <span className="text-[12px] text-[var(--color-ink)]">
-                    Ibas en <span className="font-semibold">{bookmarkBookName} {bookmark.chapter}{bookmark.verse ? `:${bookmark.verse}` : ""}</span>
+                  <BookmarkGlyph filled className="flex-none" />
+                  <span className="min-w-0 truncate text-sm text-[var(--color-ink)]">
+                    Ibas en{" "}
+                    <span className="font-semibold">
+                      {bookmarkBookName} {bookmark.chapter}
+                      {bookmark.verse ? `:${bookmark.verse}` : ""}
+                    </span>
                   </span>
-                  <span className="ml-auto flex-none text-[12px] uppercase tracking-wide text-[var(--color-red-ink)]">Continuar →</span>
+                  <span className="ml-auto flex flex-none items-center gap-1 text-sm font-semibold">
+                    Continuar <Icon name="arrow-right" size={14} />
+                  </span>
                 </button>
               ) : null}
 
-              <div>
-                <input
-                  type="search"
-                  value={bibleQuery}
-                  onChange={(e) => setBibleQuery(e.target.value)}
-                  placeholder="Buscar en la Biblia (ej. “fe”, “no temas”)"
-                  aria-label="Buscar en la Biblia"
-                  className="w-full rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-3.5 py-2.5 text-[13px] outline-none focus:border-[var(--color-red)]"
-                />
-                {searchResult ? (
-                  <div className="mt-2 rounded-2xl border border-[var(--color-line-strong)] p-2" role="region" aria-label="Resultados de la búsqueda">
-                    {searchResult.total === 0 ? (
-                      <p className="px-2 py-3 text-[12.5px] text-[var(--color-muted)]">No encontré versículos con eso.</p>
-                    ) : (
-                      <>
-                        <div className="num px-2 pb-1.5 pt-1 text-[12px] uppercase tracking-wide text-[var(--color-muted)]">
-                          {searchResult.total} {searchResult.total === 1 ? "versículo" : "versículos"}
-                          {searchResult.total > searchResult.hits.length ? ` · mostrando ${searchResult.hits.length}` : ""}
-                        </div>
-                        <ul className="flex max-h-[320px] flex-col divide-y divide-[var(--color-line)] overflow-y-auto">
-                          {searchResult.hits.map((h) => (
-                            <li key={`${h.abbrev}.${h.chapter}.${h.verse}`}>
-                              <button
-                                onClick={() => {
-                                  setAbbrev(h.abbrev);
-                                  setChapter(h.chapter);
-                                  setScrollToVerse(h.verse);
-                                  setBibleQuery("");
-                                }}
-                                className="w-full px-2 py-2.5 text-left"
-                              >
-                                <span className="num text-[12px] font-semibold uppercase tracking-wide text-[var(--color-gold)]">
-                                  {h.bookName} {h.chapter}:{h.verse}
-                                </span>
-                                <span className="mt-0.5 block text-[13px] leading-snug text-[rgb(var(--fg-rgb)/0.85)]">{h.text}</span>
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </>
-                    )}
+              <Card id="kairos-reader" className="panel-gold scroll-mt-20">
+                <h2 className="sr-only">
+                  {bookName} {chapter} · {verses.length} versículos
+                </h2>
+                <div className="flex items-center gap-2">
+                  <div className="min-w-0 flex-1">
+                    <BookPicker
+                      value={abbrev}
+                      books={BIBLE_BOOKS}
+                      onChange={(next) => {
+                        setAbbrev(next);
+                        setChapter(1);
+                      }}
+                    />
                   </div>
-                ) : null}
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Libro">
-                  <BookPicker
-                    value={abbrev}
-                    books={BIBLE_BOOKS}
-                    onChange={(next) => {
-                      setAbbrev(next);
-                      setChapter(1);
-                    }}
-                  />
-                </Field>
-                <Field label="Capítulo">
-                  <ChapterPicker value={chapter} count={chapters} onChange={setChapter} />
-                </Field>
-              </div>
-
-              <Card id="kairos-reader" className="panel-surface-glow scroll-mt-20">
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-[var(--color-line)]">
-                  <div>
-                    <Eyebrow gold>Leyendo</Eyebrow>
-                    <div className="text-[16px] font-bold mt-1">
-                      {bookName} {chapter}
-                    </div>
-                  </div>
-                  <div className="flex flex-none flex-col items-end gap-1.5">
-                    <span className="text-[12px] text-[var(--color-muted-2)] num uppercase tracking-wide">{verses.length} versículos</span>
-                    <MarkReadChip abbrev={abbrev} chapter={chapter} />
-                    <button
-                      onClick={markHere}
-                      disabled={isAtBookmark}
-                      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold uppercase tracking-wide ${
-                        isAtBookmark ? "glass-gold" : "glass text-[var(--color-muted)] hover:text-[var(--color-gold)]"
-                      }`}
-                    >
-                      <BookmarkGlyph filled={isAtBookmark} />
-                      {isAtBookmark ? "Aquí voy" : "Marcar aquí"}
-                    </button>
+                  <div className="w-[8.75rem] flex-none">
+                    <ChapterPicker value={chapter} count={chapters} onChange={setChapter} />
                   </div>
                 </div>
-                {narrator.supported ? (
-                  <div className="-mt-1 mb-4 flex items-center gap-3">
-                    <ListenButton narrator={narrator} />
-                    <button onClick={() => setVoiceOpen(true)} className="text-[12px] text-[var(--color-muted)] underline">
-                      Voz
-                    </button>
-                  </div>
-                ) : null}
-                <div className="flex flex-col divide-y divide-[var(--color-line)]">
+
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {narrator.supported ? (
+                    <div className="flex items-center">
+                      <ListenButton narrator={narrator} className="rounded-r-none" />
+                      <button onClick={() => setVoiceOpen(true)} aria-label="Elegir la voz del narrador" className="glass tap-target -ml-px rounded-full rounded-l-none px-3.5 text-sm font-semibold text-[var(--color-muted)]">
+                        Voz
+                      </button>
+                    </div>
+                  ) : null}
+                  <button
+                    onClick={isAtBookmark ? undefined : markHere}
+                    aria-pressed={isAtBookmark}
+                    className={`tap-target flex items-center gap-2 rounded-full px-3.5 text-sm font-semibold ${isAtBookmark ? "glass-gold" : "glass text-[var(--color-muted)]"}`}
+                  >
+                    <BookmarkGlyph filled={isAtBookmark} />
+                    {isAtBookmark ? "Aquí voy" : "Marcar aquí"}
+                  </button>
+                  <MarkReadChip abbrev={abbrev} chapter={chapter} />
+                </div>
+
+                <div className="mt-3 flex flex-col divide-y divide-[var(--color-line)] border-t border-[var(--color-line)] pt-3">
                   {verses.map((text, i) => {
                     const vNum = i + 1;
                     const isSpoken = narratorStatus !== "idle" && spokenIdx === i;
@@ -406,24 +384,19 @@ export function Kairos() {
                         key={i}
                         id={`kairos-verse-${vNum}`}
                         onClick={() => setPickedVerse({ verse: vNum, text })}
-                        className={`group flex items-start gap-3 py-3 text-left first:pt-0 last:pb-0 ${isBookmarked ? "-mx-2 rounded-xl px-2 bg-[rgb(var(--accent-rgb)/0.07)]" : ""} ${isSpoken ? "-mx-2 rounded-xl px-2 bg-[rgb(var(--accent-rgb)/0.16)]" : ""} ${tint && !isSpoken && !isBookmarked ? "-mx-2 rounded-xl px-2" : ""}`}
+                        className={`group flex items-start gap-3 py-3 text-left first:pt-0 last:pb-0 ${isBookmarked ? "-mx-2 rounded-xl px-2 bg-[rgb(var(--gold-rgb)/0.14)]" : ""} ${isSpoken ? "-mx-2 rounded-xl px-2 bg-[rgb(var(--accent-rgb)/0.16)]" : ""} ${tint && !isSpoken && !isBookmarked ? "-mx-2 rounded-xl px-2" : ""}`}
                         style={tint && !isSpoken ? { backgroundColor: `rgb(${colorRgb(tint)} / 0.18)` } : undefined}
                       >
-                        <span className="relative num mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-[var(--color-surface-2)] text-[12px] font-bold text-[var(--color-red-ink)] transition-colors group-hover:bg-[var(--color-red)] group-hover:text-white">
+                        <span className="relative num mt-1 flex h-6 min-w-6 flex-none items-center justify-center rounded-full bg-[var(--color-surface-2)] px-1 text-meta font-bold text-[var(--color-gold)]">
                           {vNum}
-                          {noted ? (
-                            <span
-                              aria-hidden
-                              className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-[var(--color-gold)] ring-2 ring-[var(--color-surface)]"
-                            />
-                          ) : null}
+                          {noted ? <span aria-hidden className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-[var(--color-gold)] ring-2 ring-[var(--color-surface)]" /> : null}
                         </span>
-                        <span className={`text-[14px] leading-relaxed transition-colors group-hover:text-[var(--color-ink)] ${isSpoken ? "text-[var(--color-ink)]" : "text-[rgb(var(--fg-rgb)/0.82)]"}`}>
+                        <span className={`text-base leading-relaxed ${isSpoken ? "text-[var(--color-ink)]" : "text-[rgb(var(--fg-rgb)/0.88)]"}`}>
                           {text}
                           {isBookmarked ? <span className="sr-only"> · aquí vas</span> : null}
                           {noted ? <span className="sr-only"> · tienes una nota guardada aquí</span> : null}
                         </span>
-                        {isBookmarked ? <BookmarkGlyph filled className="mt-1 flex-none self-center text-[var(--color-red-ink)]" /> : null}
+                        {isBookmarked ? <BookmarkGlyph filled className="mt-1.5 flex-none self-start text-[var(--color-gold)]" /> : null}
                       </button>
                     );
                   })}
@@ -438,9 +411,7 @@ export function Kairos() {
               <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Texto, nota o libro…" className="w-full" />
             </Field>
             {!filteredSaved.length ? (
-              <div className="text-center py-10 text-[13px] text-[var(--color-muted)]">
-                {query ? "Nada coincide con esa búsqueda." : "Sin versículos guardados."}
-              </div>
+              <div className="py-10 text-center text-sm text-[var(--color-muted)]">{query ? "Nada coincide con esa búsqueda." : "Sin versículos guardados."}</div>
             ) : query ? (
               // While actively searching, grouping only gets in the way — the flat list is already narrow.
               <div className="flex flex-col gap-3">
@@ -468,33 +439,78 @@ export function Kairos() {
           </div>
         )}
 
+        <Sheet open={searchOpen} onClose={closeSearch} title="Buscar en la Biblia">
+          <input
+            type="search"
+            autoFocus
+            value={bibleQuery}
+            onChange={(e) => setBibleQuery(e.target.value)}
+            placeholder="Ej. “fe”, “no temas”"
+            aria-label="Buscar en la Biblia"
+            className="w-full rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-3.5 py-2.5 text-base"
+          />
+          <div className="mt-3" role="region" aria-label="Resultados de la búsqueda" aria-live="polite">
+            {searchResult ? (
+              searchResult.total === 0 ? (
+                <p className="px-1 py-3 text-sm text-[var(--color-muted)]">No encontré versículos con eso.</p>
+              ) : (
+                <>
+                  <div className="num pb-1 text-meta text-[var(--color-muted)]">
+                    {searchResult.total} {searchResult.total === 1 ? "versículo" : "versículos"}
+                    {searchResult.total > searchResult.hits.length ? ` · mostrando ${searchResult.hits.length}` : ""}
+                  </div>
+                  <ul className="flex max-h-[50vh] flex-col divide-y divide-[var(--color-line)] overflow-y-auto">
+                    {searchResult.hits.map((h) => (
+                      <li key={`${h.abbrev}.${h.chapter}.${h.verse}`}>
+                        <button
+                          onClick={() => {
+                            setAbbrev(h.abbrev);
+                            setChapter(h.chapter);
+                            setScrollToVerse(h.verse);
+                            closeSearch();
+                          }}
+                          className="min-h-[var(--control-h)] w-full px-1 py-2.5 text-left"
+                        >
+                          <span className="num text-sm font-semibold text-[var(--color-gold)]">
+                            {h.bookName} {h.chapter}:{h.verse}
+                          </span>
+                          <span className="mt-0.5 block text-sm leading-snug text-[rgb(var(--fg-rgb)/0.85)]">{h.text}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )
+            ) : (
+              <p className="px-1 py-2 text-sm text-[var(--color-muted)]">Escribe al menos {MIN_QUERY_CHARS} letras para buscar en toda la Biblia.</p>
+            )}
+          </div>
+        </Sheet>
+
         <Sheet open={!!pickedVerse} onClose={() => setPickedVerse(null)} title="Guardar versículo">
           {pickedVerse ? (
             <div>
-              <div className="flex items-start justify-between gap-2">
-                <div className="inline-flex items-center rounded-full border border-[var(--color-red-soft)] px-2.5 py-0.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-red-ink)] num">
+              <div className="flex items-center justify-between gap-2">
+                <div className="num inline-flex items-center rounded-full border border-[rgb(var(--gold-rgb)/0.5)] px-3 py-1 text-sm font-semibold text-[var(--color-gold)]">
                   {bookName} {chapter}:{pickedVerse.verse}
                 </div>
-                <button
-                  onClick={() => markVerseHere(pickedVerse.verse)}
-                  className="glass-gold tap-target flex flex-none items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-ink)]"
-                >
+                <button onClick={() => markVerseHere(pickedVerse.verse)} className="glass-gold tap-target flex flex-none items-center gap-2 rounded-full px-4 text-sm font-semibold">
                   <BookmarkGlyph filled />
                   Marcar aquí
                 </button>
               </div>
-              <p className="text-[13.5px] mt-3 leading-relaxed">{pickedVerse.text}</p>
+              <p className="mt-3 text-base leading-relaxed">{pickedVerse.text}</p>
               <div className="mt-3 flex items-center gap-2" role="group" aria-label="Resaltar versículo">
-                <span className="mr-1 text-[12px] uppercase tracking-wide text-[var(--color-muted)]">Resaltar</span>
+                <span className="mr-1 text-sm text-[var(--color-muted)]">Resaltar</span>
                 {HIGHLIGHT_COLORS.map((c) => {
-                  const on = highlights[verseKey(abbrev, chapter, pickedVerse.verse)] === c.key;
+                  const on = highlights[pickedKey] === c.key;
                   return (
                     <button
                       key={c.key}
-                      onClick={() => void setHighlight(verseKey(abbrev, chapter, pickedVerse.verse), on ? null : c.key)}
+                      onClick={() => void setHighlight(pickedKey, on ? null : c.key)}
                       aria-label={`${c.label}${on ? " (quitar)" : ""}`}
                       aria-pressed={on}
-                      className="hit h-7 w-7 rounded-full border-2"
+                      className="hit h-9 w-9 rounded-full border-2"
                       style={{ backgroundColor: `rgb(${c.rgb} / 0.55)`, borderColor: on ? `rgb(${c.rgb})` : "transparent" }}
                     />
                   );
@@ -503,13 +519,12 @@ export function Kairos() {
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   onClick={() => {
-                    const key = verseKey(abbrev, chapter, pickedVerse.verse);
-                    void (key in review.state ? review.stop(key) : review.start(key, todayISO()));
-                    showToast(key in review.state ? "Quitado del repaso" : "A memorizar — te lo recuerdo en Guardados");
+                    void (pickedKey in review.state ? review.stop(pickedKey) : review.start(pickedKey, todayISO()));
+                    showToast(pickedKey in review.state ? "Quitado del repaso" : "A memorizar — te lo recuerdo en Guardados");
                   }}
-                  className="glass tap-target rounded-full px-4 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)]"
+                  className="glass tap-target rounded-full px-4 text-sm font-semibold text-[var(--color-muted)]"
                 >
-                  {verseKey(abbrev, chapter, pickedVerse.verse) in review.state ? "Dejar de memorizar" : "Memorizar"}
+                  {pickedKey in review.state ? "Dejar de memorizar" : "Memorizar"}
                 </button>
                 <button
                   onClick={async () => {
@@ -517,58 +532,54 @@ export function Kairos() {
                     if (r === "downloaded") showToast("Imagen guardada");
                     else if (r === "failed") showToast("No se pudo crear la imagen");
                   }}
-                  className="glass tap-target rounded-full px-4 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)]"
+                  className="glass tap-target rounded-full px-4 text-sm font-semibold text-[var(--color-muted)]"
                 >
                   Compartir imagen
                 </button>
+                {narrator.supported ? (
+                  <button
+                    onClick={() => {
+                      const from = pickedVerse.verse - 1;
+                      setPickedVerse(null);
+                      narrator.play(from);
+                    }}
+                    className="glass tap-target rounded-full px-4 text-sm font-semibold text-[var(--color-muted)]"
+                  >
+                    Escuchar desde aquí
+                  </button>
+                ) : null}
               </div>
-              {narrator.supported ? (
-                <button
-                  onClick={() => {
-                    const from = pickedVerse.verse - 1;
-                    setPickedVerse(null);
-                    narrator.play(from);
-                  }}
-                  className="glass tap-target mt-3 rounded-full px-4 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)]"
-                >
-                  Escuchar desde aquí
-                </button>
-              ) : null}
               {existingForPicked.length ? (
                 <div className="mt-3 flex flex-col gap-2">
-                  <span className="eyebrow eyebrow-accent">
-                    Ya guardaste esto {existingForPicked.length > 1 ? `(${existingForPicked.length} veces)` : ""}
-                  </span>
+                  <span className="eyebrow eyebrow-accent">Ya guardaste esto {existingForPicked.length > 1 ? `(${existingForPicked.length} veces)` : ""}</span>
                   {existingForPicked.map((v) => (
-                    <div key={v.id} className="flex items-start gap-2 rounded-xl border border-[var(--color-line-strong)] px-3 py-2">
+                    <div key={v.id} className="flex items-start gap-2 rounded-xl border border-[var(--color-line-strong)] py-2 pl-3 pr-1.5">
                       <div className="min-w-0 flex-1">
-                        {v.note ? (
-                          <p className="text-[12px] italic text-[var(--color-muted)]">{v.note}</p>
-                        ) : (
-                          <p className="text-[12px] text-[var(--color-muted-2)]">Sin nota — solo el versículo.</p>
-                        )}
-                        <div className="text-[12px] text-[var(--color-muted-2)] mt-1 num">{new Date(v.createdAt).toLocaleDateString("es-CO")}</div>
+                        {v.note ? <p className="text-sm italic text-[var(--color-muted)]">{v.note}</p> : <p className="text-sm text-[var(--color-muted)]">Sin nota — solo el versículo.</p>}
+                        <div className="num mt-1 text-meta text-[var(--color-muted)]">{new Date(v.createdAt).toLocaleDateString("es-CO")}</div>
                       </div>
                       <button
                         onClick={() => deleteSaved(v)}
                         aria-label="Eliminar este guardado"
-                        className="hit flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted-2)] hover:bg-[var(--color-red)] hover:text-white"
+                        className="hit flex h-8 w-8 flex-none items-center justify-center rounded-full text-[var(--color-muted)] hover:bg-[rgb(var(--fg-rgb)/0.08)] hover:text-[var(--color-accent-text)]"
                       >
-                        <Icon name="close" size={11} />
+                        <Icon name="close" size={14} />
                       </button>
                     </div>
                   ))}
                 </div>
               ) : null}
-              <Field label="Tu nota">
-                <textarea
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  rows={3}
-                  className="mt-1 w-full rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-line-strong)] px-2.5 py-2 text-[13px] outline-none focus:border-[var(--color-red)]"
-                />
-              </Field>
-              <Button variant="primary" className="w-full mt-3" onClick={saveVerse}>
+              <div className="mt-4">
+                <Field label="Tu nota">
+                  <textarea
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    rows={3}
+                    className="w-full rounded-xl border border-[var(--color-line-strong)] bg-[var(--color-surface-2)] px-3 py-2 text-base"
+                  />
+                </Field>
+              </div>
+              <Button variant="primary" className="mt-3 w-full" onClick={saveVerse}>
                 Guardar
               </Button>
             </div>
@@ -583,22 +594,22 @@ export function Kairos() {
 
 function SavedCard({ v, onDelete }: { v: SavedVerseRecord; onDelete: (v: SavedVerseRecord) => void }) {
   return (
-    <Card className="panel-surface-glow">
-      <div className="flex items-start justify-between gap-2">
-        <div className="inline-flex items-center rounded-full border border-[var(--color-red-soft)] px-2.5 py-0.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-red-ink)] num">
+    <Card>
+      <div className="flex items-center justify-between gap-2">
+        <div className="num inline-flex items-center rounded-full border border-[rgb(var(--gold-rgb)/0.5)] px-3 py-1 text-sm font-semibold text-[var(--color-gold)]">
           {v.bookName} {v.chapter}:{v.verse}
         </div>
         <button
           onClick={() => onDelete(v)}
           aria-label="Eliminar guardado"
-          className="hit flex h-6 w-6 flex-none items-center justify-center rounded-full text-[var(--color-muted-2)] hover:bg-[var(--color-red)] hover:text-white"
+          className="hit flex h-8 w-8 flex-none items-center justify-center rounded-full text-[var(--color-muted)] hover:bg-[rgb(var(--fg-rgb)/0.08)] hover:text-[var(--color-accent-text)]"
         >
-          <Icon name="close" size={11} />
+          <Icon name="close" size={14} />
         </button>
       </div>
-      <p className="text-[14px] mt-2.5 leading-relaxed">{v.text}</p>
-      {v.note ? <p className="text-[12px] text-[var(--color-muted)] mt-2.5 border-l-2 border-[var(--color-red-soft)] pl-3 italic">{v.note}</p> : null}
-      <div className="text-[12px] text-[var(--color-muted-2)] mt-2.5 num">{new Date(v.createdAt).toLocaleDateString("es-CO")}</div>
+      <p className="mt-2.5 text-base leading-relaxed">{v.text}</p>
+      {v.note ? <p className="mt-2.5 rounded-xl bg-[rgb(var(--fg-rgb)/0.05)] px-3 py-2 text-sm italic text-[var(--color-muted)]">{v.note}</p> : null}
+      <div className="num mt-2.5 text-meta text-[var(--color-muted)]">{new Date(v.createdAt).toLocaleDateString("es-CO")}</div>
     </Card>
   );
 }

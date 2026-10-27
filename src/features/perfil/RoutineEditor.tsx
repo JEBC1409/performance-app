@@ -16,7 +16,7 @@ import { todayISO } from "@/lib/date";
 
 function ToggleChip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" onClick={onClick} aria-pressed={on} className={`rounded-full px-3 py-1.5 text-[12px] font-semibold ${on ? "glass-on" : "glass text-[var(--color-muted)]"}`}>
+    <button type="button" onClick={onClick} aria-pressed={on} className={`tap-target glass rounded-full px-4 text-sm font-semibold ${on ? "" : "text-[var(--color-muted)]"}`}>
       {children}
     </button>
   );
@@ -46,18 +46,18 @@ function ExerciseRow({
 
   return (
     <li className="glass rounded-2xl">
-      <div className="flex items-center gap-1 px-3 py-2">
+      <div className="flex items-center gap-1 py-1 pl-3 pr-1">
         <button type="button" onClick={onToggle} aria-expanded={open} className="min-w-0 flex-1 text-left">
-          <div className="truncate text-[13px] font-semibold">{ex.name || "Sin nombre"}</div>
+          <div className="truncate text-sm font-semibold">{ex.name || "Sin nombre"}</div>
           <div className="num text-[12px] text-[var(--color-muted)]">
             {ex.series}×{ex.repsLabel || "?"}
             {ex.startKg != null ? ` · ${ex.startKg} kg` : ""}
           </div>
         </button>
-        <button type="button" onClick={() => onMove(-1)} disabled={first} aria-label={`Subir ${ex.name}`} className="glass-flat hit flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-muted)] disabled:opacity-30">
+        <button type="button" onClick={() => onMove(-1)} disabled={first} aria-label={`Subir ${ex.name}`} className="glass-flat flex h-11 w-11 flex-none items-center justify-center rounded-full text-[var(--color-muted)] disabled:opacity-30">
           <Icon name="arrow-up" size={15} />
         </button>
-        <button type="button" onClick={() => onMove(1)} disabled={last} aria-label={`Bajar ${ex.name}`} className="glass-flat hit flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-muted)] disabled:opacity-30">
+        <button type="button" onClick={() => onMove(1)} disabled={last} aria-label={`Bajar ${ex.name}`} className="glass-flat flex h-11 w-11 flex-none items-center justify-center rounded-full text-[var(--color-muted)] disabled:opacity-30">
           <Icon name="arrow-down" size={15} />
         </button>
       </div>
@@ -114,7 +114,7 @@ function ExerciseRow({
               Dropset
             </ToggleChip>
           </div>
-          <button type="button" onClick={onDelete} className="glass self-start rounded-full px-4 py-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-muted)] hover:text-[var(--color-red-ink)]">
+          <button type="button" onClick={onDelete} className="glass tap-target self-start rounded-full px-4 text-sm font-semibold text-[var(--color-muted)] hover:text-[var(--color-accent-text)]">
             Quitar ejercicio
           </button>
         </div>
@@ -184,10 +184,10 @@ export function RoutineEditor() {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="card-title">Mi rutina</h2>
-          <p className="mt-1.5 text-[12px] leading-snug text-[var(--color-muted)]">Ejercicios, series, repeticiones y pesos de cada día. Los cambios se guardan en tu cuenta.</p>
+          <p className="mt-1.5 text-sm leading-snug text-[var(--color-muted)]">Ejercicios, series, repeticiones y pesos de cada día. Los cambios se guardan en tu cuenta.</p>
         </div>
         {!editing ? (
-          <Button className="flex-none px-4 py-2 text-[12px]" onClick={start}>
+          <Button className="flex-none px-4" onClick={start}>
             Editar
           </Button>
         ) : null}
@@ -205,7 +205,7 @@ export function RoutineEditor() {
                   setDay(d);
                   setOpenIdx(null);
                 }}
-                className={`flex-1 rounded-full py-2 text-[12px] font-semibold uppercase ${day === d ? "glass-on" : "glass-flat text-[var(--color-muted)]"}`}
+                className={`tap-target flex-1 rounded-full text-sm font-semibold ${day === d ? "glass-on" : "glass-flat text-[var(--color-muted)]"}`}
               >
                 Día {d}
               </button>
@@ -246,17 +246,17 @@ export function RoutineEditor() {
               patchDay(day, { ex: [...cfg.ex, { name: "", series: 3, repsLabel: "8-12", toFailureLast: true }] });
               setOpenIdx(cfg.ex.length);
             }}
-            className="glass-accent tap-target rounded-full py-2.5 text-[12px] font-semibold uppercase tracking-[0.1em]"
+            className="glass-accent tap-target rounded-full text-sm font-semibold"
           >
             + Añadir ejercicio
           </button>
 
-          <p className="text-[12px] leading-snug text-[var(--color-muted-2)]">
+          <p className="text-meta leading-snug text-[var(--color-muted)]">
             Si le cambias el nombre a un ejercicio, lo que ya registraste queda con el nombre anterior. Un ejercicio nuevo no trae foto: pon la tuya desde Entreno.
           </p>
 
           {problems.length ? (
-            <ul className="rounded-xl border border-[var(--color-red-soft)] bg-[rgb(var(--accent-rgb)/0.08)] px-3 py-2 text-[12px] text-[var(--color-ink)]" role="alert">
+            <ul className="rounded-xl border border-[var(--color-red-soft)] bg-[rgb(var(--accent-rgb)/0.08)] px-3 py-2 text-sm text-[var(--color-ink)]" role="alert">
               {problems.map((p) => (
                 <li key={p}>• {p}</li>
               ))}
@@ -264,14 +264,14 @@ export function RoutineEditor() {
           ) : null}
 
           <div className="flex gap-2">
-            <button type="button" onClick={() => setEditing(false)} className="glass tap-target rounded-full px-5 text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-muted)]">
+            <button type="button" onClick={() => setEditing(false)} className="glass tap-target rounded-full px-5 text-sm font-semibold text-[var(--color-muted)]">
               Cancelar
             </button>
             <Button variant="primary" className="flex-1" onClick={save}>
               Guardar rutina
             </Button>
           </div>
-          <button type="button" onClick={restore} className="self-center text-[12px] text-[var(--color-muted)] underline-offset-2 hover:text-[var(--color-red-ink)] hover:underline">
+          <button type="button" onClick={restore} className="hit self-center text-sm text-[var(--color-muted)] underline-offset-2 hover:text-[var(--color-accent-text)] hover:underline">
             Volver a la rutina original
           </button>
         </div>

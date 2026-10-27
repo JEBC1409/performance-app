@@ -78,15 +78,14 @@ export function Login() {
       <div className="relative z-10 min-h-screen flex items-center justify-center bg-[var(--color-bg)] px-6">
         <AmbientBackground calm />
         <div className="login-card p-6 max-w-sm w-full">
-          <div className="eyebrow eyebrow-accent">Configuración pendiente</div>
-          <h1 className="font-[var(--font-display)] text-lg mt-2.5">Falta conectar Supabase</h1>
-          <p className="text-[12.5px] text-[var(--color-muted)] mt-3 leading-relaxed">
+          <h1 className="font-[var(--font-display)] text-title">Falta conectar Supabase</h1>
+          <p className="text-sm text-[var(--color-muted)] mt-3 leading-relaxed">
             El login por código necesita un proyecto de Supabase. Crea uno en{" "}
             <span className="text-[var(--color-ink)]">supabase.com</span>, copia la Project URL y el anon key desde{" "}
-            <span className="text-[var(--color-ink)]">Settings → API</span>, y agregalos a un archivo{" "}
-            <code className="text-[var(--color-red-ink)]">.env.local</code> en la raíz del proyecto como{" "}
-            <code className="text-[var(--color-red-ink)]">VITE_SUPABASE_URL</code> y{" "}
-            <code className="text-[var(--color-red-ink)]">VITE_SUPABASE_ANON_KEY</code>.
+            <span className="text-[var(--color-ink)]">Settings → API</span>, y agrégalos a un archivo{" "}
+            <code className="text-[var(--color-accent-text)]">.env.local</code> en la raíz del proyecto como{" "}
+            <code className="text-[var(--color-accent-text)]">VITE_SUPABASE_URL</code> y{" "}
+            <code className="text-[var(--color-accent-text)]">VITE_SUPABASE_ANON_KEY</code>.
           </p>
         </div>
       </div>
@@ -99,7 +98,7 @@ export function Login() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="font-[var(--font-display)] text-base tracking-[0.14em]">
-            PERFORMANCE<span className="text-[var(--color-red-ink)]">.</span>
+            PERFORMANCE<span className="text-[var(--color-accent-text)]">.</span>
           </div>
         </div>
 
@@ -107,15 +106,14 @@ export function Login() {
           {step === "email" ? (
             <form onSubmit={sendCode} className="flex flex-col gap-5">
               <div>
-                <div className="eyebrow eyebrow-accent">Acceso</div>
-                <h1 className="font-[var(--font-display)] text-lg mt-2">Iniciar sesión</h1>
-                <p className="text-[12px] text-[var(--color-muted)] mt-2 leading-relaxed">
+                <h1 className="font-[var(--font-display)] text-title">Iniciar sesión</h1>
+                <p className="text-sm text-[var(--color-muted)] mt-2 leading-relaxed">
                   Te enviamos un código de un solo uso a tu correo. Sin contraseña.
                 </p>
               </div>
 
               <label className="flex flex-col gap-1.5">
-                <span className="text-[12px] text-[var(--color-muted)] uppercase tracking-wide">Correo</span>
+                <span className="text-sm font-medium text-[var(--color-muted)]">Correo</span>
                 <input
                   ref={emailInputRef}
                   type="email"
@@ -126,16 +124,16 @@ export function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@correo.com"
-                  className="bg-[var(--color-surface-2)] border border-[var(--color-line-strong)] rounded-xl px-3.5 py-3 text-[14px] outline-none focus:border-[var(--color-red)]"
+                  className="bg-[var(--color-surface-2)] border border-[var(--color-line-strong)] rounded-xl px-3.5 py-3 text-base"
                 />
               </label>
 
-              {error ? <div className="text-[12px] text-[var(--color-red-ink)] border-l-2 border-[var(--color-red)] pl-2.5">{error}</div> : null}
+              {error ? <div role="alert" className="rounded-xl bg-[rgb(var(--accent-rgb)/0.1)] px-3 py-2 text-sm text-[var(--color-accent-text)]">{error}</div> : null}
 
               <button
                 type="submit"
                 disabled={loading || !email.trim()}
-                className="tap-target w-full btn-primary text-white border border-[rgb(var(--accent-light-rgb)/0.5)] rounded-full py-3 text-[12.5px] font-semibold uppercase tracking-wide shadow-[0_1px_0_rgb(var(--fg-rgb)/0.35)_inset,0_-6px_10px_-6px_rgba(0,0,0,0.45)_inset,0_10px_24px_-10px_rgb(var(--accent-rgb)/0.75)] hover:brightness-110 active:brightness-95 active:translate-y-px disabled:opacity-40 transition-all duration-150"
+                className="btn-primary w-full min-h-[48px] rounded-full px-5 text-base"
               >
                 {loading ? "Enviando…" : "Enviar código"}
               </button>
@@ -143,43 +141,42 @@ export function Login() {
           ) : (
             <div className="flex flex-col gap-5">
               <div>
-                <div className="eyebrow eyebrow-accent">Verificación</div>
-                <h1 className="font-[var(--font-display)] text-lg mt-2">Ingresa el código</h1>
-                <p className="text-[12px] text-[var(--color-muted)] mt-2 leading-relaxed">
+                <h1 className="font-[var(--font-display)] text-title">Ingresa el código</h1>
+                <p className="text-sm text-[var(--color-muted)] mt-2 leading-relaxed">
                   Enviado a <span className="text-[var(--color-ink)] font-medium">{email}</span>
                 </p>
               </div>
 
               <OtpInput value={code} onChange={setCode} disabled={loading} />
-              <p className="text-[12px] text-[var(--color-muted-2)] -mt-2.5">
+              <p className="text-meta text-[var(--color-muted)] -mt-2.5">
                 ¿No ves un código de {OTP_LENGTH} dígitos? También puedes entrar tocando el enlace del correo.
               </p>
 
-              {error ? <div className="text-[12px] text-[var(--color-red-ink)] border-l-2 border-[var(--color-red)] pl-2.5">{error}</div> : null}
+              {error ? <div role="alert" className="rounded-xl bg-[rgb(var(--accent-rgb)/0.1)] px-3 py-2 text-sm text-[var(--color-accent-text)]">{error}</div> : null}
 
               <button
                 onClick={verifyCode}
                 disabled={loading || code.length !== OTP_LENGTH}
-                className="tap-target w-full btn-primary text-white border border-[rgb(var(--accent-light-rgb)/0.5)] rounded-full py-3 text-[12.5px] font-semibold uppercase tracking-wide shadow-[0_1px_0_rgb(var(--fg-rgb)/0.35)_inset,0_-6px_10px_-6px_rgba(0,0,0,0.45)_inset,0_10px_24px_-10px_rgb(var(--accent-rgb)/0.75)] hover:brightness-110 active:brightness-95 active:translate-y-px disabled:opacity-40 transition-all duration-150"
+                className="btn-primary w-full min-h-[48px] rounded-full px-5 text-base"
               >
                 {loading ? "Verificando…" : "Verificar"}
               </button>
 
-              <div className="flex items-center justify-between text-[12px]">
+              <div className="flex items-center justify-between gap-2 text-sm">
                 <button
                   onClick={() => {
                     setStep("email");
                     setCode("");
                     setError("");
                   }}
-                  className="text-[var(--color-muted)] hover:text-[var(--color-ink)] uppercase tracking-wide"
+                  className="tap-target -ml-2 rounded-full px-3 text-[var(--color-muted)] hover:text-[var(--color-ink)]"
                 >
                   ← Cambiar correo
                 </button>
                 <button
                   onClick={() => sendCode()}
                   disabled={cooldown > 0 || loading}
-                  className="text-[var(--color-muted)] hover:text-[var(--color-red-ink)] disabled:opacity-40 uppercase tracking-wide"
+                  className="tap-target -mr-2 rounded-full px-3 text-[var(--color-muted)] hover:text-[var(--color-accent-text)] disabled:opacity-40"
                 >
                   {cooldown > 0 ? `Reenviar (${cooldown}s)` : "Reenviar código"}
                 </button>
@@ -188,7 +185,7 @@ export function Login() {
           )}
         </div>
 
-        <p className="text-center text-[12px] text-[var(--color-muted-2)] mt-5">Tus datos de entrenamiento viven solo en este dispositivo.</p>
+        <p className="text-center text-meta text-[var(--color-muted)] mt-5">Tus datos se guardan en tu cuenta y también en este dispositivo, para que sigan funcionando sin conexión.</p>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/db/db";
+import { Icon } from "@/ui/Icon";
+import { useMemo } from "react";
+import { useTodayActivity } from "@/hooks/useRecentActivity";
 import { targetSetsForDay } from "@/data/gym";
 import type { CycleSlot, GymDay } from "@/lib/cycle";
 import { celebrate, haptic } from "@/lib/feedback";
@@ -25,8 +26,9 @@ const STROKE = 11;
  * day. Closing all three earns a little confetti (once per day). */
 export function DayRings({ habitsDone, habitsTotal, slot }: { habitsDone: number; habitsTotal: number; slot: CycleSlot }) {
   const today = todayISO();
-  const sets = useLiveQuery(() => db.sets.where("date").equals(today).toArray(), [today]);
-  const focus = useLiveQuery(() => db.focusSessions.where("date").equals(today).toArray(), [today]);
+  const todays = useTodayActivity();
+  const sets = useMemo(() => todays?.sets.filter((s) => s.date === today), [todays, today]);
+  const focus = useMemo(() => todays?.focus.filter((f) => f.date === today), [todays, today]);
 
   const trainedDay: GymDay | null = sets?.[0]?.day ?? (slot === "rest" ? null : slot);
   const setsDone = sets?.length ?? 0;
@@ -64,7 +66,7 @@ export function DayRings({ habitsDone, habitsTotal, slot }: { habitsDone: number
   ];
 
   return (
-    <div className="panel-surface enter enter-delay-1 flex items-center gap-5 px-5 py-4" aria-label={`Anillos del día: ${closed} de 3 cerrados`}>
+    <div className="panel-surface enter enter-delay-1 flex items-center gap-5 px-5 py-4" role="group" aria-label={`Anillos del día: ${closed} de 3 cerrados`}>
       {/* Drawn in a 150-unit box but shown smaller: the rings are a glance, not the page. */}
       <div className="relative flex-none" style={{ width: SHOWN, height: SHOWN }}>
         <svg viewBox={`0 0 ${SIZE} ${SIZE}`} width={SHOWN} height={SHOWN} className="-rotate-90" aria-hidden>
@@ -92,7 +94,7 @@ export function DayRings({ habitsDone, habitsTotal, slot }: { habitsDone: number
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="num font-[var(--font-display)] text-[26px] font-light leading-none">{closed}</span>
-          <span className="mt-0.5 text-[12px] uppercase tracking-[0.14em] text-[var(--color-muted)]">de 3</span>
+          <span className="mt-0.5 text-meta text-[var(--color-muted)]">de 3</span>
         </div>
       </div>
 
@@ -102,9 +104,9 @@ export function DayRings({ habitsDone, habitsTotal, slot }: { habitsDone: number
             <span className="h-2.5 w-2.5 flex-none rounded-full" style={{ background: r.color, boxShadow: r.pct >= 1 ? `0 0 8px ${r.color}` : "none" }} />
             <div className="min-w-0">
               <div className="eyebrow leading-none">{r.label}</div>
-              <div className="num mt-1 truncate text-[13px] font-semibold leading-none">{r.value}</div>
+              <div className="num mt-1 truncate text-sm font-semibold leading-none">{r.value}</div>
             </div>
-            {r.pct >= 1 ? <span className="ml-auto text-[var(--color-good)]">✓</span> : null}
+            {r.pct >= 1 ? <Icon name="check" size={16} className="ml-auto flex-none text-[var(--color-good)]" /> : null}
           </li>
         ))}
       </ul>
