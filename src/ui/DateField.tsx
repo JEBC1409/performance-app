@@ -4,7 +4,7 @@ import { DIAS_CORTO, MESES, fmtDateFull, fmtDateHuman, pad2, parseISODate, daysI
 
 function CalendarGlyph() {
   return (
-    <svg width="13" height="13" viewBox="0 0 10 10" className="flex-none text-[var(--color-muted)]" aria-hidden>
+    <svg width="16" height="16" viewBox="0 0 10 10" className="flex-none text-[var(--color-muted)]" aria-hidden>
       <rect x="1" y="1.8" width="8" height="7.2" rx="1" fill="none" stroke="currentColor" strokeWidth="1" />
       <path d="M1 4h8" stroke="currentColor" strokeWidth="1" />
       <path d="M3 0.8v2M7 0.8v2" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
@@ -15,18 +15,19 @@ function CalendarGlyph() {
 function ChevronGlyph({ dir }: { dir: "left" | "right" }) {
   const d = dir === "left" ? "M6.5 2L3 5l3.5 3" : "M3.5 2L7 5l-3.5 3";
   return (
-    <svg width="9" height="9" viewBox="0 0 10 10" aria-hidden>
+    <svg width="12" height="12" viewBox="0 0 10 10" aria-hidden>
       <path d={d} fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
 const SIZE = {
-  md: "rounded-xl px-3 py-2.5 text-[13px] gap-2",
-  sm: "rounded-lg px-2 py-1.5 text-[12px] gap-1.5",
+  md: "min-h-[var(--control-h)] rounded-xl px-3 py-2.5 text-[14px] gap-2",
+  sm: "min-h-[var(--control-h)] rounded-xl px-3 py-2 text-[14px] gap-2",
 };
 
-const POPOVER_WIDTH = 248;
+// 7 columns of 44px (the touch size) plus the popover padding.
+const POPOVER_WIDTH = 332;
 
 /** A fully custom calendar popover — not a native <input type="date"> — so
  * it can actually match the app's dark visual identity. The native control
@@ -64,7 +65,7 @@ export function DateField({
       setViewMonth(d.getMonth());
       const rect = triggerRef.current?.getBoundingClientRect();
       if (rect) {
-        const estimatedHeight = 300;
+        const estimatedHeight = 420;
         const fitsBelow = rect.bottom + 8 + estimatedHeight <= window.innerHeight;
         setPos({
           top: fitsBelow ? rect.bottom + 8 : Math.max(12, rect.top - estimatedHeight - 8),
@@ -128,7 +129,7 @@ export function DateField({
         onClick={toggle}
         aria-expanded={open}
         aria-label="Elegir fecha"
-        className={`glass flex w-full items-center justify-between ${SIZE[size]} ${open ? "!border-[var(--color-red)]" : ""} ${className}`}
+        className={`glass flex w-full items-center justify-between ${SIZE[size]} ${open ? "!border-[var(--color-accent-text)]" : ""} ${className}`}
       >
         <span className="num text-[var(--color-ink)] capitalize truncate">
           {size === "sm" ? fmtDateHuman(value) : fmtDateFull(value)}
@@ -141,25 +142,25 @@ export function DateField({
             <div
               ref={popoverRef}
               style={{ position: "fixed", top: pos.top, left: pos.left, width: POPOVER_WIDTH }}
-              className="enter z-50 rounded-2xl border border-[var(--color-line-strong)] bg-[var(--color-surface)] p-3 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.7)]"
+              className="enter surface-2 z-50 rounded-2xl p-3"
             >
-              <div className="flex items-center justify-between mb-2.5">
+              <div className="flex items-center justify-between mb-1">
                 <button
                   type="button"
                   onClick={() => shiftMonth(-1)}
                   aria-label="Mes anterior"
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[rgb(var(--fg-rgb)/0.06)]"
+                  className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[rgb(var(--fg-rgb)/0.06)]"
                 >
                   <ChevronGlyph dir="left" />
                 </button>
-                <span className="text-[12px] font-semibold capitalize text-[var(--color-ink)]">
+                <span className="text-[14px] font-semibold capitalize text-[var(--color-ink)]">
                   {MESES[viewMonth]} {viewYear}
                 </span>
                 <button
                   type="button"
                   onClick={() => shiftMonth(1)}
                   aria-label="Mes siguiente"
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[rgb(var(--fg-rgb)/0.06)]"
+                  className="flex h-11 w-11 items-center justify-center rounded-full text-[var(--color-muted)] hover:text-[var(--color-ink)] hover:bg-[rgb(var(--fg-rgb)/0.06)]"
                 >
                   <ChevronGlyph dir="right" />
                 </button>
@@ -167,7 +168,7 @@ export function DateField({
 
               <div className="grid grid-cols-7 gap-y-1">
                 {DIAS_CORTO.map((d) => (
-                  <div key={d} className="flex h-6 items-center justify-center text-[12px] uppercase tracking-wide text-[var(--color-muted-2)]">
+                  <div key={d} className="flex h-8 items-center justify-center text-[12px] font-medium uppercase text-[var(--color-muted-2)]">
                     {d[0]}
                   </div>
                 ))}
@@ -182,13 +183,13 @@ export function DateField({
                       type="button"
                       disabled={disabled}
                       onClick={() => pick(iso)}
-                      className={`num flex h-7 w-7 items-center justify-center rounded-full text-[12px] transition-colors ${
+                      className={`num mx-auto flex h-10 w-10 items-center justify-center rounded-full text-[14px] transition-colors ${
                         isSelected
-                          ? "bg-[var(--color-red)] text-white font-semibold"
+                          ? "bg-[rgb(var(--accent-solid-rgb))] text-[var(--text-on-accent)] font-semibold"
                           : disabled
                             ? "text-[var(--color-muted-2)] opacity-30"
                             : isToday
-                              ? "border border-[var(--color-red)] text-[var(--color-red-ink)]"
+                              ? "border border-[var(--color-accent-text)] text-[var(--color-accent-text)]"
                               : "text-[var(--color-ink)] hover:bg-[rgb(var(--fg-rgb)/0.08)]"
                       }`}
                     >
@@ -202,7 +203,7 @@ export function DateField({
                 <button
                   type="button"
                   onClick={() => pick(today)}
-                  className="mt-2.5 w-full rounded-lg border border-[var(--color-line-strong)] py-1.5 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-muted)] hover:text-[var(--color-red-ink)] hover:border-[var(--color-red)]"
+                  className="mt-2 min-h-[var(--control-h)] w-full rounded-xl border border-[var(--color-line-strong)] text-[14px] font-semibold text-[var(--color-muted)] hover:text-[var(--color-accent-text)] hover:border-[var(--color-accent-text)]"
                 >
                   Hoy
                 </button>

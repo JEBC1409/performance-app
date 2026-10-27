@@ -5,14 +5,15 @@ export interface TabItem<T extends string> {
 
 export function Tabs<T extends string>({ items, value, onChange }: { items: TabItem<T>[]; value: T; onChange: (v: T) => void }) {
   return (
-    <div className="glass-track flex gap-1 p-1 rounded-full">
+    <div className="glass-track flex gap-1 p-1 rounded-full" role="group">
       {items.map((it) => {
         const active = it.key === value;
         return (
           <button
             key={it.key}
             onClick={() => onChange(it.key)}
-            className={`tap-target flex-1 rounded-full py-2 text-[12px] font-semibold tracking-wide uppercase ${
+            aria-pressed={active}
+            className={`tap-target flex-1 rounded-full px-2 text-[14px] font-semibold ${
               active ? "glass-on" : "glass-flat text-[var(--color-muted)] hover:text-[var(--color-ink)]"
             }`}
           >

@@ -7,7 +7,7 @@ export function Headline({ value, unit, caption, deltas }: { value: ReactNode; u
     <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
       <div>
         <div className="flex items-baseline gap-1.5">
-          <span className="num font-[var(--font-display)] text-[40px] font-light leading-none tracking-tight text-[var(--color-ink)]">{value}</span>
+          <span className="num font-[var(--font-display)] text-[length:var(--fs-hero)] font-light leading-none tracking-tight text-[var(--color-ink)]">{value}</span>
           {unit ? <span className="text-[14px] text-[var(--color-muted)]">{unit}</span> : null}
         </div>
         {caption ? <div className="mt-1.5 text-[12px] text-[var(--color-muted-2)]">{caption}</div> : null}

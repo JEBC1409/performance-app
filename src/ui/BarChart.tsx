@@ -13,9 +13,9 @@ export interface BarPoint {
 function StatTile({ point, unit }: { point: BarPoint; unit?: string }) {
   return (
     <div className="flex h-full flex-col justify-center gap-1 py-2">
-      <div className="num text-[26px] font-bold leading-none text-[var(--color-ink)]">
+      <div className="num text-[length:var(--fs-screen)] font-bold leading-none text-[var(--color-ink)]">
         {point.value}
-        {unit ? <span className="ml-1 text-[13px] font-medium text-[var(--color-muted)]">{unit}</span> : null}
+        {unit ? <span className="ml-1 text-[14px] font-medium text-[var(--color-muted)]">{unit}</span> : null}
       </div>
       <div className="text-[12px] text-[var(--color-muted-2)] num">{point.label}</div>
     </div>
@@ -69,7 +69,7 @@ export function BarChart({
   return (
     <div>
       <div className="flex items-baseline justify-between">
-        <span className="num text-[15px] font-bold text-[var(--color-ink)]">
+        <span className="num text-[16px] font-bold text-[var(--color-ink)]">
           {activePoint.value}
           {unit ? <span className="ml-1 text-[12px] font-medium text-[var(--color-muted)]">{unit}</span> : null}
         </span>

@@ -38,7 +38,7 @@ export function Radar({ axes, size = 240 }: { axes: RadarAxis[]; size?: number }
         return (
           <span
             key={ax.label}
-            className="absolute text-[12px] uppercase tracking-wide text-[var(--color-muted)] whitespace-nowrap"
+            className="absolute text-[12px] font-medium text-[var(--color-muted)] whitespace-nowrap"
             style={{ left: lx, top: ly, transform: "translate(-50%, -50%)" }}
           >
             {ax.label}

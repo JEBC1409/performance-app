@@ -42,7 +42,7 @@ export function Section({ id, title, summary, defaultOpen = false, children }: {
         className="glass tap-target flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left"
       >
         <span className="min-w-0">
-          <span className="block font-[var(--font-display)] text-[15px]">{title}</span>
+          <span className="block font-[var(--font-display)] text-[16px] font-medium">{title}</span>
           {summary ? <span className="mt-0.5 block truncate text-[12px] text-[var(--color-muted)]">{summary}</span> : null}
         </span>
         <Icon name="chevron-right" size={18} className={`flex-none text-[var(--color-muted)] transition-transform duration-200 ${open ? "rotate-90" : ""}`} />

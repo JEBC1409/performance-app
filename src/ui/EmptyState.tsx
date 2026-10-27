@@ -40,15 +40,15 @@ export function EmptyState({
 }) {
   return (
     <div className={`flex flex-col items-center text-center ${compact ? "px-4 py-5" : "px-6 py-8"}`}>
-      <span className="glass flex h-12 w-12 items-center justify-center rounded-full text-[var(--color-red-ink)]">
+      <span className="glass flex h-12 w-12 items-center justify-center rounded-full text-[var(--color-accent-text)]">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
           {PATHS[icon]}
         </svg>
       </span>
-      <div className="mt-3 font-[var(--font-display)] text-[14px]">{title}</div>
-      {hint ? <p className="mt-1 max-w-[260px] text-[12px] leading-snug text-[var(--color-muted)]">{hint}</p> : null}
+      <div className="mt-3 font-[var(--font-display)] text-[16px] font-medium">{title}</div>
+      {hint ? <p className="mt-1 max-w-[280px] text-[14px] leading-snug text-[var(--color-muted)]">{hint}</p> : null}
       {action ? (
-        <button onClick={action.onClick} className="glass-accent tap-target mt-4 rounded-full px-5 py-2 text-[12px] font-semibold uppercase tracking-[0.1em]">
+        <button onClick={action.onClick} className="glass-accent tap-target mt-4 rounded-full px-5 text-[14px] font-semibold">
           {action.label}
         </button>
       ) : null}

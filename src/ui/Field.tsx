@@ -3,7 +3,7 @@ import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react
 export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-[12px] text-[var(--color-muted)] uppercase tracking-wide">{label}</span>
+      <span className="text-[12px] font-medium text-[var(--color-muted)]">{label}</span>
       {children}
     </label>
   );
@@ -14,7 +14,7 @@ export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...rest}
-      className={`rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-line-strong)] px-2.5 py-2 text-[13px] text-[var(--color-ink)] outline-none focus:border-[var(--color-red)] ${className}`}
+      className={`min-h-[var(--control-h)] rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-line-strong)] px-3 py-2.5 text-base text-[var(--color-ink)] placeholder:text-[var(--color-muted-2)] ${className}`}
     />
   );
 }
@@ -24,7 +24,7 @@ export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
       {...rest}
-      className={`rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-line-strong)] px-2.5 py-2 text-[13px] text-[var(--color-ink)] outline-none focus:border-[var(--color-red)] ${className}`}
+      className={`min-h-[var(--control-h)] rounded-xl bg-[var(--color-surface-2)] border border-[var(--color-line-strong)] px-3 py-2.5 text-base text-[var(--color-ink)] placeholder:text-[var(--color-muted-2)] ${className}`}
     >
       {children}
     </select>

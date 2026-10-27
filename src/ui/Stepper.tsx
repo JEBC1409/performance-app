@@ -21,26 +21,26 @@ export function Stepper({
     return out;
   };
   return (
-    <div className="inline-flex items-stretch rounded-full border border-[var(--color-line-strong)] overflow-hidden">
+    <div className="inline-flex min-h-[var(--control-h)] items-stretch rounded-full border border-[var(--color-line-strong)] overflow-hidden">
       <button
         type="button"
         onClick={() => onChange(clamp(value - step))}
-        className="glass-flat w-8 flex items-center justify-center text-[var(--color-ink)]"
+        className="glass-flat w-11 flex items-center justify-center text-[var(--color-ink)]"
         aria-label="Disminuir"
       >
-        <Icon name="minus" size={14} />
+        <Icon name="minus" size={16} />
       </button>
-      <div className="num min-w-14 flex items-center justify-center text-sm border-x border-[var(--color-line-strong)] px-2">
+      <div className="num min-w-14 flex items-center justify-center text-[14px] font-medium border-x border-[var(--color-line-strong)] px-2">
         {value}
         {suffix}
       </div>
       <button
         type="button"
         onClick={() => onChange(clamp(value + step))}
-        className="glass-flat w-8 flex items-center justify-center text-[var(--color-ink)]"
+        className="glass-flat w-11 flex items-center justify-center text-[var(--color-ink)]"
         aria-label="Aumentar"
       >
-        <Icon name="plus" size={14} />
+        <Icon name="plus" size={16} />
       </button>
     </div>
   );

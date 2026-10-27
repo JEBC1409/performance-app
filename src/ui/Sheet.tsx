@@ -80,12 +80,12 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
           if (shouldClose) onClose();
         }}
         style={dy ? { transform: `translateY(${dy}px)`, transition: "none" } : { transition: "transform 200ms ease" }}
-        className="relative w-full outline-none sidebar:max-w-md bg-[var(--color-surface)] border-t sidebar:border border-[var(--color-line-strong)] p-5 pb-[calc(1.25rem_+_env(safe-area-inset-bottom))] sidebar:pb-5 max-h-[85vh] overflow-y-auto enter">
+        className="surface-2 relative w-full outline-none sidebar:max-w-md rounded-t-[20px] sidebar:rounded-[20px] p-5 pb-[calc(1.25rem_+_env(safe-area-inset-bottom))] sidebar:pb-5 max-h-[85vh] overflow-y-auto enter">
         <span aria-hidden className="mx-auto -mt-2 mb-3 block h-1 w-10 rounded-full bg-[rgb(var(--fg-rgb)/0.18)] sidebar:hidden" />
-        <div className="flex items-center justify-between mb-4">
-          {title ? <div className="eyebrow">{title}</div> : <span />}
-          <button onClick={onClose} className="glass hit w-7 h-7 rounded-full flex items-center justify-center text-[var(--color-muted)] hover:text-[var(--color-ink)]" aria-label="Cerrar">
-            <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden>
+        <div className="flex items-center justify-between gap-3 mb-4">
+          {title ? <div className="card-title">{title}</div> : <span />}
+          <button onClick={onClose} className="glass -mr-1 h-11 w-11 flex-none rounded-full flex items-center justify-center text-[var(--color-muted)] hover:text-[var(--color-ink)]" aria-label="Cerrar">
+            <svg width="14" height="14" viewBox="0 0 10 10" aria-hidden>
               <path d="M1 1l8 8M9 1l-8 8" stroke="currentColor" strokeWidth="1.4" />
             </svg>
           </button>

@@ -23,8 +23,8 @@ export function PageHeader({
         <Eyebrow accent={!gold} gold={gold}>
           {eyebrow}
         </Eyebrow>
-        <h1 className="mt-1.5 font-[var(--font-display)] text-[24px] leading-tight tracking-tight">{title}</h1>
-        {subtitle ? <div className="mt-1.5 text-[12.5px] leading-snug text-[var(--color-muted)]">{subtitle}</div> : null}
+        <h1 className="mt-1.5 font-[var(--font-display)] text-[28px] font-semibold leading-tight tracking-tight">{title}</h1>
+        {subtitle ? <div className="mt-1.5 text-[14px] leading-snug text-[var(--color-muted)]">{subtitle}</div> : null}
       </div>
       {right ? <div className="flex-none">{right}</div> : null}
     </div>

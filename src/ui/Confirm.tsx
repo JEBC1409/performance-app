@@ -18,11 +18,11 @@ export function ConfirmHost() {
     <Sheet open={pending != null} onClose={() => finish(false)} title={pending?.title}>
       {pending ? (
         <div className="flex flex-col gap-4">
-          {pending.message ? <p className="text-[13px] leading-snug text-[var(--color-muted)]">{pending.message}</p> : null}
+          {pending.message ? <p className="text-[14px] leading-snug text-[var(--color-muted)]">{pending.message}</p> : null}
           <div className="flex gap-2">
-            <button onClick={() => finish(false)} className="glass tap-target flex-1 rounded-full text-[12px] font-semibold uppercase tracking-[0.1em] text-[var(--color-muted)]">
+            <Button className="flex-1" onClick={() => finish(false)}>
               Cancelar
-            </button>
+            </Button>
             <Button variant="primary" className="flex-1" onClick={() => finish(true)}>
               {pending.confirmLabel ?? "Confirmar"}
             </Button>

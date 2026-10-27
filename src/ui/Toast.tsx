@@ -52,7 +52,7 @@ export function ToastHost() {
 function ToastBubble({ toast, onDone }: { toast: ToastState; onDone: () => void }) {
   const action = toast.opts?.action;
   return (
-    <div className="fixed bottom-[calc(6.5rem_+_env(safe-area-inset-bottom))] sidebar:bottom-6 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-3 rounded-full bg-[var(--color-ink)] px-4 py-2 text-[12.5px] font-semibold text-[var(--color-bg)] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.8)] enter">
+    <div className="fixed bottom-[calc(6.5rem_+_env(safe-area-inset-bottom))] sidebar:bottom-6 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-3 rounded-full bg-[var(--color-ink)] py-2 pl-4 pr-2 text-[14px] font-semibold text-[var(--color-bg)] shadow-[var(--shadow-float)] enter">
       <span>{toast.msg}</span>
       {action ? (
         <button
@@ -60,7 +60,7 @@ function ToastBubble({ toast, onDone }: { toast: ToastState; onDone: () => void 
             action.onClick();
             onDone();
           }}
-          className="rounded-full bg-[rgb(var(--accent-rgb))] px-3 py-1 text-[12px] font-bold uppercase tracking-wide text-white"
+          className="hit rounded-full bg-[rgb(var(--accent-solid-rgb))] px-3.5 py-1.5 text-[14px] font-semibold text-[var(--text-on-accent)]"
         >
           {action.label}
         </button>

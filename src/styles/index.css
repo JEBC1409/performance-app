@@ -37,6 +37,17 @@
   --font-display: "Space Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-body: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
 
+  /* Type scale as Tailwind utilities (text-meta, text-title, …). The 14px and 16px
+     steps are Tailwind's own text-sm / text-base. Same numbers as --fs-* below. */
+  --text-meta: 12px;
+  --text-meta--line-height: 1.35;
+  --text-title: 20px;
+  --text-title--line-height: 1.2;
+  --text-screen: 28px;
+  --text-screen--line-height: 1.15;
+  --text-hero: 48px;
+  --text-hero--line-height: 1;
+
   --radius-none: 0px;
 
   --breakpoint-sidebar: 900px;
@@ -46,7 +57,15 @@
    tint and highlight reads these three channels, so switching accent (Perfil ›
    Apariencia) recolors everything at once. Semantic colors — good/warn/gold —
    are separate on purpose: green means done, amber means careful, gold means
-   spiritual (Bible, prayer). */
+   spiritual (Bible, prayer).
+
+   Accent tokens, by job:
+     --accent-rgb          the vivid accent: glows, tints (α), rings, chart marks
+     --accent-solid-rgb    a FILL that holds text (primary buttons, selected tabs);
+                           always paired with --text-on-accent, ≥4.5:1 (contrast.test.ts)
+     --text-on-accent      the text colour that goes on --accent-solid-rgb
+     --color-accent-text   accent used AS TEXT (on the page, on cards, on a tinted
+                           block of --accent-rgb at ≤16%); ≥4.5:1 in both themes */
 :root {
   /* Theme channels: the UI never hard-codes white or black — text, borders
      and glass tints are all rgb(var(--fg-rgb) / α) over rgb(var(--bg-rgb)), so
@@ -54,15 +73,18 @@
   --fg-rgb: 255 255 255;
   --bg-rgb: 0 0 0;
   --surface-rgb: 11 11 13;
-  /* Opaque "raised" surface used when transparency is reduced. */
+  /* Opaque "raised" surface: elevated layers (sheets, menus) and reduced transparency. */
   --raised-rgb: 23 23 27;
   color-scheme: dark;
   --accent-rgb: 223 37 49;
   --accent-light-rgb: 255 95 105;
   --accent-dark-rgb: 140 15 25;
+  --accent-solid-rgb: 223 37 49;
+  --text-on-accent: #ffffff;
   --color-red: rgb(var(--accent-rgb));
-  --accent-ink-rgb: 239 66 77;
+  --accent-ink-rgb: 242 93 102;
   --color-red-ink: rgb(var(--accent-ink-rgb));
+  --color-accent-text: rgb(var(--accent-ink-rgb));
   --color-bar: rgb(var(--fg-rgb) / 0.22);
   --gold-rgb: 226 185 111;
   /* Text on a solid good/warn fill: black on the bright dark-theme colours, white on the deeper light-theme ones. */
@@ -73,59 +95,86 @@
   --color-red-softer: rgb(var(--accent-rgb) / 0.65);
   --color-warn: #e0a030;
   --color-gold: #e2b96f;
+
+  /* Type scale: 12 meta (labels, captions) · 14 text (buttons, secondary lines)
+     · 16 body & inputs · 20 card title · 28 screen title · 48 hero figure. */
+  --fs-meta: 12px;
+  --fs-sm: 14px;
+  --fs-body: 16px;
+  --fs-title: 20px;
+  --fs-screen: 28px;
+  --fs-hero: 48px;
+
+  /* Shape and size. --control-h is the minimum touch height of anything you press. */
+  --control-h: 44px;
+  --r-card: 16px;
+  --r-ctl: 12px;
+
+  /* Elevation: one soft shadow, only for layers that float (sheets, menus, dock, toasts). */
+  --shadow-float: 0 14px 36px -14px rgba(0, 0, 0, 0.65);
 }
 :root[data-accent="gold"] {
   --accent-ink-rgb: 226 185 111;
   --accent-rgb: 226 185 111;
   --accent-light-rgb: 245 214 150;
   --accent-dark-rgb: 150 108 38;
+  --accent-solid-rgb: 226 185 111;
+  --text-on-accent: #0b0b0d;
 }
 :root[data-accent="blue"] {
-  --accent-ink-rgb: 59 130 246;
+  --accent-ink-rgb: 87 148 246;
   --accent-rgb: 59 130 246;
   --accent-light-rgb: 125 178 255;
   --accent-dark-rgb: 20 60 150;
+  --accent-solid-rgb: 37 99 235;
+  --text-on-accent: #ffffff;
 }
 :root[data-accent="violet"] {
-  --accent-ink-rgb: 147 103 247;
+  --accent-ink-rgb: 162 125 247;
   --accent-rgb: 139 92 246;
   --accent-light-rgb: 187 158 255;
   --accent-dark-rgb: 80 40 170;
+  --accent-solid-rgb: 124 58 237;
+  --text-on-accent: #ffffff;
 }
 :root[data-accent="green"] {
   --accent-ink-rgb: 34 197 94;
   --accent-rgb: 34 197 94;
   --accent-light-rgb: 110 231 160;
   --accent-dark-rgb: 14 100 50;
+  --accent-solid-rgb: 34 197 94;
+  --text-on-accent: #0b0b0d;
 }
 :root[data-accent="cyan"] {
   --accent-ink-rgb: 6 182 212;
   --accent-rgb: 6 182 212;
   --accent-light-rgb: 103 232 249;
   --accent-dark-rgb: 14 90 120;
+  --accent-solid-rgb: 6 182 212;
+  --text-on-accent: #0b0b0d;
 }
 :root[data-accent="orange"] {
   --accent-ink-rgb: 249 115 22;
   --accent-rgb: 249 115 22;
   --accent-light-rgb: 253 170 100;
   --accent-dark-rgb: 150 60 6;
+  --accent-solid-rgb: 249 115 22;
+  --text-on-accent: #0b0b0d;
 }
 :root[data-accent="pink"] {
-  --accent-ink-rgb: 236 72 153;
+  --accent-ink-rgb: 239 98 168;
   --accent-rgb: 236 72 153;
   --accent-light-rgb: 249 148 200;
   --accent-dark-rgb: 150 25 90;
+  --accent-solid-rgb: 219 39 119;
+  --text-on-accent: #ffffff;
 }
 
 /* "Sobrio": the same app with far less glow — neutral edges, a quiet
-   background — for people who find the red halo loud. */
-:root[data-calm="true"] .panel-surface {
-  border-color: rgb(var(--fg-rgb) / 0.1);
-  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.8), 0 1px 0 rgb(var(--fg-rgb) / 0.05) inset;
-}
+   background — for people who find the accent halo loud. */
 :root[data-calm="true"] .panel-surface-glow {
-  border-color: rgb(var(--accent-rgb) / 0.3);
-  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.8), 0 0 26px -12px rgb(var(--accent-rgb) / 0.35);
+  border-color: rgb(var(--accent-rgb) / 0.22);
+  box-shadow: none;
 }
 :root[data-calm="true"] .ambient-glow {
   opacity: 0.28;
@@ -172,6 +221,23 @@ nav,
   -webkit-user-select: none;
   user-select: none;
 }
+/* Buttons are written in sentence case, 14px-ish, with normal tracking: no shouting
+   caps with 0.1em spacing. (Wins over a screen's own uppercase/tracking utilities
+   on purpose; text inside the button can still set its own.) */
+button,
+[role="button"],
+[role="tab"],
+summary {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Every text field, number field and select is at least --control-h tall (44px),
+   whatever padding the screen gave it. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]),
+select {
+  min-height: var(--control-h);
+}
 
 /* iOS zooms the whole page in when you focus a field whose text is under 16px and
    leaves it zoomed, so on phones every field is 16px. */
@@ -189,41 +255,62 @@ nav,
 
 ::selection {
   background: var(--color-red-soft);
-  color: #fff;
+  color: var(--color-ink);
 }
 
+/* Keyboard focus: one clear accent ring everywhere. The ring colour is the
+   accent-as-text colour, so it keeps ≥3:1 on both themes. Fields get it too,
+   even where a screen wrote outline-none. */
 :focus-visible {
-  outline: 2px solid var(--color-red);
+  outline: 2px solid var(--color-accent-text);
   outline-offset: 2px;
 }
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-accent-text);
+  outline-offset: 1px;
+  border-color: var(--color-accent-text);
+}
 
-/* Minimum touch target for primary, repeatedly-tapped controls (WCAG 2.5.5).
-   Small inline icon toggles (steppers, calendar cells, close buttons) are an
-   intentional exception — bumping those to 44px would break dense layouts. */
+/* Minimum touch target for repeatedly-tapped controls (WCAG 2.5.5):
+   --control-h (44px). Small visual controls keep their look with .hit below. */
 .tap-target {
-  min-height: 44px;
+  min-height: var(--control-h);
 }
 
 .num {
   font-variant-numeric: tabular-nums;
 }
 
+/* Section label / metadata: one sober style — 12px, semibold, sentence case with
+   its first letter capitalised, barely any tracking. Accent and gold only change colour. */
 .eyebrow {
   font-family: var(--font-display);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 12px;
-  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-size: var(--fs-meta);
+  line-height: 1.35;
+  font-weight: 600;
   color: var(--color-muted);
 }
+.eyebrow::first-letter {
+  text-transform: uppercase;
+}
+.eyebrow-accent {
+  color: var(--color-accent-text);
+}
+.eyebrow-gold {
+  color: var(--color-gold);
+}
 
-/* A card's own heading: readable sentence-case type, so small caps labels can
-   stay for true metadata (units, states) instead of every heading shouting. */
+/* A card's own heading: sentence-case title type. */
 .card-title {
   font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 0.005em;
+  font-size: var(--fs-title);
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--color-ink);
 }
 
@@ -238,44 +325,44 @@ nav,
   display: none;
 }
 
-.eyebrow-accent {
-  color: var(--color-red-ink);
-}
-.eyebrow-gold {
-  color: var(--color-gold);
-}
-
+/* ── Surfaces: three levels ──────────────────────────────────────────────
+     surface-0  the page (--color-bg + the ambient backdrop)
+     surface-1  .panel-surface — a flat card: 1px neutral border, no shadow
+                (.panel-surface-glow adds a faint accent halo, for ONE featured card)
+     surface-2  .surface-2 — layers that float (sheets, menus, popovers, dock):
+                raised fill, one soft shadow; the only place that blurs the page */
 .panel-surface {
   position: relative;
-  background: linear-gradient(155deg, rgb(var(--fg-rgb) / 0.05), rgb(var(--surface-rgb) / 0.72) 55%, rgb(var(--bg-rgb) / 0.78) 100%);
-  border: 1px solid rgb(var(--accent-rgb) / 0.24);
-  border-radius: 18px;
-  box-shadow: 0 22px 50px -22px rgba(0, 0, 0, 0.8), 0 0 46px -12px rgb(var(--accent-rgb) / 0.4), 0 1px 0 rgb(var(--fg-rgb) / 0.04) inset;
+  background: rgb(var(--surface-rgb) / 0.88);
+  border: 1px solid rgb(var(--fg-rgb) / 0.1);
+  border-radius: var(--r-card);
   overflow: hidden;
 }
-
-/* Stronger centered halo for featured/accent cards — a bigger, softer red
-   glow bleeding out from behind the card, like the reference "glowing
-   rounded panel on black" look, rather than a thin edge highlight. */
 .panel-surface-glow {
-  border-color: rgb(var(--accent-rgb) / 0.55);
-  box-shadow: 0 22px 50px -22px rgba(0, 0, 0, 0.85), 0 0 70px -8px rgb(var(--accent-rgb) / 0.7), 0 0 6px rgb(var(--accent-rgb) / 0.35) inset;
+  border-color: rgb(var(--accent-rgb) / 0.42);
+  box-shadow: 0 0 24px -12px rgb(var(--accent-rgb) / 0.4);
+}
+.surface-2 {
+  background: rgb(var(--raised-rgb) / 0.96);
+  border: 1px solid rgb(var(--fg-rgb) / 0.14);
+  box-shadow: var(--shadow-float);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
 }
 
 /* Top nav (desktop): a floating rounded-full pill bar — circular logo badge
-   + icon/label items, solid-color active state (no gradients, no square
-   corners), echoing the reference pill-nav look. */
+   + icon/label items, solid-color active state, echoing the reference pill-nav look. */
 .nav-pillbar {
   display: flex;
   align-items: center;
   gap: 4px;
   padding: 5px;
   border-radius: 999px;
-  background: rgb(var(--surface-rgb) / 0.55);
+  background: rgb(var(--surface-rgb) / 0.8);
   border: 1px solid rgb(var(--fg-rgb) / 0.12);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
-  backdrop-filter: blur(18px) saturate(150%);
-  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.08) inset, 0 16px 32px -18px rgba(0, 0, 0, 0.75);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: var(--shadow-float);
 }
 .nav-logo-badge {
   flex: none;
@@ -285,13 +372,13 @@ nav,
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-red);
+  background: rgb(var(--accent-solid-rgb));
 }
 .nav-logo-dot {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: #fff;
+  background: var(--text-on-accent);
 }
 .nav-pill-item {
   display: flex;
@@ -305,10 +392,7 @@ nav,
   background: rgb(var(--fg-rgb) / 0.07);
 }
 .nav-pill-item-active {
-  background: linear-gradient(165deg, rgb(var(--accent-light-rgb) / 0.22), rgb(var(--accent-rgb) / 0.12));
-  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.14) inset, 0 6px 18px -10px rgb(var(--accent-rgb) / 0.8);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background: rgb(var(--accent-rgb) / 0.16);
 }
 .nav-pill-icon {
   flex: none;
@@ -322,14 +406,12 @@ nav,
   transition: background-color 150ms ease;
 }
 .nav-pill-item-active .nav-pill-icon {
-  background: linear-gradient(165deg, rgb(var(--accent-light-rgb) / 0.7), rgb(var(--accent-rgb) / 0.55));
-  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.3) inset, 0 0 14px -2px rgb(var(--accent-rgb) / 0.7);
+  background: rgb(var(--accent-solid-rgb));
+  color: var(--text-on-accent);
 }
 .nav-pill-label {
-  font-size: 11.5px;
+  font-size: var(--fs-sm);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
   color: var(--color-muted);
 }
 .nav-pill-item-active .nav-pill-label {
@@ -366,14 +448,12 @@ nav,
 .nav-dock-item[aria-current="page"] {
   flex-grow: 2.7;
   color: var(--color-ink);
-  background: linear-gradient(165deg, rgb(var(--accent-light-rgb) / 0.38), rgb(var(--accent-rgb) / 0.3));
-  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.16) inset, 0 6px 18px -10px rgb(var(--accent-rgb) / 0.9);
+  background: rgb(var(--accent-rgb) / 0.2);
 }
 .nav-dock-label {
   display: none;
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   font-weight: 600;
-  letter-spacing: 0.02em;
   white-space: nowrap;
 }
 .nav-dock-item[aria-current="page"] .nav-dock-label {
@@ -389,11 +469,11 @@ nav,
   gap: 6px;
   padding: 10px;
   border-radius: 28px;
-  background: rgb(var(--surface-rgb) / 0.94);
+  background: rgb(var(--raised-rgb) / 0.96);
   border: 1px solid rgb(var(--fg-rgb) / 0.14);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
-  backdrop-filter: blur(18px) saturate(150%);
-  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.8);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: var(--shadow-float);
 }
 .nav-dock-tile {
   display: flex;
@@ -402,7 +482,7 @@ nav,
   gap: 6px;
   padding: 10px 4px;
   border-radius: 20px;
-  font-size: 12.5px;
+  font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--color-ink);
 }
@@ -422,7 +502,8 @@ nav,
   background: var(--color-surface-2);
 }
 .nav-dock-tile[aria-current="page"] .nav-dock-tile-icon {
-  background: linear-gradient(165deg, rgb(var(--accent-light-rgb) / 0.5), rgb(var(--accent-rgb) / 0.4));
+  background: rgb(var(--accent-solid-rgb));
+  color: var(--text-on-accent);
 }
 @media (min-width: 900px) {
   .nav-dock {
@@ -438,20 +519,16 @@ nav,
   }
 }
 
-/* Neon streak flame — habit streak indicators. */
+/* Streak flame — habit streak indicators. One soft glow, not a neon stack. */
 .flame-glow {
-  color: var(--color-red-ink);
-  filter: drop-shadow(0 0 3px rgb(var(--accent-rgb) / 0.9)) drop-shadow(0 0 8px rgb(var(--accent-rgb) / 0.6));
+  color: var(--color-accent-text);
+  filter: drop-shadow(0 0 4px rgb(var(--accent-rgb) / 0.55));
 }
 
-/* Ambient backdrop: a fine technical grid, mostly invisible on black, that
-   lights up only where a red glow bleeds through two corners — plus a
-   subtle film grain overlay. Replaces the earlier soft-blur "dune" blobs,
-   which read as too faint/shapeless ("se ve como sin nada") — a grid gives
-   the background actual structure instead of just diffuse color. Cards sit
-   above it at a higher stacking context and are translucent (see
-   .panel-surface / .login-card) so the glow tints through instead of being
-   fully hidden behind opaque panels. */
+/* Ambient backdrop (surface-0): a fine technical grid that lights up only where a
+   soft accent glow reaches two corners, plus a faint grain. Static and cheap: no
+   blur filter, no animation, no blend mode — just radial gradients. Cards sit above
+   it and are translucent, so the glow tints through instead of being hidden. */
 .ambient-bg {
   position: fixed;
   inset: 0;
@@ -467,8 +544,8 @@ nav,
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgb(var(--fg-rgb) / 0.09) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(var(--fg-rgb) / 0.09) 1px, transparent 1px);
+    linear-gradient(rgb(var(--fg-rgb) / 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--fg-rgb) / 0.08) 1px, transparent 1px);
   background-size: 46px 46px;
   mask-image:
     radial-gradient(52% 46% at 14% 12%, black, transparent 70%),
@@ -479,33 +556,19 @@ nav,
 }
 .ambient-glow {
   position: absolute;
-  inset: -10%;
-  filter: blur(70px);
-  will-change: transform;
+  inset: 0;
   background:
-    radial-gradient(46% 40% at 14% 12%, rgb(var(--accent-rgb) / 0.55), transparent 65%),
-    radial-gradient(42% 38% at 88% 90%, rgb(var(--accent-rgb) / 0.38), transparent 65%);
-  animation: ambient-glow-drift 52s ease-in-out infinite alternate;
-}
-@keyframes ambient-glow-drift {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(2%, -2%) scale(1.05); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ambient-glow {
-    animation: none !important;
-  }
+    radial-gradient(60% 52% at 10% 6%, rgb(var(--accent-rgb) / 0.34), transparent 70%),
+    radial-gradient(56% 48% at 92% 96%, rgb(var(--accent-rgb) / 0.22), transparent 70%);
 }
 .ambient-grain {
   position: absolute;
   inset: 0;
-  opacity: 0.06;
-  mix-blend-mode: overlay;
+  opacity: 0.035;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Calm variant (Login): quiets the grid/glow and grain for a sober, elegant
-   feel — no ribbons to skip anymore, the grid itself is already restrained. */
+/* Calm variant (Login): quiets the grid/glow and grain for a sober, elegant feel. */
 .ambient-bg-calm .ambient-grid {
   opacity: 0.7;
 }
@@ -513,18 +576,16 @@ nav,
   opacity: 0.6;
 }
 .ambient-bg-calm .ambient-grain {
-  opacity: 0.035;
+  opacity: 0.025;
 }
 
-/* Login card: rounded glass card echoing the Dr. Discipline landing, but
-   kept deliberately quiet — a thin red top hairline and a soft ambient glow
-   rather than a loud gradient fill, for a minimal/sober login moment. */
+/* Login card: a raised card, deliberately quiet — a thin accent hairline on top. */
 .login-card {
   position: relative;
-  background: linear-gradient(180deg, rgba(20, 20, 23, 0.96), rgba(6, 6, 7, 0.98) 55%);
+  background: rgb(var(--raised-rgb) / 0.97);
   border: 1px solid var(--color-line-strong);
-  border-radius: 22px;
-  box-shadow: 0 24px 56px -30px rgba(0, 0, 0, 0.8), 0 1px 0 rgb(var(--fg-rgb) / 0.04) inset;
+  border-radius: 20px;
+  box-shadow: var(--shadow-float);
   overflow: hidden;
 }
 .login-card::before {
@@ -536,179 +597,178 @@ nav,
 }
 
 .glow-dot {
-  box-shadow: 0 0 12px var(--color-red);
+  box-shadow: 0 0 8px var(--color-red);
 }
 
-/* Primary CTA: real frosted glass, not a flat translucent fill — a
-   semi-transparent tinted gradient over backdrop-blur so whatever sits
-   behind the button (panel gradients, the ambient grid) actually shows
-   through blurred, plus a light-catching top edge and a sheen that sweeps
-   across on hover. A single low-opacity color alone reads as a cheap
-   webpage button; the blur + layered highlight is what sells "glass". */
-.btn-primary {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(165deg, rgb(var(--accent-light-rgb) / 0.55) 0%, rgb(var(--accent-rgb) / 0.62) 45%, rgb(var(--accent-dark-rgb) / 0.68) 100%);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  transition: box-shadow 200ms ease, filter 200ms ease, transform 150ms ease;
-}
-.btn-primary::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(160deg, rgb(var(--fg-rgb) / 0.4) 0%, rgb(var(--fg-rgb) / 0) 40%);
-  pointer-events: none;
-}
-.btn-primary::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: -60%;
-  width: 35%;
-  background: linear-gradient(75deg, transparent, rgb(var(--fg-rgb) / 0.55), transparent);
-  transform: skewX(-20deg);
-  transition: left 650ms cubic-bezier(0.16, 1, 0.3, 1);
-  pointer-events: none;
-}
-.btn-primary:hover::after {
-  left: 130%;
-}
-.btn-primary:hover {
-  transform: translateY(-1px);
-}
-
-/* Secondary glass: same frosted-blur family, neutral tint, for outline
-   buttons that need to sit quietly next to a primary CTA. */
-.btn-glass {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(165deg, rgb(var(--fg-rgb) / 0.09) 0%, rgb(var(--fg-rgb) / 0.02) 60%);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  transition: box-shadow 200ms ease, border-color 200ms ease, transform 150ms ease;
-}
-.btn-glass:hover {
-  transform: translateY(-1px);
-}
-
-/* ── Glass controls ─────────────────────────────────────────────────────
-   One shared translucent look for every button: a frosted blur of whatever
-   is behind it, a faint light-to-clear gradient, a 1px edge with a bright
-   top rim, and a soft lift on hover. Shape (pill, circle, rounded rect),
-   size and text color still come from each button's own classes.
-     .glass         neutral glass — the default for any button
-     .glass-on      selected / active: red-tinted glass with a glow
-     .glass-accent  outlined red glass for secondary calls to action
-     .glass-flat    invisible until hovered (inactive segments, links)
-     .glass-track   the recessed tray a row of segments sits in */
+/* ── Buttons and controls ────────────────────────────────────────────────
+   Three clear roles, all ≥44px tall via .btn / .tap-target:
+     primary    .btn-primary (or .glass-on)  solid accent fill + --text-on-accent
+     secondary  .glass                       surface + 1px border
+     ghost      .glass-flat                  no box until hovered
+   Selected state (segments, chips, toggles): put aria-pressed="true" (or
+   aria-selected="true") on a .btn / .glass — or add .glass-sel — for an accent
+   ~16% fill with an accent border. Extras: .glass-accent (outlined accent call to
+   action), .glass-gold (spiritual), .glass-track (the tray a segmented row sits in).
+   No blur, no sweep, no lift on hover: only colour changes and a small press. */
 .glass,
 .glass-on,
-.glass-accent {
+.glass-accent,
+.glass-gold,
+.glass-flat,
+.glass-sel,
+.btn-primary {
   position: relative;
-  isolation: isolate;
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
-  backdrop-filter: blur(14px) saturate(150%);
-  transition: background 200ms ease, border-color 200ms ease, box-shadow 200ms ease, color 200ms ease, transform 150ms ease;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, filter 150ms ease, transform 120ms ease;
 }
-.glass::before,
-.glass-on::before,
-.glass-accent::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(170deg, rgb(var(--fg-rgb) / 0.16) 0%, rgb(var(--fg-rgb) / 0) 46%);
+.btn {
+  min-height: var(--control-h);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
 }
+
+/* Primary: a solid accent fill that holds its text at ≥4.5:1 on every accent. */
+.btn-primary,
+.glass-on {
+  border: 1px solid rgb(var(--accent-solid-rgb));
+  background: rgb(var(--accent-solid-rgb));
+  color: var(--text-on-accent);
+  box-shadow: none;
+}
+.btn-primary {
+  min-height: var(--control-h);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1.2;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.btn-primary:hover:not(:disabled),
+.glass-on:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+/* Secondary: surface + border. */
 .glass {
-  border: 1px solid rgb(var(--fg-rgb) / 0.13);
-  background: linear-gradient(165deg, rgb(var(--fg-rgb) / 0.09) 0%, rgb(var(--fg-rgb) / 0.025) 65%);
-  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.1) inset, 0 8px 20px -14px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgb(var(--fg-rgb) / 0.16);
+  background: rgb(var(--fg-rgb) / 0.06);
 }
 .glass:hover:not(:disabled) {
-  border-color: rgb(var(--fg-rgb) / 0.26);
-  background: linear-gradient(165deg, rgb(var(--fg-rgb) / 0.15) 0%, rgb(var(--fg-rgb) / 0.05) 65%);
-  transform: translateY(-1px);
+  border-color: rgb(var(--fg-rgb) / 0.28);
+  background: rgb(var(--fg-rgb) / 0.1);
 }
-.glass-on {
-  border: 1px solid rgb(var(--accent-light-rgb) / 0.5);
-  color: #fff;
-  background: linear-gradient(165deg, rgb(var(--accent-light-rgb) / 0.66) 0%, rgb(var(--accent-rgb) / 0.54) 55%, rgb(var(--accent-dark-rgb) / 0.62) 100%);
-  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.32) inset, 0 10px 26px -12px rgb(var(--accent-rgb) / 0.85);
-}
-.glass-on:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.36) inset, 0 12px 30px -10px rgb(var(--accent-rgb) / 0.95);
-}
+
+/* Outlined accent: a quiet call to action. */
 .glass-accent {
-  border: 1px solid rgb(var(--accent-rgb) / 0.45);
-  color: var(--color-red-ink);
-  background: linear-gradient(165deg, rgb(var(--accent-rgb) / 0.2) 0%, rgb(var(--accent-rgb) / 0.05) 70%);
-  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.08) inset;
+  border: 1px solid rgb(var(--accent-rgb) / 0.5);
+  color: var(--color-accent-text);
+  background: rgb(var(--accent-rgb) / 0.1);
 }
 .glass-accent:hover:not(:disabled) {
-  color: #fff;
-  border-color: rgb(var(--accent-light-rgb) / 0.6);
-  background: linear-gradient(165deg, rgb(var(--accent-light-rgb) / 0.42) 0%, rgb(var(--accent-rgb) / 0.3) 70%);
-  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.24) inset, 0 10px 24px -12px rgb(var(--accent-rgb) / 0.85);
-  transform: translateY(-1px);
-}
-.glass:active:not(:disabled),
-.glass-on:active:not(:disabled),
-.glass-accent:active:not(:disabled) {
-  transform: translateY(0) scale(0.985);
+  border-color: rgb(var(--accent-rgb) / 0.75);
+  background: rgb(var(--accent-rgb) / 0.18);
 }
 .glass-gold {
-  position: relative;
-  isolation: isolate;
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
-  backdrop-filter: blur(14px) saturate(150%);
-  border: 1px solid rgba(226, 185, 111, 0.45);
+  border: 1px solid rgb(var(--gold-rgb) / 0.5);
   color: var(--color-gold);
-  background: linear-gradient(165deg, rgba(226, 185, 111, 0.2) 0%, rgba(226, 185, 111, 0.05) 70%);
-  box-shadow: 0 1px 0 rgb(var(--fg-rgb) / 0.08) inset;
-  transition: background 200ms ease, border-color 200ms ease, color 200ms ease, transform 150ms ease;
+  background: rgb(var(--gold-rgb) / 0.1);
 }
 .glass-gold:hover:not(:disabled) {
-  color: #fff;
-  border-color: rgba(245, 214, 150, 0.7);
-  background: linear-gradient(165deg, rgba(245, 214, 150, 0.4) 0%, rgba(226, 185, 111, 0.24) 70%);
-  transform: translateY(-1px);
+  border-color: rgb(var(--gold-rgb) / 0.8);
+  background: rgb(var(--gold-rgb) / 0.18);
 }
+
+/* Ghost: invisible until hovered. */
 .glass-flat {
   border: 1px solid transparent;
-  transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
 }
 .glass-flat:hover:not(:disabled) {
   background: rgb(var(--fg-rgb) / 0.07);
   border-color: rgb(var(--fg-rgb) / 0.1);
 }
+
+/* Selected (tonal): accent ~16% fill, accent border, normal ink — calmer than a solid fill. */
+.glass-sel,
+.btn[aria-pressed="true"],
+.btn[aria-selected="true"],
+.glass[aria-pressed="true"],
+.glass[aria-selected="true"],
+.glass-flat[aria-pressed="true"],
+.glass-flat[aria-selected="true"] {
+  border: 1px solid rgb(var(--accent-rgb) / 0.6);
+  background: rgb(var(--accent-rgb) / 0.16);
+  color: var(--color-ink);
+}
+.glass-sel:hover:not(:disabled),
+.btn[aria-pressed="true"]:hover:not(:disabled),
+.btn[aria-selected="true"]:hover:not(:disabled),
+.glass[aria-pressed="true"]:hover:not(:disabled),
+.glass[aria-selected="true"]:hover:not(:disabled),
+.glass-flat[aria-pressed="true"]:hover:not(:disabled),
+.glass-flat[aria-selected="true"]:hover:not(:disabled) {
+  border-color: rgb(var(--accent-rgb) / 0.75);
+  background: rgb(var(--accent-rgb) / 0.22);
+}
+
+/* The recessed tray a row of segments sits in. */
 .glass-track {
-  background: rgb(var(--bg-rgb) / 0.32);
+  background: rgb(var(--bg-rgb) / 0.5);
   border: 1px solid rgb(var(--fg-rgb) / 0.1);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  backdrop-filter: blur(16px) saturate(140%);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) inset, 0 1px 0 rgb(var(--fg-rgb) / 0.05);
+}
+
+.glass:active:not(:disabled),
+.glass-on:active:not(:disabled),
+.glass-accent:active:not(:disabled),
+.glass-gold:active:not(:disabled),
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.98);
 }
 .glass:disabled,
 .glass-on:disabled,
-.glass-accent:disabled {
+.glass-accent:disabled,
+.glass-gold:disabled,
+.btn-primary:disabled {
   opacity: 0.5;
 }
 @media (prefers-reduced-motion: reduce) {
   .glass,
   .glass-on,
-  .glass-accent {
+  .glass-accent,
+  .glass-gold,
+  .glass-flat,
+  .glass-sel,
+  .btn-primary {
     transition: none;
   }
-  .glass:hover:not(:disabled),
-  .glass-on:hover:not(:disabled),
-  .glass-accent:hover:not(:disabled) {
+  .glass:active:not(:disabled),
+  .glass-on:active:not(:disabled),
+  .glass-accent:active:not(:disabled),
+  .glass-gold:active:not(:disabled),
+  .btn-primary:active:not(:disabled) {
     transform: none;
   }
+}
+
+/* Small visual controls keep their look but get a ≥44px touch area: an invisible
+   pseudo-element at least --control-h wide and tall, centred on the control.
+   Applies to .hit, to every switch, and to glass-family buttons (so small chips and
+   icon buttons stay tappable without changing how they look). */
+.hit,
+[role="switch"],
+[role="checkbox"] {
+  position: relative;
+}
+.hit::after,
+[role="switch"]::after,
+[role="checkbox"]::after,
+button:is(.glass, .glass-on, .glass-accent, .glass-gold, .glass-flat, .glass-sel)::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, var(--control-h));
+  height: max(100%, var(--control-h));
+  transform: translate(-50%, -50%);
 }
 
 @keyframes enter-fade {
@@ -735,23 +795,6 @@ nav,
 .enter-delay-2 { animation-delay: 120ms; }
 .enter-delay-3 { animation-delay: 180ms; }
 .enter-delay-4 { animation-delay: 240ms; }
-
-/* Active press feedback */
-.press-active:active {
-  transform: translateY(1px) scale(0.99);
-}
-
-@keyframes sweep {
-  from {
-    transform: translateX(-120%);
-  }
-  to {
-    transform: translateX(220%);
-  }
-}
-.sweep-line {
-  animation: sweep 2.4s linear infinite;
-}
 
 @keyframes soft-pulse {
   0%,
@@ -793,9 +836,10 @@ nav,
   animation: draw-line 900ms ease-out both;
 }
 
+/* Reduced motion switches animations off; it never hides content. Every element
+   below keeps showing its final state (an .enter card, a PR badge, a drawn line). */
 @media (prefers-reduced-motion: reduce) {
   .enter,
-  .sweep-line,
   .pulse,
   .focus-breathe,
   .draw-line {
@@ -833,53 +877,35 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 /* ── Accessibility: transparency and contrast preferences ────────────────
    People who ask their system for less transparency (or more contrast) get
-   solid surfaces: no blur, opaque fills, stronger edges. */
+   solid surfaces: no blur, opaque fills, stronger edges. The glass-family
+   controls already have no blur, so only the floating layers change. */
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .glass,
-  .glass-on,
-  .glass-accent,
-  .glass-gold,
-  .glass-track,
+  .surface-2,
   .nav-pillbar,
-  .nav-dock-more,
-  .nav-pill-item-active,
-  .btn-primary {
+  .nav-dock-more {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
+    background: rgb(var(--raised-rgb));
   }
   .glass {
     background: rgb(var(--raised-rgb));
     border-color: rgb(var(--fg-rgb) / 0.3);
   }
   .glass-accent {
-    background: rgb(var(--accent-dark-rgb) / 0.35);
-    border-color: rgb(var(--accent-light-rgb));
+    background: rgb(var(--raised-rgb));
+    border-color: var(--color-accent-text);
   }
   .glass-gold {
     background: rgb(var(--raised-rgb));
     border-color: var(--color-gold);
   }
-  .glass-on,
-  .btn-primary {
-    background: rgb(var(--accent-dark-rgb));
-    border-color: rgb(var(--accent-light-rgb));
-    color: #fff;
-  }
   .glass-track {
     background: rgb(var(--surface-rgb));
     border-color: rgb(var(--fg-rgb) / 0.28);
   }
-  .nav-pillbar {
-    background: rgb(var(--surface-rgb));
-  }
   .panel-surface {
     background: rgb(var(--surface-rgb));
     border-color: rgb(var(--fg-rgb) / 0.24);
-  }
-  .glass::before,
-  .glass-on::before,
-  .glass-accent::before {
-    display: none;
   }
 }
 @media (prefers-contrast: more) {
@@ -887,16 +913,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     --color-muted: rgb(var(--fg-rgb) / 0.85);
     --color-muted-2: rgb(var(--fg-rgb) / 0.72);
   }
-}
-
-/* Small visual controls keep their look but get a 44px touch area. */
-.hit {
-  position: relative;
-}
-.hit::after {
-  content: "";
-  position: absolute;
-  inset: -10px;
 }
 
 /* ── Celebrations: a quick burst + a "pop" for checks. Decorative only. ── */
@@ -929,20 +945,19 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 @keyframes shimmer-pr {
   0%, 100% { box-shadow: 0 0 0 0 rgba(226, 185, 111, 0); }
-  50% { box-shadow: 0 0 12px 1px rgba(226, 185, 111, 0.55); }
+  50% { box-shadow: 0 0 10px 0 rgba(226, 185, 111, 0.4); }
 }
 .pr-badge {
   animation: shimmer-pr 1.8s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .confetti-layer,
   .pop,
   .pr-badge {
     animation: none !important;
-    display: none;
   }
-  .pop {
-    display: revert;
+  /* Pure decoration (the confetti burst) is the only thing that goes away. */
+  .confetti-layer {
+    display: none;
   }
 }
 
@@ -1001,8 +1016,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 /* ── Light theme ─────────────────────────────────────────────────────────
-   Same components, swapped channels. A few things that are "light on dark"
-   by design (glass highlights, accent buttons, the glow halos) are re-tuned. */
+   Same components, swapped channels. The ground is a GRAY (never white) so it
+   reads in sunlight; accent fills are deeper than on dark so white text holds. */
 :root[data-theme="light"] {
   color-scheme: light;
   --fg-rgb: 22 22 28;
@@ -1018,64 +1033,84 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   --color-gold: #5f420a;
   --color-warn: #644000;
   --color-good: #10502d;
-  --accent-ink-rgb: 144 15 23;
+  --accent-ink-rgb: 118 11 19;
+  --accent-solid-rgb: 190 28 40;
+  --text-on-accent: #ffffff;
   /* Quiet fills for chart bars and the like, strong enough to see on the gray ground. */
   --color-bar: rgb(var(--fg-rgb) / 0.3);
   --gold-rgb: 176 128 30;
   --color-on-solid: #ffffff;
   --tier-ink: 35%;
   --color-scrim: rgb(20 20 28 / 0.42);
+  --shadow-float: 0 12px 28px -14px rgba(30, 30, 60, 0.4);
 }
 :root[data-theme="light"][data-accent="blue"] {
-  --accent-ink-rgb: 29 68 144;
+  --accent-ink-rgb: 26 59 124;
+  --accent-solid-rgb: 37 99 235;
+  --text-on-accent: #ffffff;
 }
 :root[data-theme="light"][data-accent="violet"] {
-  --accent-ink-rgb: 79 50 151;
+  --accent-ink-rgb: 67 44 129;
+  --accent-solid-rgb: 109 40 217;
+  --text-on-accent: #ffffff;
 }
 :root[data-theme="light"][data-accent="green"] {
-  --accent-ink-rgb: 14 83 39;
+  --accent-ink-rgb: 13 79 37;
+  --accent-solid-rgb: 21 128 61;
+  --text-on-accent: #ffffff;
 }
 :root[data-theme="light"][data-accent="cyan"] {
-  --accent-ink-rgb: 3 80 93;
+  --accent-ink-rgb: 3 72 84;
+  --accent-solid-rgb: 14 116 144;
+  --text-on-accent: #ffffff;
 }
 :root[data-theme="light"][data-accent="orange"] {
-  --accent-ink-rgb: 117 54 10;
+  --accent-ink-rgb: 105 48 10;
+  --accent-solid-rgb: 194 65 12;
+  --text-on-accent: #ffffff;
 }
 :root[data-theme="light"][data-accent="pink"] {
-  --accent-ink-rgb: 127 39 83;
+  --accent-ink-rgb: 109 33 71;
+  --accent-solid-rgb: 190 24 93;
+  --text-on-accent: #ffffff;
 }
 :root[data-theme="light"][data-accent="gold"] {
-  --accent-ink-rgb: 93 65 12;
+  --accent-ink-rgb: 84 59 10;
   --accent-rgb: 176 128 30;
   --accent-light-rgb: 210 165 65;
   --accent-dark-rgb: 120 84 10;
-}
-:root[data-theme="light"] .glass::before,
-:root[data-theme="light"] .glass-on::before,
-:root[data-theme="light"] .glass-accent::before {
-  background: linear-gradient(170deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 46%);
+  --accent-solid-rgb: 176 128 30;
+  --text-on-accent: #0b0b0d;
 }
 :root[data-theme="light"] .glass {
-  background: linear-gradient(165deg, rgb(var(--raised-rgb) / 0.85), rgb(var(--surface-rgb) / 0.55) 70%);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 8px 20px -14px rgba(30, 30, 60, 0.35);
+  background: rgb(var(--raised-rgb) / 0.8);
+  border-color: rgb(var(--fg-rgb) / 0.2);
 }
-:root[data-theme="light"] .glass-on,
-:root[data-theme="light"] .btn-primary {
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) inset, 0 10px 26px -12px rgb(var(--accent-rgb) / 0.7);
+:root[data-theme="light"] .glass:hover:not(:disabled) {
+  background: rgb(var(--raised-rgb));
+  border-color: rgb(var(--fg-rgb) / 0.32);
+}
+:root[data-theme="light"] .glass-track {
+  background: rgb(var(--fg-rgb) / 0.07);
+  border-color: rgb(var(--fg-rgb) / 0.14);
 }
 :root[data-theme="light"] .panel-surface {
-  border-color: rgb(var(--fg-rgb) / 0.1);
-  box-shadow: 0 14px 34px -22px rgba(30, 30, 60, 0.35), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
+  border-color: rgb(var(--fg-rgb) / 0.14);
+  box-shadow: 0 1px 2px rgba(30, 30, 60, 0.12);
 }
 :root[data-theme="light"] .panel-surface-glow {
-  border-color: rgb(var(--accent-rgb) / 0.4);
-  box-shadow: 0 14px 34px -22px rgba(30, 30, 60, 0.3), 0 0 34px -14px rgb(var(--accent-rgb) / 0.4);
+  border-color: rgb(var(--accent-rgb) / 0.45);
+  box-shadow: 0 0 22px -12px rgb(var(--accent-rgb) / 0.4);
+}
+:root[data-theme="light"][data-calm="true"] .panel-surface-glow {
+  border-color: rgb(var(--accent-rgb) / 0.25);
+  box-shadow: none;
 }
 :root[data-theme="light"] .ambient-glow {
   opacity: 0.22;
 }
-:root[data-theme="light"] .nav-pillbar {
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 12px 26px -16px rgba(30, 30, 60, 0.35);
+:root[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: none;
 }
 /* The side art (mascots, Kairos) is light-on-black and blends with "screen",
    which makes it vanish on a light page. Inverting it turns the black backdrop
@@ -1096,4 +1131,21 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 :root[data-theme="light"] .photo-tone {
   filter: saturate(0.7) contrast(1.02) brightness(1);
+}
+
+/* ── focus/oración ── */
+/* Oración's one featured card (the reader): the same flat card with a gold edge and a faint gold halo. */
+.panel-gold {
+  border-color: rgb(var(--gold-rgb) / 0.4);
+  box-shadow: 0 0 24px -12px rgb(var(--gold-rgb) / 0.4);
+}
+:root[data-calm="true"] .panel-gold {
+  border-color: rgb(var(--gold-rgb) / 0.22);
+  box-shadow: none;
+}
+
+/* ── datos ── */
+/* BarChart already prints the active bar's value above the plot; its floating bubble would say it a second time. */
+.datos-bars .glass[aria-hidden="true"] {
+  display: none;
 }

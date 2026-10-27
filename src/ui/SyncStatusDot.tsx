@@ -45,13 +45,13 @@ export function SyncStatusDot() {
       }}
       title={label}
       aria-label={label}
-      className="flex items-center gap-1.5"
+      className="hit flex items-center gap-1.5"
     >
       <span
         className={`h-1.5 w-1.5 rounded-full flex-none ${status.state === "syncing" ? "animate-pulse" : ""}`}
         style={{ background: dotColor, boxShadow: status.state !== "offline" || n > 0 ? `0 0 6px ${dotColor}` : "none" }}
       />
-      <span className="text-[12px] uppercase tracking-wide text-[var(--color-muted-2)]">{label}</span>
+      <span className="text-[12px] font-medium text-[var(--color-muted-2)]">{label}</span>
     </button>
   );
 }
