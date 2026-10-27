@@ -44,6 +44,10 @@ window.addEventListener("vite:preloadError", (e) => {
 window.addEventListener("error", (e) => logError(e.error ?? e.message, "error"));
 window.addEventListener("unhandledrejection", (e) => logError(e.reason, "promesa"));
 
+// Tells public/boot-watchdog.js the bundle itself ran, so a slow network or auth is not
+// mistaken for a broken cache (it only repairs/clears caches when the bundle never started).
+document.documentElement.dataset.mounted = "1";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ErrorBoundary>

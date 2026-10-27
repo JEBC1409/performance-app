@@ -76,9 +76,32 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Vendors change far less often than the app: in their own chunks they stay
+        // cached (browser + service worker precache) across deploys, so an update
+        // only re-downloads the app code. The Excel reader is deliberately left out:
+        // it stays a lazy chunk of its own (see globIgnores above).
+        manualChunks(id: string) {
+          if (!id.includes("node_modules")) return undefined;
+          if (id.includes("node_modules/xlsx")) return undefined;
+          if (id.includes("node_modules/@supabase") || id.includes("node_modules/iceberg-js")) return "vendor-supabase";
+          if (id.includes("node_modules/dexie")) return "vendor-dexie";
+          // Exact package dirs: "node_modules/react" alone would also swallow
+          // react-body-highlighter, which only a lazy screen needs.
+          if (/node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id)) return "vendor-react";
+          return undefined;
+        },
+      },
+    },
+  },
   test: {
     environment: "jsdom",
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
+    // screens.test.tsx flakes under load (Dexie + jsdom); the default 5 s is too tight.
+    testTimeout: 15000,
+    expect: { poll: { timeout: 3000 } },
   },
 });

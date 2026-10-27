@@ -17,6 +17,8 @@ import { RestTimer } from "@/features/entreno/RestTimer";
 import { useRestTimer } from "@/features/entreno/useRestTimer";
 import { useScheduleNotifications } from "@/hooks/useScheduleNotifications";
 import { useAuth } from "@/hooks/useAuth";
+import { useToday } from "@/hooks/useToday";
+import { decideBoot, hasStoredSession } from "@/layout/bootGate";
 import { Login } from "@/features/auth/Login";
 import { Hoy } from "@/features/hoy/Hoy";
 import { FocusPipHost } from "@/features/focus/FocusPip";
@@ -38,17 +40,13 @@ const Kairos = lazy(() => import("@/features/kairos/Kairos").then((m) => ({ defa
 const Mouredev = lazy(() => import("@/features/mouredev/Mouredev").then((m) => ({ default: m.Mouredev })));
 const Perfil = lazy(() => import("@/features/perfil/Perfil").then((m) => ({ default: m.Perfil })));
 
+// Only the two screens opened most often, a few seconds after the app is up (so it
+// never competes with boot or the first sync) and never on Data Saver. The rest load
+// on first visit, as lazy chunks.
+const WARM_DELAY_MS = 4000;
 const warmScreens = () =>
-  Promise.all([
-    import("@/features/entreno/Entreno"),
-    import("@/features/habitos/Habitos"),
-    import("@/features/datos/Datos"),
-    import("@/features/horario/Horario"),
-    import("@/features/focus/Focus"),
-    import("@/features/kairos/Kairos"),
-    import("@/features/mouredev/Mouredev"),
-    import("@/features/perfil/Perfil"),
-  ]).catch(() => {});
+  Promise.all([import("@/features/entreno/Entreno"), import("@/features/habitos/Habitos")]).catch(() => {});
+const saveDataOn = () => (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true;
 
 function ScreenFallback() {
   return (
@@ -58,6 +56,9 @@ function ScreenFallback() {
     </div>
   );
 }
+
+/** Dev-only: `VITE_DEV_SKIP_AUTH=1 npm run dev` shows the app without signing in, for checking screens. Compiled out of production builds. */
+const DEV_SKIP_AUTH = import.meta.env.DEV && import.meta.env.VITE_DEV_SKIP_AUTH === "1";
 
 export type Tab = "hoy" | "entreno" | "habitos" | "datos" | "mas" | "horario" | "focus" | "kairos" | "mouredev" | "perfil";
 
@@ -117,8 +118,13 @@ function RestPill() {
 }
 
 export default function App() {
-  const { session, loading: authLoading } = useAuth();
+  const { session, loading: authLoading, offlineTrusted } = useAuth();
   const [ready, setReady] = useState(false);
+  // The day, kept current: when it changes (app reopened next morning, or midnight
+  // passes) the screens below remount, so none of them keeps showing "yesterday".
+  const today = useToday();
+  // Evidence of a previous sign-in on this device, read once: local-first boot (see bootGate).
+  const [storedSession] = useState(hasStoredSession);
   const [tab, setTabRaw] = useState<Tab>(() => {
     const linked = readDeepLink(window.location.search);
     if (linked) {
@@ -148,18 +154,23 @@ export default function App() {
   useFocusWatcher();
   useRestWatcher();
   useScheduleNotifications();
-  useLandingRedirect(!authLoading && !session);
+  useLandingRedirect(!authLoading && !session && !offlineTrusted);
 
   useEffect(() => {
     seedIfNeeded().finally(() => setReady(true));
   }, []);
 
   useEffect(() => {
-    if (!ready) return;
-    const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback;
-    const id = idle ? idle(() => void warmScreens()) : window.setTimeout(() => void warmScreens(), 2500);
+    if (!ready || saveDataOn()) return;
+    const w = window as Window & { requestIdleCallback?: (cb: () => void) => number; cancelIdleCallback?: (id: number) => void };
+    let idleId: number | undefined;
+    const timer = window.setTimeout(() => {
+      if (w.requestIdleCallback) idleId = w.requestIdleCallback(() => void warmScreens());
+      else void warmScreens();
+    }, WARM_DELAY_MS);
     return () => {
-      if (!idle) window.clearTimeout(id);
+      window.clearTimeout(timer);
+      if (idleId !== undefined) w.cancelIdleCallback?.(idleId);
     };
   }, [ready]);
 
@@ -177,23 +188,32 @@ export default function App() {
     setTab("entreno");
   }
 
+  // Local-first boot: with evidence of a previous sign-in the app opens from its local
+  // data as soon as it is seeded, instead of waiting for Supabase (which, with an expired
+  // token and no network, retried for ~26 s). Without evidence nothing of the app shows.
+  const boot = decideBoot({
+    authLoading,
+    hasSession: Boolean(session) || offlineTrusted,
+    hasStoredSession: storedSession,
+    devSkipAuth: DEV_SKIP_AUTH,
+    ready,
+    cameFromLanding: new URLSearchParams(window.location.search).has("enter"),
+  });
+
   // Tells public/boot-watchdog.js the app got past its loading screens.
   useEffect(() => {
-    if (!authLoading && (ready || !session)) document.documentElement.dataset.booted = "1";
-  }, [authLoading, ready, session]);
+    if (boot.booted) document.documentElement.dataset.booted = "1";
+  }, [boot.booted]);
 
-  if (authLoading) return <LoadingScreen />;
-  if (!session) {
-    const cameFromLanding = new URLSearchParams(window.location.search).has("enter");
-    return cameFromLanding ? <Login /> : <LoadingScreen />;
-  }
-  if (!ready) return <LoadingScreen />;
+  if (boot.view === "loading") return <LoadingScreen />;
+  if (boot.view === "login") return <Login />;
 
   return (
     <Shell active={tab} onChange={setTab}>
-      {/* keyed by screen: one that crashes must not leave every other screen showing its error */}
+      {/* keyed by screen (one that crashes must not leave every other screen showing its error)
+          and by day (a new day remounts the screen so it re-reads "today") */}
       <ErrorBoundary
-        key={tab}
+        key={`${tab}:${today}`}
         fallback={(reset, error) => <ScreenError error={error} reset={reset} />}
       >
       <Suspense fallback={<ScreenFallback />}>

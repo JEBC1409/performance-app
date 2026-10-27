@@ -9,6 +9,7 @@
  * and otherwise with a button — instead of leaving a blank or endless screen. */
 (function () {
   var TIMEOUT = 15000;
+  var LATE_TIMEOUT = 60000;
   var KEY = "performance_repair_at";
   var COOLDOWN = 10 * 60 * 1000;
 
@@ -60,8 +61,22 @@
     };
   }
 
+  // The app's bundle sets data-mounted when it starts running. If it did, the cause
+  // of a late boot is the network or the sign-in check, not a stale cache: never
+  // clear the service worker / caches on its account (that also wipes the offline
+  // copy). Offer the manual repair only after a much longer wait.
+  function mounted() {
+    return document.documentElement.getAttribute("data-mounted") === "1";
+  }
+
   setTimeout(function () {
     if (booted()) return;
+    if (mounted()) {
+      setTimeout(function () {
+        if (!booted()) overlay();
+      }, LATE_TIMEOUT - TIMEOUT);
+      return;
+    }
     var last = 0;
     try { last = Number(localStorage.getItem(KEY)) || 0; } catch {}
     if (Date.now() - last > COOLDOWN) {
