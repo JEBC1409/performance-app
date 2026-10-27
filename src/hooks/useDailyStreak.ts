@@ -1,8 +1,7 @@
 import { useMemo } from "react";
-import { useLiveQuery } from "dexie-react-hooks";
-import { activeDaysCount, computeDailyScores, currentDailyStreak, totalPoints, type DayScore } from "@/lib/dailyScore";
-import { todayISO } from "@/lib/date";
+import { buildDailyScores, currentDailyStreak, STREAK_WINDOW_DAYS, totalPoints, type DayScore } from "@/lib/dailyScore";
 import { streakRankProgress } from "@/lib/streakRank";
+import { useRecentActivity } from "./useRecentActivity";
 
 export interface DailyStreakData {
   scores: DayScore[];
@@ -16,17 +15,13 @@ export interface DailyStreakData {
 }
 
 export function useDailyStreak(): DailyStreakData | undefined {
-  const today = todayISO();
-  // Three small live queries instead of one that re-reads the whole history on
-  // every write: the 28-day window, the count of earlier active days (untouched
-  // by anything you log today), and today's own.
-  const scores = useLiveQuery(() => computeDailyScores(), [today]);
-  const before = useLiveQuery(() => activeDaysCount("before", today), [today]);
-  const from = useLiveQuery(() => activeDaysCount("from", today), [today]);
+  // Built from the shared recent-activity read (the past once, today's rows live),
+  // not from five table queries of its own that re-run on every write.
+  const recent = useRecentActivity();
 
   return useMemo(() => {
-    if (!scores || before === undefined || from === undefined) return undefined;
-    const activeDays = before + from;
+    if (!recent) return undefined;
+    const scores = buildDailyScores({ sets: recent.sets, habitDays: recent.habitDays, weights: recent.weights, sleeps: recent.sleep, focus: recent.focus }, STREAK_WINDOW_DAYS, recent.today);
     const { days, frozenDates, freezesUsedThisMonth, freezesAvailable } = currentDailyStreak(scores);
     return {
       scores,
@@ -35,8 +30,8 @@ export function useDailyStreak(): DailyStreakData | undefined {
       freezesUsedThisMonth,
       freezesAvailable,
       points: totalPoints(scores),
-      activeDays,
-      progress: streakRankProgress(activeDays),
+      activeDays: recent.activeDays,
+      progress: streakRankProgress(recent.activeDays),
     };
-  }, [scores, before, from]);
+  }, [recent]);
 }

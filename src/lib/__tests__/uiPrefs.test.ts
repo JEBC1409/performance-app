@@ -14,7 +14,8 @@ describe("uiPrefs", () => {
   });
   it("normalizes the card order: known cards once, new ones appended", () => {
     const all = HOME_CARDS.map((c) => c.key);
-    expect(normalizeOrder(["stats", "rings", "stats", "bogus"])).toEqual(["stats", "rings", ...all.filter((k) => k !== "stats" && k !== "rings")]);
+    // "priorities" and "insights" are late additions: each lands next to the card it belongs with, the rest follow the default order.
+    expect(normalizeOrder(["stats", "rings", "stats", "bogus"])).toEqual(["stats", "rings", "priorities", "session", "habits", "insights", "streak", "verse"]);
     expect(normalizeOrder(undefined)).toEqual(all);
     expect(normalizeOrder(all).length).toBe(all.length);
   });

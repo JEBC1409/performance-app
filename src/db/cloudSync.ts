@@ -1,7 +1,10 @@
 import type { Table } from "dexie";
 import { supabase } from "@/lib/supabase";
-import { syncStarted, syncFinished, syncAborted } from "./syncStatus";
-import { enqueue, flushOutbox, isMissingTable, pendingKeys, refreshQueued } from "./outbox";
+import { uuid } from "@/lib/uuid";
+import { logError } from "@/lib/errorLog";
+import { requestPersistentStorage } from "@/lib/storage";
+import { syncStarted, syncFinished, syncAborted, reportSyncError } from "./syncStatus";
+import { enqueue, flushOutbox, isMissingTable, pendingKeys, readableSyncError, refreshQueued } from "./outbox";
 import type { Executor } from "./outbox";
 import {
   db,
@@ -241,13 +244,13 @@ const executor: Executor = async (entry) => {
 };
 
 /** Sends whatever is queued for the signed-in user (no-op when nothing is). */
-async function flushNow(): Promise<void> {
+async function flushNow(force = false): Promise<void> {
   const userId = currentUserId;
   if (!userId || !supabase) return;
   if ((await refreshQueued()) === 0) return;
   syncStarted();
   try {
-    const res = await flushOutbox(userId, executor);
+    const res = await flushOutbox(userId, executor, { force });
     if (res.offline) syncAborted();
     else syncFinished(res.lastError ?? undefined);
   } catch (err) {
@@ -257,14 +260,39 @@ async function flushNow(): Promise<void> {
 }
 
 function queue(entry: Parameters<typeof enqueue>[0]): void {
-  enqueue(entry)
-    .then(flushNow)
-    .catch((err) => console.error("Cloud sync: could not queue a change", err));
+  enqueue(entry).then(
+    () => void flushNow(),
+    (err) => {
+      // The change is saved locally but could not be recorded for upload: say so
+      // instead of leaving it to silently never reach the cloud.
+      console.error("Cloud sync: could not queue a change", err);
+      logError(err, "outbox");
+      reportSyncError("No se pudo preparar un cambio para subirlo");
+    },
+  );
 }
 
-/** Retry button / reconnect: send the queue, then pull the latest. */
+/** Retry button: send the queue (ignoring retry back-off), then pull the latest. */
 export function retrySync(): void {
-  if (currentUserId) fullSync(currentUserId).catch((err) => console.error("Cloud sync failed", err));
+  if (currentUserId) fullSync(currentUserId, { force: true }).catch((err) => console.error("Cloud sync failed", err));
+}
+
+/** A full pull is 12 requests plus merges, so outside of start-up and the
+ * retry button it runs at most once per this long. */
+export const PULL_MIN_INTERVAL_MS = 10 * 60_000;
+let lastPullAt = 0;
+
+/** Pulls only if the last pull was long enough ago. Returns whether it ran. */
+export function pullIfStale(userId: string, now = Date.now()): Promise<boolean> {
+  if (now - lastPullAt < PULL_MIN_INTERVAL_MS) return Promise.resolve(false);
+  return fullSync(userId).then(() => true);
+}
+
+/** Back online / back in the app: deliver what is queued, and pull only when it's been a while. */
+async function resumeSync(): Promise<void> {
+  await flushNow();
+  const userId = currentUserId;
+  if (userId) await pullIfStale(userId).catch((err) => console.error("Cloud sync failed", err));
 }
 
 // ---------- generic per-table sync ----------
@@ -436,21 +464,21 @@ async function syncSettings(userId: string) {
  * unsynced for reasons that had nothing to do with it. */
 let fullSyncRun: Promise<void> | null = null;
 
-export function fullSync(userId: string): Promise<void> {
+export function fullSync(userId: string, opts: { force?: boolean } = {}): Promise<void> {
   if (!fullSyncRun) {
-    fullSyncRun = doFullSync(userId).finally(() => {
+    fullSyncRun = doFullSync(userId, opts.force === true).finally(() => {
       fullSyncRun = null;
     });
   }
   return fullSyncRun;
 }
 
-async function doFullSync(userId: string): Promise<void> {
+async function doFullSync(userId: string, force: boolean): Promise<void> {
   syncStarted();
   // Deliver offline changes first, so the pull below can't clobber them.
   let flushError: string | undefined;
   try {
-    const flushed = await flushOutbox(userId, executor);
+    const flushed = await flushOutbox(userId, executor, { force });
     flushError = flushed.lastError ?? undefined;
     if (flushed.offline) {
       syncAborted();
@@ -459,12 +487,14 @@ async function doFullSync(userId: string): Promise<void> {
   } catch (err) {
     console.error("Cloud sync: flushing the outbox failed", err);
   }
+  lastPullAt = Date.now();
   const results = await Promise.allSettled([...COLLECTION_TABLES.map((cfg) => syncCollection(cfg, userId)), syncSettings(userId)]);
   const failures = results.filter((r): r is PromiseRejectedResult => r.status === "rejected");
   for (const f of failures) console.error("Cloud sync: a table failed to sync", f.reason);
   // A table whose migration hasn't been applied yet is logged, not surfaced as a sync error.
   const surfaced = failures.filter((f) => !isMissingTable(f.reason instanceof Error ? f.reason.message : String(f.reason?.message ?? f.reason)));
-  const failure = surfaced[0] ? (surfaced[0].reason instanceof Error ? surfaced[0].reason.message : String(surfaced[0].reason?.message ?? "Error de sincronización")) : flushError;
+  const failureText = surfaced[0] ? (surfaced[0].reason instanceof Error ? surfaced[0].reason.message : String(surfaced[0].reason?.message ?? "Error de sincronización")) : undefined;
+  const failure = failureText ? readableSyncError(failureText) : flushError;
   await refreshQueued();
   syncFinished(failure);
 }
@@ -484,7 +514,7 @@ function registerHook(cfg: TableSync) {
   // leak out as an unwanted push.
   cfg.localTable.hook("creating", function (_primKey, obj) {
     if (cfg.idKeyed && !(obj as { remoteId?: string }).remoteId) {
-      (obj as { remoteId?: string }).remoteId = crypto.randomUUID();
+      (obj as { remoteId?: string }).remoteId = uuid();
     }
     if (suppressHooks) return;
     (this as { onsuccess?: () => void }).onsuccess = () => push(obj);
@@ -533,11 +563,11 @@ let triggersBound = false;
 function bindReconnectTriggers() {
   if (triggersBound || typeof window === "undefined") return;
   triggersBound = true;
-  // Back online: deliver what piled up, then pull whatever changed elsewhere.
-  window.addEventListener("online", () => retrySync());
+  // Back online: deliver what piled up (and pull, if it's been a while).
+  window.addEventListener("online", () => void resumeSync());
   // Coming back to the app is a good moment to retry too.
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) void flushNow();
+    if (!document.hidden) void resumeSync();
   });
   // A flaky connection can leave changes queued while the browser still says
   // "online" — keep trying quietly in the background.
@@ -568,13 +598,19 @@ export function initCloudSync(): void {
   supabase.auth.getSession().then(({ data }) => {
     const uid = data.session?.user.id ?? null;
     currentUserId = uid;
-    if (uid) syncOnce(uid);
+    if (uid) {
+      syncOnce(uid);
+      void requestPersistentStorage();
+    }
   });
 
   supabase.auth.onAuthStateChange((_event, session) => {
     const uid = session?.user.id ?? null;
     currentUserId = uid;
-    if (uid) syncOnce(uid);
+    if (uid) {
+      syncOnce(uid);
+      void requestPersistentStorage();
+    }
     if (!uid) syncedUserId = null;
   });
 }

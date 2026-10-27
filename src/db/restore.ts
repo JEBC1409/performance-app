@@ -1,6 +1,7 @@
 import Dexie from "dexie";
 import { supabase } from "@/lib/supabase";
 import { db } from "./db";
+import { pendingCount } from "./outbox";
 import { getSyncSnapshot, subscribeSyncStatus } from "./syncStatus";
 
 const FLAG = "performance_restore_from_cloud";
@@ -17,7 +18,14 @@ export function isRestoring(): boolean {
   }
 }
 
-export type CloudCheck = { ok: true; sets: number; days: number } | { ok: false; why: string };
+/** Changes made on this device that haven't reached the cloud yet (the outbox).
+ * Restoring wipes them. null = couldn't be read (e.g. the very database problem
+ * that sent the user here), which must be treated as "unknown", not as zero. */
+export async function pendingChanges(): Promise<number | null> {
+  return pendingCount();
+}
+
+export type CloudCheck = { ok: true; sets: number; days: number; pending: number | null } | { ok: false; why: string };
 
 /** Is there something in the account to restore from? Only reads. */
 export async function checkCloud(): Promise<CloudCheck> {
@@ -33,14 +41,22 @@ export async function checkCloud(): Promise<CloudCheck> {
     };
     const [sets, days] = await Promise.all([count("sets"), count("habit_days")]);
     if (sets + days === 0) return { ok: false, why: "En la nube no hay datos guardados." };
-    return { ok: true, sets, days };
+    return { ok: true, sets, days, pending: await pendingChanges() };
   } catch (e) {
     return { ok: false, why: "No pude consultar la nube: " + (e instanceof Error ? e.message : String(e)) };
   }
 }
 
-/** Deletes this device's local database and reloads, so the account's data is pulled down fresh. */
-export async function restoreFromCloud(): Promise<void> {
+/** Deletes this device's local database and reloads, so the account's data is
+ * pulled down fresh. Refuses while there are changes that haven't been uploaded
+ * (or when that can't be checked) unless `force` is passed — the caller is
+ * expected to have asked the user to confirm losing them. */
+export async function restoreFromCloud(opts: { force?: boolean } = {}): Promise<void> {
+  if (!opts.force) {
+    const pending = await pendingChanges();
+    if (pending === null) throw new Error("No pude comprobar si tienes cambios sin subir, así que no borré nada");
+    if (pending > 0) throw new Error(`Tienes ${pending} ${pending === 1 ? "cambio sin subir; se perdería" : "cambios sin subir; se perderían"}, así que no borré nada`);
+  }
   localStorage.setItem(FLAG, "1");
   try {
     db.close();

@@ -2,7 +2,7 @@ import { db, type HabitDayRecord } from "@/db/db";
 import { distinctDates } from "@/db/safeQuery";
 import { addDays, todayISO } from "./date";
 
-const STREAK_WINDOW_DAYS = 28;
+export const STREAK_WINDOW_DAYS = 28;
 
 export interface DayScore {
   date: string;
@@ -15,25 +15,26 @@ function habitsDoneFor(day: HabitDayRecord | undefined): number {
   return day?.done.length ?? 0;
 }
 
-/** One entry per day in the window, oldest first, even for days with
- * nothing logged (points: 0) — the streak/rank math below needs the full,
- * gapless run to walk backward correctly. */
-export async function computeDailyScores(days: number = STREAK_WINDOW_DAYS): Promise<DayScore[]> {
-  const since = addDays(todayISO(), -(days - 1));
-  const [sets, habitDays, weights, sleeps, focus] = await Promise.all([
-    db.sets.where("date").aboveOrEqual(since).toArray(),
-    db.habitDays.where("date").aboveOrEqual(since).toArray(),
-    db.weights.where("date").aboveOrEqual(since).toArray(),
-    db.sleep.where("date").aboveOrEqual(since).toArray(),
-    db.focusSessions.where("date").aboveOrEqual(since).toArray(),
-  ]);
+export interface ScoreRows {
+  sets: { date: string }[];
+  habitDays: HabitDayRecord[];
+  weights: { date: string }[];
+  sleeps: { date: string }[];
+  focus: { date: string }[];
+}
 
+/** The scoring math on rows already in memory (any superset of the window is fine —
+ * only the `days` ending `today` are looked at). One entry per day, oldest first, even
+ * for days with nothing logged (points: 0) — the streak/rank math below needs the
+ * full, gapless run to walk backward correctly. */
+export function buildDailyScores(rows: ScoreRows, days: number = STREAK_WINDOW_DAYS, today: string = todayISO()): DayScore[] {
+  const since = addDays(today, -(days - 1));
   const focusByDate = new Map<string, number>();
-  focus.forEach((f) => focusByDate.set(f.date, (focusByDate.get(f.date) ?? 0) + 1));
-  const trainedDates = new Set(sets.map((s) => s.date));
-  const weightDates = new Set(weights.map((w) => w.date));
-  const sleepDates = new Set(sleeps.map((s) => s.date));
-  const habitByDate = new Map(habitDays.map((h) => [h.date, h]));
+  rows.focus.forEach((f) => focusByDate.set(f.date, (focusByDate.get(f.date) ?? 0) + 1));
+  const trainedDates = new Set(rows.sets.map((s) => s.date));
+  const weightDates = new Set(rows.weights.map((w) => w.date));
+  const sleepDates = new Set(rows.sleeps.map((s) => s.date));
+  const habitByDate = new Map(rows.habitDays.map((h) => [h.date, h]));
 
   const out: DayScore[] = [];
   for (let i = 0; i < days; i++) {
@@ -49,6 +50,20 @@ export async function computeDailyScores(days: number = STREAK_WINDOW_DAYS): Pro
     out.push({ date, points, trained, habitsDone });
   }
   return out;
+}
+
+/** Scores for the last `days` days, read from the database. (The Hoy screen builds
+ * the same thing from its shared recent-activity read instead — see useDailyStreak.) */
+export async function computeDailyScores(days: number = STREAK_WINDOW_DAYS): Promise<DayScore[]> {
+  const since = addDays(todayISO(), -(days - 1));
+  const [sets, habitDays, weights, sleeps, focus] = await Promise.all([
+    db.sets.where("date").aboveOrEqual(since).toArray(),
+    db.habitDays.where("date").aboveOrEqual(since).toArray(),
+    db.weights.where("date").aboveOrEqual(since).toArray(),
+    db.sleep.where("date").aboveOrEqual(since).toArray(),
+    db.focusSessions.where("date").aboveOrEqual(since).toArray(),
+  ]);
+  return buildDailyScores({ sets, habitDays, weights, sleeps, focus }, days);
 }
 
 /** Grace days per calendar month that keep a streak alive across a missed

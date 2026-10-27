@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const reopenDb = vi.fn();
 const checkCloud = vi.fn();
 const restoreFromCloud = vi.fn();
-vi.mock("@/db/restore", () => ({ checkCloud: () => checkCloud(), restoreFromCloud: () => restoreFromCloud() }));
+vi.mock("@/db/restore", () => ({ checkCloud: () => checkCloud(), restoreFromCloud: (opts?: unknown) => restoreFromCloud(opts) }));
 vi.mock("@/db/recover", async (importOriginal) => ({ ...(await importOriginal<typeof import("@/db/recover")>()), reopenDb: () => reopenDb() }));
 
 const { ScreenError } = await import("../ScreenError");
@@ -63,7 +63,7 @@ describe("ScreenError", () => {
 
   it("offers to restore from the account, shows what is there, and only wipes after confirming", async () => {
     reopenDb.mockRejectedValue(new Error("still broken"));
-    checkCloud.mockResolvedValue({ ok: true, sets: 670, days: 40 });
+    checkCloud.mockResolvedValue({ ok: true, sets: 670, days: 40, pending: 0 });
     restoreFromCloud.mockResolvedValue(undefined);
     render(<ScreenError error={idbError()} reset={() => {}} />);
     fireEvent.click(await screen.findByRole("button", { name: /Restaurar desde mi cuenta/i }));
@@ -71,6 +71,57 @@ describe("ScreenError", () => {
     expect(restoreFromCloud).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: /^Restaurar$/ }));
     await waitFor(() => expect(restoreFromCloud).toHaveBeenCalledTimes(1));
+    expect(restoreFromCloud).toHaveBeenCalledWith(undefined); // nothing pending: no force needed
+  });
+
+  it("with changes not uploaded yet, warns how many would be lost and needs a second tap", async () => {
+    reopenDb.mockRejectedValue(new Error("still broken"));
+    checkCloud.mockResolvedValue({ ok: true, sets: 670, days: 40, pending: 3 });
+    restoreFromCloud.mockResolvedValue(undefined);
+    render(<ScreenError error={idbError()} reset={() => {}} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Restaurar desde mi cuenta/i }));
+    expect(await screen.findByText(/Tienes 3 cambios sin subir; se perderían/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /^Restaurar$/ }));
+    expect(restoreFromCloud).not.toHaveBeenCalled();
+    expect(screen.getByText(/Toca de nuevo para confirmar/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Sí, borrar y restaurar/ }));
+    await waitFor(() => expect(restoreFromCloud).toHaveBeenCalledTimes(1));
+    expect(restoreFromCloud).toHaveBeenCalledWith({ force: true });
+  });
+
+  it("says it in the singular for one pending change", async () => {
+    reopenDb.mockRejectedValue(new Error("still broken"));
+    checkCloud.mockResolvedValue({ ok: true, sets: 1, days: 1, pending: 1 });
+    render(<ScreenError error={idbError()} reset={() => {}} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Restaurar desde mi cuenta/i }));
+    expect(await screen.findByText(/Tienes 1 cambio sin subir; se perdería/)).toBeInTheDocument();
+  });
+
+  it("when the pending changes can't be counted, asks for the reinforced confirmation too", async () => {
+    reopenDb.mockRejectedValue(new Error("still broken"));
+    checkCloud.mockResolvedValue({ ok: true, sets: 670, days: 40, pending: null });
+    restoreFromCloud.mockResolvedValue(undefined);
+    render(<ScreenError error={idbError()} reset={() => {}} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Restaurar desde mi cuenta/i }));
+    expect(await screen.findByText(/No pude comprobar si tienes cambios sin subir/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /^Restaurar$/ }));
+    expect(restoreFromCloud).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: /Sí, borrar y restaurar/ }));
+    await waitFor(() => expect(restoreFromCloud).toHaveBeenCalledWith({ force: true }));
+  });
+
+  it("cancelling after the first tap resets the confirmation", async () => {
+    reopenDb.mockRejectedValue(new Error("still broken"));
+    checkCloud.mockResolvedValue({ ok: true, sets: 5, days: 5, pending: 2 });
+    render(<ScreenError error={idbError()} reset={() => {}} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Restaurar desde mi cuenta/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /^Restaurar$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Cancelar/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /Restaurar desde mi cuenta/i }));
+    expect(await screen.findByRole("button", { name: /^Restaurar$/ })).toBeInTheDocument();
+    expect(restoreFromCloud).not.toHaveBeenCalled();
   });
 
   it("refuses to restore when the cloud has nothing, and wipes nothing", async () => {

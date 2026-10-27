@@ -1,5 +1,6 @@
 import Dexie, { type EntityTable } from "dexie";
 import type { GymDay } from "@/lib/cycle";
+import { uuid } from "@/lib/uuid";
 
 export interface SetRecord {
   id?: number;
@@ -91,6 +92,8 @@ export interface OutboxRecord {
   createdAt: number;
   attempts: number;
   lastError?: string;
+  /** When the last failed delivery attempt happened — drives the retry back-off. */
+  lastAttemptAt?: number;
 }
 
 /** App-level configuration the user can edit in the app (their routine, their
@@ -207,7 +210,7 @@ db.version(2)
         .table(name)
         .toCollection()
         .modify((row) => {
-          row.remoteId = crypto.randomUUID();
+          row.remoteId = uuid();
         });
     }
   });

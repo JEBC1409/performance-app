@@ -20,10 +20,10 @@ export type HomeCard = "rings" | "priorities" | "session" | "streak" | "habits" 
 
 export const HOME_CARDS: { key: HomeCard; label: string }[] = [
   { key: "rings", label: "Anillos del día" },
-  { key: "priorities", label: "Prioridades y cierre del día" },
   { key: "session", label: "Sesión del día" },
-  { key: "streak", label: "Racha" },
   { key: "habits", label: "Hábitos de hoy" },
+  { key: "priorities", label: "Prioridades y cierre del día" },
+  { key: "streak", label: "Racha" },
   { key: "insights", label: "Descubrimientos" },
   { key: "stats", label: "Estadísticas" },
   { key: "verse", label: "Versículo" },
@@ -83,6 +83,7 @@ export function normalizeOrder(saved: unknown): HomeCard[] {
   if (Array.isArray(saved)) {
     for (const k of saved) if (typeof k === "string" && known.has(k) && !out.includes(k as HomeCard)) out.push(k as HomeCard);
   }
+  if (!out.length) return [...DEFAULT_ORDER]; // nothing saved: the default order as it is
   for (const k of DEFAULT_ORDER) {
     if (out.includes(k)) continue;
     const after = PLACE_AFTER[k];

@@ -57,6 +57,14 @@ export function syncAborted(): void {
   recompute();
 }
 
+/** Shows an error that happened outside a sync attempt (e.g. a change that could
+ * not be queued for upload). Doesn't touch the in-flight count; the next
+ * successful sync clears it. */
+export function reportSyncError(message: string): void {
+  lastError = message;
+  recompute();
+}
+
 export function syncFinished(error?: string): void {
   pending = Math.max(0, pending - 1);
   if (error) {
