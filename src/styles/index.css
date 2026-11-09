@@ -1149,3 +1149,98 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .datos-bars .glass[aria-hidden="true"] {
   display: none;
 }
+
+/* ── Focus: fondo con los colores de la carátula (como la letra de Apple Music) ── */
+@property --cv1 { syntax: "<color>"; inherits: true; initial-value: #1c1c22; }
+@property --cv2 { syntax: "<color>"; inherits: true; initial-value: #1c1c22; }
+@property --cv3 { syntax: "<color>"; inherits: true; initial-value: #1c1c22; }
+@property --cv4 { syntax: "<color>"; inherits: true; initial-value: #1c1c22; }
+
+/* The full-screen timer turns dark while the cover colours are behind it, whatever the
+   app theme, so the white text and glass buttons keep their contrast. */
+.zen-cover {
+  color-scheme: dark;
+  --fg-rgb: 255 255 255;
+  --bg-rgb: 0 0 0;
+  --surface-rgb: 11 11 13;
+  --raised-rgb: 23 23 27;
+  --color-bg: #000000;
+  --color-surface: #0b0b0d;
+  --color-surface-2: #111114;
+  --color-line: rgb(255 255 255 / 0.1);
+  --color-line-strong: rgb(255 255 255 / 0.18);
+  --color-ink: #ffffff;
+  --color-muted: rgb(255 255 255 / 0.78);
+  --color-muted-2: rgb(255 255 255 / 0.66);
+  color: #ffffff;
+}
+.cover-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: #08080a;
+  transition:
+    --cv1 1.6s ease,
+    --cv2 1.6s ease,
+    --cv3 1.6s ease,
+    --cv4 1.6s ease;
+}
+/* A soft darkening so the lyrics stay readable over any cover. */
+.cover-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgb(0 0 0 / 0.06), rgb(0 0 0 / 0.26));
+}
+.cover-blob {
+  position: absolute;
+  width: 110vmax;
+  height: 110vmax;
+  border-radius: 50%;
+  opacity: 0.95;
+  will-change: transform;
+}
+.cover-blob-1 {
+  top: -38vmax;
+  left: -30vmax;
+  background: radial-gradient(circle, var(--cv1) 0%, transparent 72%);
+  animation: cover-drift-1 28s ease-in-out infinite alternate;
+}
+.cover-blob-2 {
+  right: -34vmax;
+  top: -12vmax;
+  background: radial-gradient(circle, var(--cv2) 0%, transparent 72%);
+  animation: cover-drift-2 34s ease-in-out infinite alternate;
+}
+.cover-blob-3 {
+  bottom: -42vmax;
+  left: -16vmax;
+  background: radial-gradient(circle, var(--cv3) 0%, transparent 72%);
+  animation: cover-drift-3 31s ease-in-out infinite alternate;
+}
+.cover-blob-4 {
+  bottom: -30vmax;
+  right: -28vmax;
+  background: radial-gradient(circle, var(--cv4) 0%, transparent 72%);
+  animation: cover-drift-4 37s ease-in-out infinite alternate;
+}
+@keyframes cover-drift-1 {
+  to { transform: translate3d(26vmax, 18vmax, 0) rotate(40deg) scale(1.08); }
+}
+@keyframes cover-drift-2 {
+  to { transform: translate3d(-24vmax, 24vmax, 0) rotate(-35deg) scale(0.94); }
+}
+@keyframes cover-drift-3 {
+  to { transform: translate3d(30vmax, -22vmax, 0) rotate(30deg) scale(1.1); }
+}
+@keyframes cover-drift-4 {
+  to { transform: translate3d(-28vmax, -16vmax, 0) rotate(-45deg) scale(0.92); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cover-blob { animation: none; }
+}
+:root[data-calm="true"] .cover-blob {
+  animation: none;
+}

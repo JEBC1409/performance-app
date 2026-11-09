@@ -22,6 +22,8 @@ import { MusicLists } from "./MusicLists";
 import { useMusicLists } from "@/lib/musicLists";
 import { isMouredevTask } from "@/lib/mouredevFocus";
 import { useLyricsPref } from "@/lib/lyricsPref";
+import { useCoverPalette } from "@/lib/coverColors";
+import { CoverBackdrop } from "./CoverBackdrop";
 
 const SIZE = 300;
 const C = SIZE / 2;
@@ -177,6 +179,7 @@ function FocusView() {
   const pipAvailable = pipSupport() !== null;
   const musicState = useSyncExternalStore(subscribeMusic, getMusicState, getMusicState);
   const musicOn = !!musicState.config;
+  const cover = useCoverPalette(musicOn && musicState.started ? musicState.videoId : "");
   const savedLists = useMusicLists();
   const lyricsPref = useLyricsPref();
   const lyricsOn = musicOn && lyricsPref;
@@ -491,10 +494,14 @@ function FocusView() {
 
       {zen
         ? createPortal(
-            <div className="fixed inset-0 z-[68] overflow-y-auto bg-[var(--color-bg)] px-6 lg:px-12" role="dialog" aria-modal aria-label="Focus en pantalla completa" style={{ paddingTop: "calc(1rem + env(safe-area-inset-top))", paddingBottom: `calc(${lyricsOn ? "1rem" : "2rem"} + env(safe-area-inset-bottom))` }}>
-              <div className="ambient-bg" aria-hidden>
-                <div className="ambient-glow" />
-              </div>
+            <div className={`fixed inset-0 z-[68] overflow-y-auto bg-[var(--color-bg)] px-6 lg:px-12 ${cover ? "zen-cover" : ""}`} role="dialog" aria-modal aria-label="Focus en pantalla completa" style={{ paddingTop: "calc(1rem + env(safe-area-inset-top))", paddingBottom: `calc(${lyricsOn ? "1rem" : "2rem"} + env(safe-area-inset-bottom))` }}>
+              {cover ? (
+                <CoverBackdrop colors={cover} />
+              ) : (
+                <div className="ambient-bg" aria-hidden>
+                  <div className="ambient-glow" />
+                </div>
+              )}
               <div className={`relative mx-auto flex min-h-full w-full max-w-[940px] flex-col items-center justify-between ${lyricsOn ? "gap-3 md:gap-6" : "gap-6"} ${musicOn ? "lg:max-w-[1320px]" : ""}`}>
                 <div className="flex w-full justify-end">
                   <button onClick={() => setImmersive(false)} aria-label="Salir de pantalla completa" className="glass tap-target flex h-11 w-11 items-center justify-center rounded-full text-[var(--color-muted)]">
