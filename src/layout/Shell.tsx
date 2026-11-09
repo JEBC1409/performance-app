@@ -5,6 +5,7 @@ import { NavDock } from "./NavDock";
 import type { Tab } from "@/App";
 import { OfflineBanner } from "@/ui/OfflineBanner";
 import { useUiPrefs } from "@/hooks/useUiPrefs";
+import { useCoverTitleBar } from "@/hooks/useCoverTitleBar";
 
 const SIDEBAR_TABS: { key: Tab; label: string }[] = [
   { key: "hoy", label: "Hoy" },
@@ -49,6 +50,7 @@ export function Shell({
 }) {
   // The dock shows the screens you picked (Perfil › Apariencia); the rest live under "Más".
   const { navTabs } = useUiPrefs();
+  useCoverTitleBar();
   const desktop = useMediaQuery(DESKTOP_QUERY);
   const label = (k: string) => SIDEBAR_TABS.find((t) => t.key === k)?.label ?? k;
   const MOBILE_TABS: { key: Tab; label: string }[] = navTabs.map((k) => ({ key: k as Tab, label: label(k) }));

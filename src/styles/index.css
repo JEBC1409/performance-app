@@ -1260,22 +1260,3 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 :root[data-calm="true"] .cover-blob {
   animation: none;
 }
-
-/* The quiet version behind the whole app while a song plays: the tint plus slow colour, the
-   cards above it stay translucent so it shows through. Fewer blobs, lower strength. */
-.cover-ambient .cover-blob {
-  opacity: 0.6;
-}
-.cover-ambient .cover-blob-5,
-.cover-ambient .cover-blob-6 {
-  display: none;
-}
-.cover-ambient::after {
-  display: none;
-}
-:root[data-theme="light"] .cover-ambient {
-  background: color-mix(in srgb, var(--cv1) 22%, var(--color-bg));
-}
-:root[data-theme="light"] .cover-ambient .cover-blob {
-  opacity: 0.38;
-}
