@@ -23,7 +23,7 @@ import { useMusicLists } from "@/lib/musicLists";
 import { isMouredevTask } from "@/lib/mouredevFocus";
 import { useLyricsPref } from "@/lib/lyricsPref";
 import { useCoverPalette } from "@/lib/coverColors";
-import { CoverBackdrop } from "./CoverBackdrop";
+import { CoverBackdrop } from "@/ui/CoverBackdrop";
 
 const SIZE = 300;
 const C = SIZE / 2;

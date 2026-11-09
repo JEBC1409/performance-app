@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_NAV, HOME_CARDS, normalizeNav, normalizeOrder, parseUiPrefs } from "../uiPrefs";
+import { DEFAULT_NAV, HOME_CARDS, normalizeNav, normalizeOrder, parseUiPrefs, setThemeTint } from "../uiPrefs";
 
 describe("uiPrefs", () => {
   it("falls back to defaults for missing or broken storage", () => {
@@ -32,5 +32,15 @@ describe("cards added after an order was saved", () => {
   it("land next to the card they belong with, not buried at the bottom", () => {
     const before = ["rings", "session", "streak", "habits", "stats", "verse"];
     expect(normalizeOrder(before)).toEqual(["rings", "priorities", "session", "streak", "habits", "insights", "stats", "verse"]);
+  });
+
+  it("tints the title bar with the playing song's colour and puts it back after", () => {
+    document.head.insertAdjacentHTML("beforeend", '<meta name="theme-color" content="#000000">');
+    const meta = () => document.querySelector('meta[name="theme-color"]')!.getAttribute("content");
+    document.documentElement.dataset.theme = "dark";
+    setThemeTint([200, 100, 50]);
+    expect(meta()).toBe("#442211"); // 34% of the colour over black
+    setThemeTint(null);
+    expect(meta()).toBe("#000000");
   });
 });

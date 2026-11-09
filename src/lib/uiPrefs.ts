@@ -140,6 +140,27 @@ function resolveTheme(theme: Theme): "dark" | "light" {
   return typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
 }
 
+// Colour of the window's title bar / the phone's status bar. While a song plays it takes a
+// tint of the cover (same mix as the page backdrop: CoverBackdrop's color-mix), so the bar
+// doesn't stay a black stripe over a coloured page.
+let themeTint: [number, number, number] | null = null;
+const TINT_SHARE = { dark: 0.34, light: 0.22 } as const;
+const THEME_BASE = { dark: [0, 0, 0], light: [196, 199, 207] } as const;
+
+function paintThemeColor(theme: "dark" | "light"): void {
+  const base = THEME_BASE[theme];
+  const t = themeTint ? TINT_SHARE[theme] : 0;
+  const hex = base.map((b, i) => Math.round(b + ((themeTint?.[i] ?? b) - b) * t).toString(16).padStart(2, "0")).join("");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", `#${hex}`);
+}
+
+/** Tints the title bar with the playing song's colour; null puts it back. */
+export function setThemeTint(rgb: [number, number, number] | null): void {
+  if (typeof document === "undefined") return;
+  themeTint = rgb;
+  paintThemeColor(resolveTheme(prefs.theme));
+}
+
 /** Puts the prefs on <html>; safe to call before React renders (no flash). */
 export function applyUiPrefs(p: UiPrefs = prefs): void {
   if (typeof document === "undefined") return;
@@ -150,7 +171,7 @@ export function applyUiPrefs(p: UiPrefs = prefs): void {
   else delete root.dataset.calm;
   const theme = resolveTheme(p.theme);
   root.dataset.theme = theme;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "light" ? "#c4c7cf" : "#000000");
+  paintThemeColor(theme);
   if (!autoListener && typeof window !== "undefined" && window.matchMedia) {
     autoListener = true;
     window.matchMedia("(prefers-color-scheme: light)").addEventListener?.("change", () => {
