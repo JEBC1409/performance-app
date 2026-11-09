@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_NAV, HOME_CARDS, normalizeNav, normalizeOrder, parseUiPrefs, setThemeTint } from "../uiPrefs";
+import { DEFAULT_NAV, HOME_CARDS, normalizeNav, normalizeOrder, parseUiPrefs, themeColorFor } from "../uiPrefs";
 
 describe("uiPrefs", () => {
   it("falls back to defaults for missing or broken storage", () => {
@@ -34,13 +34,11 @@ describe("cards added after an order was saved", () => {
     expect(normalizeOrder(before)).toEqual(["rings", "priorities", "session", "streak", "habits", "insights", "stats", "verse"]);
   });
 
-  it("tints the title bar with the playing song's colour and puts it back after", () => {
-    document.head.insertAdjacentHTML("beforeend", '<meta name="theme-color" content="#000000">');
-    const meta = () => document.querySelector('meta[name="theme-color"]')!.getAttribute("content");
-    document.documentElement.dataset.theme = "dark";
-    setThemeTint([200, 100, 50]);
-    expect(meta()).toBe("#442211"); // 34% of the colour over black
-    setThemeTint(null);
-    expect(meta()).toBe("#000000");
+  it("colours the title bar from the accent, darker on the dark theme", () => {
+    expect(themeColorFor("dark", "cyan")).toBe("#022f37"); // 26% of #06b6d4 over black
+    expect(themeColorFor("dark", "red")).not.toBe(themeColorFor("dark", "green"));
+    // the light theme stays light: still close to its gray ground
+    const light = themeColorFor("light", "cyan");
+    expect(parseInt(light.slice(1, 3), 16)).toBeGreaterThan(150);
   });
 });
