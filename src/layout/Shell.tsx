@@ -76,7 +76,7 @@ export function Shell({
 
           <div className="nav-pillbar min-w-0 max-w-full justify-self-center">
             <span className="nav-logo-badge">
-              <span className="nav-logo-dot" />
+              <span className="nav-logo-mark" aria-hidden />
             </span>
             <nav className="flex min-w-0 items-center gap-0.5" aria-label="Navegación">
               {SIDEBAR_TABS.map((t) => {

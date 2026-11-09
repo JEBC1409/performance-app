@@ -374,11 +374,13 @@ textarea:focus-visible {
   justify-content: center;
   background: rgb(var(--accent-solid-rgb));
 }
-.nav-logo-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
+/* The P mark, painted in the text-on-accent colour (white, or dark on the light accents). */
+.nav-logo-mark {
+  width: 17px;
+  height: 24px;
   background: var(--text-on-accent);
+  -webkit-mask: url("/icons/logo-mark.png") center / contain no-repeat;
+  mask: url("/icons/logo-mark.png") center / contain no-repeat;
 }
 .nav-pill-item {
   display: flex;
