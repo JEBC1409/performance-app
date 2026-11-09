@@ -1155,9 +1155,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 @property --cv2 { syntax: "<color>"; inherits: true; initial-value: #1c1c22; }
 @property --cv3 { syntax: "<color>"; inherits: true; initial-value: #1c1c22; }
 @property --cv4 { syntax: "<color>"; inherits: true; initial-value: #1c1c22; }
+@property --cv5 { syntax: "<color>"; inherits: true; initial-value: #1c1c22; }
+@property --cv6 { syntax: "<color>"; inherits: true; initial-value: #1c1c22; }
 
 /* The full-screen timer turns dark while the cover colours are behind it, whatever the
-   app theme, so the white text and glass buttons keep their contrast. */
+   app theme, and its accent turns white (Apple Music's own controls are white), so the
+   dial, the play button and the chips sit with the cover instead of fighting it. */
 .zen-cover {
   color-scheme: dark;
   --fg-rgb: 255 255 255;
@@ -1167,13 +1170,45 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   --color-bg: #000000;
   --color-surface: #0b0b0d;
   --color-surface-2: #111114;
-  --color-line: rgb(255 255 255 / 0.1);
-  --color-line-strong: rgb(255 255 255 / 0.18);
+  --color-line: rgb(255 255 255 / 0.12);
+  --color-line-strong: rgb(255 255 255 / 0.2);
   --color-ink: #ffffff;
-  --color-muted: rgb(255 255 255 / 0.78);
-  --color-muted-2: rgb(255 255 255 / 0.66);
+  --color-muted: rgb(255 255 255 / 0.8);
+  --color-muted-2: rgb(255 255 255 / 0.68);
+  --accent-rgb: 255 255 255;
+  --accent-light-rgb: 255 255 255;
+  --accent-dark-rgb: 214 214 222;
+  --accent-solid-rgb: 255 255 255;
+  --accent-ink-rgb: 255 255 255;
+  --color-red: #ffffff;
+  --color-red-ink: #ffffff;
+  --color-accent-text: rgb(255 255 255 / 0.82);
+  --text-on-accent: #101014;
   color: #ffffff;
 }
+/* Frosted white controls over the moving colours (also when "reduce transparency" would make them opaque). */
+.zen-cover .glass,
+.zen-cover .glass-accent {
+  background: rgb(255 255 255 / 0.16);
+  border-color: rgb(255 255 255 / 0.22);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.zen-cover .glass:hover:not(:disabled),
+.zen-cover .glass-accent:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.24);
+  border-color: rgb(255 255 255 / 0.34);
+}
+.zen-cover .glass[aria-pressed="true"],
+.zen-cover .glass-sel {
+  background: rgb(255 255 255 / 0.34);
+  border-color: rgb(255 255 255 / 0.5);
+  color: #ffffff;
+}
+.zen-cover .glass-on {
+  box-shadow: 0 8px 28px -8px rgb(0 0 0 / 0.45);
+}
+
 .cover-backdrop {
   position: absolute;
   inset: 0;
@@ -1185,59 +1220,39 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     --cv1 1.6s ease,
     --cv2 1.6s ease,
     --cv3 1.6s ease,
-    --cv4 1.6s ease;
+    --cv4 1.6s ease,
+    --cv5 1.6s ease,
+    --cv6 1.6s ease;
 }
-/* A soft darkening so the lyrics stay readable over any cover. */
+/* A light darkening so the lyrics stay readable over any cover. */
 .cover-backdrop::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(rgb(0 0 0 / 0.06), rgb(0 0 0 / 0.26));
+  background: linear-gradient(rgb(0 0 0 / 0.04), rgb(0 0 0 / 0.24));
 }
+/* Each blob loops through three stops of its own (--x/--y/--r/--s per stop) at its own pace,
+   so the colours keep sliding past each other and never repeat in step. */
 .cover-blob {
   position: absolute;
-  width: 110vmax;
-  height: 110vmax;
+  width: 92vmax;
+  height: 92vmax;
   border-radius: 50%;
-  opacity: 0.95;
   will-change: transform;
+  animation: cover-flow var(--dur, 20s) ease-in-out infinite;
 }
-.cover-blob-1 {
-  top: -38vmax;
-  left: -30vmax;
-  background: radial-gradient(circle, var(--cv1) 0%, transparent 72%);
-  animation: cover-drift-1 28s ease-in-out infinite alternate;
+@keyframes cover-flow {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  25% { transform: translate3d(var(--x1), var(--y1), 0) rotate(var(--r1)) scale(var(--s1)); }
+  50% { transform: translate3d(var(--x2), var(--y2), 0) rotate(var(--r2)) scale(var(--s2)); }
+  75% { transform: translate3d(var(--x3), var(--y3), 0) rotate(var(--r3)) scale(var(--s3)); }
 }
-.cover-blob-2 {
-  right: -34vmax;
-  top: -12vmax;
-  background: radial-gradient(circle, var(--cv2) 0%, transparent 72%);
-  animation: cover-drift-2 34s ease-in-out infinite alternate;
-}
-.cover-blob-3 {
-  bottom: -42vmax;
-  left: -16vmax;
-  background: radial-gradient(circle, var(--cv3) 0%, transparent 72%);
-  animation: cover-drift-3 31s ease-in-out infinite alternate;
-}
-.cover-blob-4 {
-  bottom: -30vmax;
-  right: -28vmax;
-  background: radial-gradient(circle, var(--cv4) 0%, transparent 72%);
-  animation: cover-drift-4 37s ease-in-out infinite alternate;
-}
-@keyframes cover-drift-1 {
-  to { transform: translate3d(26vmax, 18vmax, 0) rotate(40deg) scale(1.08); }
-}
-@keyframes cover-drift-2 {
-  to { transform: translate3d(-24vmax, 24vmax, 0) rotate(-35deg) scale(0.94); }
-}
-@keyframes cover-drift-3 {
-  to { transform: translate3d(30vmax, -22vmax, 0) rotate(30deg) scale(1.1); }
-}
-@keyframes cover-drift-4 {
-  to { transform: translate3d(-28vmax, -16vmax, 0) rotate(-45deg) scale(0.92); }
-}
+.cover-blob-1 { top: -34vmax; left: -28vmax; background: radial-gradient(circle, var(--cv1) 0%, transparent 70%); --dur: 17s; --x1: 38vmax; --y1: 10vmax; --r1: 50deg; --s1: 1.15; --x2: 30vmax; --y2: 40vmax; --r2: 120deg; --s2: 0.85; --x3: -6vmax; --y3: 22vmax; --r3: 40deg; --s3: 1.1; }
+.cover-blob-2 { top: -30vmax; right: -34vmax; background: radial-gradient(circle, var(--cv2) 0%, transparent 70%); --dur: 23s; --x1: -34vmax; --y1: 18vmax; --r1: -60deg; --s1: 0.9; --x2: -40vmax; --y2: 44vmax; --r2: -130deg; --s2: 1.2; --x3: -10vmax; --y3: 14vmax; --r3: -50deg; --s3: 0.95; }
+.cover-blob-3 { top: 18vmax; left: -42vmax; background: radial-gradient(circle, var(--cv3) 0%, transparent 70%); --dur: 19s; --x1: 30vmax; --y1: -26vmax; --r1: 70deg; --s1: 1.2; --x2: 48vmax; --y2: 8vmax; --r2: 150deg; --s2: 0.9; --x3: 14vmax; --y3: 30vmax; --r3: 60deg; --s3: 1.05; }
+.cover-blob-4 { top: 8vmax; right: -44vmax; background: radial-gradient(circle, var(--cv4) 0%, transparent 70%); --dur: 26s; --x1: -42vmax; --y1: 26vmax; --r1: -80deg; --s1: 1.1; --x2: -26vmax; --y2: -16vmax; --r2: -160deg; --s2: 0.88; --x3: -46vmax; --y3: 6vmax; --r3: -70deg; --s3: 1.15; }
+.cover-blob-5 { bottom: -40vmax; left: -22vmax; background: radial-gradient(circle, var(--cv5) 0%, transparent 70%); --dur: 21s; --x1: 34vmax; --y1: -22vmax; --r1: 55deg; --s1: 0.9; --x2: 12vmax; --y2: -42vmax; --r2: 140deg; --s2: 1.2; --x3: 40vmax; --y3: -10vmax; --r3: 70deg; --s3: 1; }
+.cover-blob-6 { bottom: -36vmax; right: -30vmax; background: radial-gradient(circle, var(--cv6) 0%, transparent 70%); --dur: 28s; --x1: -36vmax; --y1: -30vmax; --r1: -65deg; --s1: 1.15; --x2: -14vmax; --y2: -12vmax; --r2: -150deg; --s2: 0.9; --x3: -40vmax; --y3: -38vmax; --r3: -60deg; --s3: 1.1; }
 @media (prefers-reduced-motion: reduce) {
   .cover-blob { animation: none; }
 }

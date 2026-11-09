@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pickPalette } from "../coverColors";
+import { expandPalette, pickPalette } from "../coverColors";
 
 const px = (rgb: [number, number, number], n: number) => Array.from({ length: n }, () => [...rgb, 255]).flat();
 
@@ -28,5 +28,29 @@ describe("pickPalette", () => {
   it("returns nothing for a gray or empty image", () => {
     expect(pickPalette(px([120, 120, 120], 100))).toEqual([]);
     expect(pickPalette([])).toEqual([]);
+  });
+});
+
+describe("expandPalette", () => {
+  it("fills up to n colours with shades of the cover's own", () => {
+    const out = expandPalette([[200, 90, 20]], 6);
+    expect(out).toHaveLength(6);
+    expect(out[0]).toEqual([200, 90, 20]);
+    expect(new Set(out.map((c) => c.join())).size).toBeGreaterThan(3);
+  });
+
+  it("keeps the cover's colours first and returns nothing for none", () => {
+    const two = expandPalette(
+      [
+        [200, 30, 40],
+        [30, 60, 200],
+      ],
+      4,
+    );
+    expect(two.slice(0, 2)).toEqual([
+      [200, 30, 40],
+      [30, 60, 200],
+    ]);
+    expect(expandPalette([], 6)).toEqual([]);
   });
 });

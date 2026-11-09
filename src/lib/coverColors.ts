@@ -50,6 +50,19 @@ export function tune(rgb: RGB): RGB {
 const MAX_PERCEIVED = 0.56;
 const perceived = ([r, g, b]: RGB) => (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
 
+/** `n` colours for the backdrop from however many the cover gave: when it is nearly one colour,
+ * the rest are analogous shades of it (hue nudged, a bit lighter or deeper), so the mesh still has depth. */
+export function expandPalette(colors: RGB[], n: number): RGB[] {
+  if (!colors.length) return [];
+  const out = [...colors];
+  for (let k = 0; out.length < n; k++) {
+    const [h, s, l] = toHsl(colors[k % colors.length]);
+    const hue = (h + (k % 2 ? 10 : -10) + 360) % 360;
+    out.push(tune(fromHsl(hue, s, Math.min(0.55, Math.max(0.36, l + (k % 3 === 0 ? 0.1 : 0.03))))));
+  }
+  return out.slice(0, n);
+}
+
 const dist = (a: RGB, b: RGB) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 
 /** The cover's main colours from RGBA pixels: the most present, most colourful ones,
